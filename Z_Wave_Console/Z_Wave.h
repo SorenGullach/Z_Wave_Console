@@ -194,9 +194,9 @@ private:
 		case eJobs::INITIALIZE:
 			// Start or continue initialization until it reports Done.
 			if (module.InitializationState == ZW_Module::eInitializationState::NotInitialized)
-				initializeManager.Start();
+				initializeManager.StartOrResume();
 			else if (module.InitializationState == ZW_Module::eInitializationState::Paused)
-				initializeManager.Restart();
+				initializeManager.StartOrResume();
 			else if (module.InitializationState == ZW_Module::eInitializationState::Initialized)
 				return eJobResult::Done;
 

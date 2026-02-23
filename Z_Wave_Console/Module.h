@@ -74,6 +74,11 @@ public:
 
 	bool HasAPICommand(eCommandIds cmdId)
 	{
+		if(cmdId == eCommandIds::FUNC_ID_GET_INIT_DATA) // always expected to be a part of a module initialization sequence
+			return true;
+		if (cmdId == eCommandIds::FUNC_ID_GET_CAPABILITIES) // always expected to be a part of a module initialization sequence
+			return true;
+
 		for (auto& apicmd : ApiCommands)
 		{
 			if (apicmd == static_cast<uint8_t>(cmdId))
