@@ -1,0 +1,7 @@
+<Solution>
+  <Configurations>
+    <Platform Name="x64" />
+    <Platform Name="x86" />
+  </Configurations>
+  <Project Path="Z_Wave_Console/Z_Wave_Console.vcxproj" Id="3c45af10-52e5-4097-bf6b-1819e5c2be1c" />
+</Solution>

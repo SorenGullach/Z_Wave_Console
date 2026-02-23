@@ -1,0 +1,37 @@
+09:15:41 INFO [Interface.cpp:17              ] OpenPort ok: port='COM3'
+09:15:41 INFO [InitializeManager.cpp:11      ] >> GetInitData: cmdId=0x02
+09:15:41 DBG  [Interface.cpp:98              ] >> Send: cmdId=0x02 name=FUNC_ID_GET_INIT_DATA flow=3 attempt=1
+09:15:41 DBG  [Interface.cpp:103             ]        : bytesLen=5 bytes=[01 03 00 02 FE ]
+09:15:41 DBG  [Interface.cpp:324             ] << Recv: bytesLen=39 bytes=[01 25 01 02 05 08 1D 01 08 08 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 03 01 CA ]
+09:15:41 DBG  [Interface.cpp:327             ]        : cmdId=0x02 name=FUNC_ID_GET_INIT_DATA payloadLen=34
+09:15:41 DBG  [Z_Wave.h:89                   ] << initializeManager [RES] 0x02 FUNC_ID_GET_INIT_DATA | payload=34B [0]=0x05
+09:15:41 INFO [InitializeManager.cpp:59      ] << GetInitData ApiVersion=5 Caps=8 NodeListLen=29 ChipType=3 ChipVer=1 
+09:15:41 INFO [InitializeManager.cpp:65      ] << GetInitData: parsed nodeIds=3 (first=1, last=20)
+09:15:41 INFO [InitializeManager.cpp:164     ] >> GetCapabilities: cmdId=0x07
+09:15:41 DBG  [Interface.cpp:98              ] >> Send: cmdId=0x07 name=FUNC_ID_GET_CAPABILITIES flow=3 attempt=1
+09:15:41 DBG  [Interface.cpp:103             ]        : bytesLen=5 bytes=[01 03 00 07 FB ]
+09:15:41 DBG  [Interface.cpp:324             ] << Recv: bytesLen=45 bytes=[01 2B 01 07 03 07 00 86 00 02 00 01 FE 80 FE 88 0F 00 00 00 FB 97 7F 82 07 00 00 80 00 80 00 00 00 00 00 00 00 00 00 00 00 00 00 00 C2 ]
+09:15:41 DBG  [Interface.cpp:327             ]        : cmdId=0x07 name=FUNC_ID_GET_CAPABILITIES payloadLen=40
+09:15:41 DBG  [Z_Wave.h:89                   ] << initializeManager [RES] 0x07 FUNC_ID_GET_CAPABILITIES | payload=40B [0]=0x03
+09:15:41 INFO [InitializeManager.cpp:204     ] << GetCapabilities: appVer=3.7 mfg=0x0086 prodType=0x0002 prodId=0x0001 cmdCount=47 cmdList=[2 3 4 5 6 7 8 16 18 19 20 21 22 23 24 28 32 33 34 35 36 65 66 68 69 70 71 72 73 74 75 77 80 81 82 83 84 85 86 87 90 96 97 98 99 128 144 ] (payloadLen=40)
+09:15:41 INFO [InitializeManager.cpp:75      ] >> GetControllerCapabilities: cmdId=0x05
+09:15:42 DBG  [Interface.cpp:98              ] >> Send: cmdId=0x05 name=FUNC_ID_GET_CONTROLLER_CAPABILITIES flow=3 attempt=1
+09:15:42 DBG  [Interface.cpp:103             ]        : bytesLen=5 bytes=[01 03 00 05 F9 ]
+09:15:42 DBG  [Interface.cpp:324             ] << Recv: bytesLen=6 bytes=[01 04 01 05 1C E3 ]
+09:15:42 DBG  [Interface.cpp:327             ]        : cmdId=0x05 name=FUNC_ID_GET_CONTROLLER_CAPABILITIES payloadLen=1
+09:15:42 DBG  [Z_Wave.h:89                   ] << initializeManager [RES] 0x05 FUNC_ID_GET_CONTROLLER_CAPABILITIES | payload=1B [0]=0x1C
+09:15:42 INFO [InitializeManager.cpp:94      ] << GetControllerCapabilities: caps=0x1C secondary=false otherNet=false sisPresent=true sucEnabled=true noNodesIncluded=false (payloadLen=1)
+09:15:42 INFO [InitializeManager.cpp:222     ] >> GetNetworkIdsFromMemory: cmdId=0x20
+09:15:42 DBG  [Interface.cpp:98              ] >> Send: cmdId=0x20 name=ZW_API_GET_NETWORK_IDS_FROM_MEMORY flow=3 attempt=1
+09:15:42 DBG  [Interface.cpp:103             ]        : bytesLen=5 bytes=[01 03 00 20 DC ]
+09:15:42 DBG  [Interface.cpp:324             ] << Recv: bytesLen=10 bytes=[01 08 01 20 01 4C E4 51 01 2F ]
+09:15:42 DBG  [Interface.cpp:327             ]        : cmdId=0x20 name=ZW_API_GET_NETWORK_IDS_FROM_MEMORY payloadLen=5
+09:15:42 DBG  [Z_Wave.h:89                   ] << initializeManager [RES] 0x20 ZW_API_GET_NETWORK_IDS_FROM_MEMORY | payload=5B [0]=0x01
+09:15:42 INFO [InitializeManager.cpp:244     ] << GetNetworkIdsFromMemory: homeId=0x014CE451 nodeId=1 (payloadLen=5)
+09:15:42 INFO [InitializeManager.cpp:254     ] >> GetLibraryVersion: cmdId=0x15
+09:15:42 DBG  [Interface.cpp:98              ] >> Send: cmdId=0x15 name=FUNC_ID_GET_LIBRARY_VERSION flow=3 attempt=1
+09:15:42 DBG  [Interface.cpp:103             ]        : bytesLen=5 bytes=[01 03 00 15 E9 ]
+09:15:42 DBG  [Interface.cpp:324             ] << Recv: bytesLen=18 bytes=[01 10 01 15 5A 2D 57 61 76 65 20 32 2E 37 38 00 01 9B ]
+09:15:42 DBG  [Interface.cpp:327             ]        : cmdId=0x15 name=FUNC_ID_GET_LIBRARY_VERSION payloadLen=13
+09:15:42 DBG  [Z_Wave.h:89                   ] << initializeManager [RES] 0x15 FUNC_ID_GET_LIBRARY_VERSION | payload=13B [0]=0x5A
+09:15:42 INFO [InitializeManager.cpp:293     ] << GetLibraryVersion: verStr='Z-Wave 2.78' libType=0x01 protoParsed=2.78 (payloadLen=13)
