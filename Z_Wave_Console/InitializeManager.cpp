@@ -1,5 +1,10 @@
 
+#include "Logging.h"
 #include "InitializeManager.h"
+
+#include <sstream>
+
+#include <sstream>
 
 /////////////////////////////////////////////////
 // GetInitData

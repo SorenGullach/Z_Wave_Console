@@ -1,8 +1,10 @@
 
+
 #include "Node.h"
 
-std::string ZW_Node::ToString() const
+std::string ZW_NodeInfo::ToString() const
 {
+    DebugLockGuard lock(stateMutex);
     std::ostringstream out;
 
     out << "=== Node " << std::dec << NodeId
@@ -26,16 +28,16 @@ std::string ZW_Node::ToString() const
     out << "Interview        : ";
     switch (interviewState)
     {
-    case eInterviewState::Waitting:            out << "Waiting\n"; break;
-    case eInterviewState::WattingProtocolInfo: out << "WaitingProtocolInfo\n"; break;
-    case eInterviewState::DoneProtocolInfo:    out << "DoneProtocolInfo\n"; break;
-    case eInterviewState::FailProtocolInfo:    out << "FailProtocolInfo\n"; break;
-    case eInterviewState::WattingNodeInfo:     out << "WaitingNodeInfo\n"; break;
-    case eInterviewState::DoneNodeInfo:        out << "DoneNodeInfo\n"; break;
-    case eInterviewState::FailNodeInfo:        out << "FailNodeInfo\n"; break;
-    case eInterviewState::WattingCCInfo:       out << "WaitingCCInfo\n"; break;
-    case eInterviewState::DoneCCInfo:          out << "DoneCCInfo\n"; break;
-    case eInterviewState::FailCCInfo:          out << "FailCCInfo\n"; break;
+    case eInterviewState::NotInterviewed:      out << "NotInterviewed\n"; break;
+    case eInterviewState::ProtocolInfoPending: out << "ProtocolInfoPending\n"; break;
+    case eInterviewState::ProtocolInfoDone:    out << "ProtocolInfoDone\n"; break;
+    case eInterviewState::NodeInfoPending:     out << "NodeInfoPending\n"; break;
+    case eInterviewState::NodeInfoDone:        out << "NodeInfoDone\n"; break;
+    case eInterviewState::CCVersionPending:    out << "CCVersionPending\n"; break;
+    case eInterviewState::CCVersionDone:       out << "CCVersionDone\n"; break;
+	case eInterviewState::CCMnfcSpecPending:   out << "CCMnfcSpecPending\n"; break;
+	case eInterviewState::CCMnfcSpecDone:      out << "CCMnfcSpecDone\n"; break;
+	case eInterviewState::InterviewDone:       out << "InterviewDone\n"; break;
     default:                                   out << "Unknown\n"; break;
     }
 
@@ -57,9 +59,6 @@ std::string ZW_Node::ToString() const
                 << unsigned(manufacturerInfo.deviceIdFormat)
                 << " data=";
 
-            for (auto b : manufacturerInfo.deviceIdData)
-                out << std::setw(2) << unsigned(b);
-
             out << "\n";
         }
     }
@@ -78,29 +77,29 @@ std::string ZW_Node::ToString() const
     // Device classes
     //
     out << "Device classes   : basic=0x" << std::hex << std::setw(2)
-        << unsigned(basic)
-        << " generic=0x" << std::setw(2) << unsigned(generic)
-        << " specific=0x" << std::setw(2) << unsigned(specific) << "\n";
+        << unsigned(protocolInfo.basic)
+        << " generic=0x" << std::setw(2) << unsigned(protocolInfo.generic)
+        << " specific=0x" << std::setw(2) << unsigned(protocolInfo.specific) << "\n";
 
     //
     // Protocol flags
     //
-    out << "Protocol flags   : listening=" << (isListening ? "yes" : "no")
-        << " routing=" << (isRouting ? "yes" : "no")
-        << " speed=" << std::dec << unsigned(supportedSpeed)
-        << " protoVer=" << unsigned(protocolVersion) << "\n";
+    out << "Protocol flags   : listening=" << (protocolInfo.isListening ? "yes" : "no")
+        << " routing=" << (protocolInfo.isRouting ? "yes" : "no")
+        << " speed=" << std::dec << unsigned(protocolInfo.supportedSpeed)
+        << " protoVer=" << unsigned(protocolInfo.protocolVersion) << "\n";
 
     //
     // Optional flags
     //
-    out << "Optional flags   : optFunc=" << (optionalFunctionality ? "yes" : "no")
-        << " sensor1000ms=" << (sensor1000ms ? "yes" : "no")
-        << " sensor250ms=" << (sensor250ms ? "yes" : "no")
-        << " beam=" << (beamCapable ? "yes" : "no")
-        << " routingEndNode=" << (routingEndNode ? "yes" : "no")
-        << " specificDevice=" << (specificDevice ? "yes" : "no")
-        << " controllerNode=" << (controllerNode ? "yes" : "no")
-        << " security=" << (security ? "yes" : "no") << "\n";
+    out << "Optional flags   : optFunc=" << (protocolInfo.optionalFunctionality ? "yes" : "no")
+        << " sensor1000ms=" << (protocolInfo.sensor1000ms ? "yes" : "no")
+        << " sensor250ms=" << (protocolInfo.sensor250ms ? "yes" : "no")
+        << " beam=" << (protocolInfo.beamCapable ? "yes" : "no")
+        << " routingEndNode=" << (protocolInfo.routingEndNode ? "yes" : "no")
+        << " specificDevice=" << (protocolInfo.specificDevice ? "yes" : "no")
+        << " controllerNode=" << (protocolInfo.controllerNode ? "yes" : "no")
+        << " security=" << (protocolInfo.security ? "yes" : "no") << "\n";
 
     //
     // CC values

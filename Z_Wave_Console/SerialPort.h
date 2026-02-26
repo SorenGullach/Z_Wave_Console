@@ -3,7 +3,6 @@
 #include <vector>
 #include <cstdint>
 #include <windows.h>
-#include <iostream>
 
 class SerialPort
 {

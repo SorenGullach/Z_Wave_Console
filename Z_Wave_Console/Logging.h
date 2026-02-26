@@ -8,7 +8,6 @@
 #include <chrono>
 #include <ctime>
 #include <iomanip>
-#include <utility>
 #include <source_location>
 #include <algorithm>
 
@@ -63,12 +62,15 @@ public:
 
 	std::vector<std::string> GetLog(size_t last = maxEntries)
 	{
-		auto _lock = Lock();
+		std::vector<std::string> result;
+		{
+			auto _lock = Lock();
 
-		const size_t count = std::min(last, log.size());
-		std::vector<std::string> result(count);
-		const auto startIt = log.end() - static_cast<std::ptrdiff_t>(count);
-		std::copy(startIt, log.end(), result.begin());
+			const size_t count = std::min(last, log.size());
+			result.resize(count);
+			const auto startIt = log.end() - static_cast<std::ptrdiff_t>(count);
+			std::copy(startIt, log.end(), result.begin());
+		}
 		return result;
 	}
 
@@ -132,7 +134,10 @@ private:
 				std::tm tmBuf{};
 				localtime_s(&tmBuf, &t);
 
-				logFile << std::put_time(&tmBuf, "%H:%M:%S") << " " << line << std::endl;
+				logFile << std::put_time(&tmBuf, "%H:%M:%S") << '.' 
+				        << std::setw(3) << std::setfill('0') 
+				        << std::chrono::duration_cast<std::chrono::milliseconds>(now.time_since_epoch()).count() % 1000
+				        << " " << line << std::endl;
 				logFile.flush();
 			}
 		}

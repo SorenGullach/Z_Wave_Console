@@ -5,6 +5,7 @@
 #include <algorithm>
 #include <conio.h>
 #include <iostream>
+#include <vector>
 
 #include "Logging.h"
 #include "Z_Wave.h"
@@ -93,10 +94,10 @@ static void WriteFixedLine(int x, int y, const std::string& s)
 	if (out.empty() || out.back() != '\n')
 		out.push_back('\n');
 
-	if (out.size() < kConsoleWidth + 1)
-		out.append((kConsoleWidth + 1) - out.size(), ' ');
+	if (out.size() < (size_t)kConsoleWidth + 1)
+		out.append(((size_t)kConsoleWidth + 1) - out.size(), ' ');
 	else
-		out.resize(kConsoleWidth + 1);
+		out.resize((size_t)kConsoleWidth + 1);
 
 	DWORD written = 0;
 	WriteConsoleA(GetStdHandle(STD_OUTPUT_HANDLE), out.c_str(), (DWORD)out.size(), &written, nullptr);
@@ -302,5 +303,4 @@ int main()
 	}
 
 	ZW.ClosePort();
-}
-
+};

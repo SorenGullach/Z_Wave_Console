@@ -5,7 +5,7 @@
 #include <vector>
 #include <string>
 
-class ZW_Node;
+class ZW_NodeInfo;
 
 #include "CommandClass.h"
 #include "APIFrame.h"
@@ -13,10 +13,10 @@ class ZW_Node;
 class ZW_CCHandler
 {
 protected:
-    ZW_Node& node;
+    ZW_NodeInfo& node;
 
 public:
-    ZW_CCHandler(ZW_Node& n) : node(n) {}
+    ZW_CCHandler(ZW_NodeInfo& n) : node(n) {}
     virtual ~ZW_CCHandler() = default;
 
     virtual void HandleReport(uint8_t cmdId, const std::vector<uint8_t>& params) = 0;
@@ -40,11 +40,11 @@ public:
 
 class ZW_Device
 {
-    ZW_Node& node;
+    ZW_NodeInfo& node;
     std::unordered_map<eCommandClass, std::unique_ptr<ZW_CCHandler>> handlers;
 
 public:
-    ZW_Device(ZW_Node& n) : node(n) {}
+    ZW_Device(ZW_NodeInfo& n) : node(n) {}
 
     template<typename T>
     void AddHandler()
@@ -75,6 +75,17 @@ class ZW_CC_Battery : public ZW_CCHandler
 {
 public:
     static constexpr eCommandClass CC = eCommandClass::BATTERY;
+
+    using ZW_CCHandler::ZW_CCHandler;
+
+    void MakeFrame(ZW_APIFrame& frame, uint8_t cmdId, const std::vector<uint8_t>& params) override;
+    void HandleReport(uint8_t cmdId, const std::vector<uint8_t>& params) override;
+};
+
+class ZW_CC_ManufacturerSpecific : public ZW_CCHandler
+{
+public:
+    static constexpr eCommandClass CC = eCommandClass::MANUFACTURER_SPECIFIC;
 
     using ZW_CCHandler::ZW_CCHandler;
 
@@ -197,6 +208,29 @@ public:
     static constexpr eCommandClass CC = eCommandClass::MULTI_CHANNEL_ASSOCIATION;
 
     using ZW_CCHandler::ZW_CCHandler;
+
+    void MakeFrame(ZW_APIFrame& frame, uint8_t cmdId, const std::vector<uint8_t>& params) override;
+    void HandleReport(uint8_t cmdId, const std::vector<uint8_t>& params) override;
+};
+
+class ZW_CC_WakeUp : public ZW_CCHandler
+{
+public:
+    static constexpr eCommandClass CC = eCommandClass::WAKE_UP;
+    using ZW_CCHandler::ZW_CCHandler;
+
+    enum class eWakeUpCommand : uint8_t
+    {
+        WAKE_UP_INTERVAL_SET = 0x04,
+        WAKE_UP_INTERVAL_GET = 0x05,
+        WAKE_UP_INTERVAL_REPORT = 0x06,
+        WAKE_UP_NOTIFICATION = 0x07,
+        WAKE_UP_NO_MORE_INFORMATION = 0x08,
+
+        // v3+
+        WAKE_UP_INTERVAL_CAPABILITIES_GET = 0x09,
+        WAKE_UP_INTERVAL_CAPABILITIES_REPORT = 0x0A
+    };
 
     void MakeFrame(ZW_APIFrame& frame, uint8_t cmdId, const std::vector<uint8_t>& params) override;
     void HandleReport(uint8_t cmdId, const std::vector<uint8_t>& params) override;

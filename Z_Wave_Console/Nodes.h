@@ -18,7 +18,7 @@ public:
 
 	ZW_Node* Get(uint16_t nodeid);
 	const ZW_Node* Get(uint16_t nodeid) const;
-	ZW_Node* GetOrCreate(uint16_t nodeid);
+	ZW_Node* GetOrCreate(uint16_t nodeid, EnqueueFn enqueue);
 	bool Exists(uint16_t nodeid) const;
 
 	ZW_Node::CommandClassTag* GetCC(uint16_t nodeid, eCommandClass ccid);

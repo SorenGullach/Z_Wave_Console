@@ -1,5 +1,3 @@
-
-
 #include "Logging.h"
 #include "Interface.h"
 
@@ -54,16 +52,25 @@ void ZW_Interface::Start()
         return;
 
     worker = std::thread([this]()
+    {
+        try
         {
             while (running.load())
             {
                 if (!IsSerialOpen())
                     break;
                 Run();
-                std::this_thread::sleep_for(std::chrono::milliseconds(10));
             }
-            running.store(false);
-        });
+        }
+        catch (const std::exception& ex)
+        {
+            Log.AddL(eLogTypes::ERR, MakeTag(), "Unhandled exception in worker thread: {}", ex.what());
+        }
+        catch (...)
+        {
+            Log.AddL(eLogTypes::ERR, MakeTag(), "Unknown exception in worker thread.");
+        }
+    });
 }
 
 void ZW_Interface::Stop()
@@ -382,8 +389,10 @@ void ZW_Interface::Run()
 
     uint8_t b = 0;
     int n = SerialRead(&b, 1);
-    if (n <= 0)
+    if (n <= 0) {
+        std::this_thread::yield();
         return;
+    }
 
     if (b == static_cast<uint8_t>(AckTypes::ACK))
     {

@@ -3,20 +3,15 @@
 #include <mutex>
 #include <queue>
 #include <vector>
-#include <format>
-#include <sstream>
-#include <source_location>
 
 #include <atomic>
 #include <chrono>
-#include <cstdio>
 #include <string>
 #include <thread>
 
 #include "SerialPort.h"
-#include "Logging.h"
 #include "APIFrame.h"
-#include "APICommands.h"
+#include <cstdint>
 
 // ===============================================================
 // Transport + send/receive state machine for Z-Wave Serial API

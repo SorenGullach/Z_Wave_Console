@@ -140,6 +140,14 @@ enum class eAssociationGroupInfoCommand : uint8_t
 	AGI_GROUP_COMMAND_LIST_REPORT = 0x06
 };
 
+enum class eManufacturerSpecificCommand : uint8_t
+{
+    DEVICE_SPECIFIC_GET = 0x04,
+    DEVICE_SPECIFIC_GET_V2 = 0x06,
+    DEVICE_SPECIFIC_REPORT = 0x05,
+    DEVICE_SPECIFIC_REPORT_V2 = 0x07
+};
+
 inline std::string CommandClassToString(eCommandClass cc)
 {
 	switch (cc)

@@ -1,8 +1,10 @@
 #pragma once
 
+#include "APICommands.h"
+
 #include <string>
 #include <vector>
-#include "APICommands.h"
+#include <cstdint>
 
 class ZW_Module
 {
@@ -48,8 +50,6 @@ public:
 	// 4.5 Get Network IDs From Memory (0x20)
 	uint32_t HomeId = 0;
 	uint16_t NodeId = 0;
-
-	bool NodeIdBaseType16Bit = false; // TODO: we wait for the implmenatiom
 
 	enum eInitializationState
 	{

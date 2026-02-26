@@ -21,17 +21,16 @@ const ZW_Node* ZW_Nodes::Get(uint16_t nodeid) const
 	return it->second.get();
 }
 
-ZW_Node* ZW_Nodes::GetOrCreate(uint16_t nodeid)
+ZW_Node* ZW_Nodes::GetOrCreate(uint16_t nodeid, EnqueueFn enqueue)
 {
-	auto it = nodes.find(nodeid);
-	if (it != nodes.end())
-		return it->second.get();
+    auto it = nodes.find(nodeid);
+    if (it != nodes.end())
+        return it->second.get();
 
-	auto n = std::make_unique<ZW_Node>();
-	n->NodeId = nodeid;
-	auto* raw = n.get();
-	nodes.emplace(nodeid, std::move(n));
-	return raw;
+    auto n = std::make_unique<ZW_Node>(nodeid, enqueue);
+    auto* raw = n.get();
+    nodes.emplace(nodeid, std::move(n));
+    return raw;
 }
 
 bool ZW_Nodes::Exists(uint16_t nodeid) const

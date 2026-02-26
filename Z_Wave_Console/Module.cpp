@@ -8,6 +8,9 @@
 std::string ZW_Module::ToString()
 {
     std::string out;
+    // initialize state
+    out += std::format("Initialized      : {} {}\n", (uint8_t)InitializationState, InitializationState == eInitializationState::Initialized ? "Yes" : "No");
+     
     // API version
     const std::string apiVersionText =
         (ApiVersion >= 10)

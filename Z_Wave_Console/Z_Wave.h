@@ -5,6 +5,8 @@
 #include "Nodes.h"
 #include "APIFrame.h"
 #include "InitializeManager.h"
+#include "InterviewManager.h"
+#include "CCDispatcher.h"
 
 #include <atomic>
 #include <chrono>
@@ -15,10 +17,11 @@
 class Z_Wave : private ZW_Interface
 {
 public:
-	Z_Wave() : 
-		initializeManager([this](const ZW_APIFrame& f) { Enqueue(f); }, module)
-	{
-	}
+	Z_Wave() :
+		initializeManager([this](const ZW_APIFrame& f) { Enqueue(f); }, module),
+		interviewManager([this](const ZW_APIFrame& f) { Enqueue(f); }, nodes),
+		CCDispatcher([this](const ZW_APIFrame& f) { Enqueue(f); }, nodes)
+	{}
 
 	~Z_Wave()
 	{
@@ -26,17 +29,17 @@ public:
 	}
 	bool OpenPort(const std::string& portname)
 	{
-		if(ZW_Interface::OpenPort(portname))
+		if (ZW_Interface::OpenPort(portname))
 		{
 			StartJobWorker();
 			return true;
 		}
 		return false;
 	}
-	void ClosePort() 
-	{ 
+	void ClosePort()
+	{
 		StopJobWorker();
-		ZW_Interface::ClosePort(); 
+		ZW_Interface::ClosePort();
 	}
 
 	//******************************************************************
@@ -47,7 +50,14 @@ public:
 		if (module.InitializationState != ZW_Module::eInitializationState::NotInitialized)
 			return;
 
-		EnqueueJob(eJobs::INITIALIZE);
+		EnqueueJob(eJobs::INITIALIZE, 0);
+		/*
+				initializeManager.Start();
+				Log.AddL(eLogTypes::INFO, MakeTag(), "----------------------------------- Initialization done.");
+
+				if(module.InitializationState == ZW_Module::eInitializationState::Initialized)
+				StartInterview();
+		*/
 	}
 
 	void StartInterview()
@@ -55,9 +65,18 @@ public:
 		if (module.InitializationState != ZW_Module::eInitializationState::Initialized)
 			return;
 
-		EnqueueJob(eJobs::INTERVIEW);
+		for (size_t i = 0; i < module.NodeIds.size(); i++)
+		{
+			if (module.NodeIds[i] != 0 && module.NodeIds[i] != 1)
+			{
+				ZW_Node* node = nodes.GetOrCreate(module.NodeIds[i], [this](const ZW_APIFrame& f) { Enqueue(f); });
+				if (node)
+					node->SetInterviewState(ZW_Node::eInterviewState::NotInterviewed); 
+				EnqueueJob(eJobs::INTERVIEW, module.NodeIds[i]);
+			}
+		}
 	}
-	
+
 	virtual std::string HostToString()
 	{
 		return module.ToString();
@@ -70,11 +89,13 @@ public:
 
 	void RequestBattery(uint16_t nodeid)
 	{
-		//UICommands.RequestBattery(nodeid);
+		ZW_Node* node = nodes.Get(nodeid);
+		if(!node) return;	
+		node->EnqueueJob(ZW_Node::eJobs::BATTERY_GET);
 	}
 
 protected:
-	
+
 	bool OnFrameReceived(const ZW_APIFrame& frame) override
 	{
 		switch (frame.APICmd.CmdId)
@@ -90,16 +111,27 @@ protected:
 			return initializeManager.HandleFrame(frame);
 
 		case eCommandIds::ZW_API_APPLICATION_UPDATE:
+			{
+				ApplicationUpdateEvent event = static_cast<ApplicationUpdateEvent>(frame.payload[0]);
+				if (event == ApplicationUpdateEvent::UPDATE_STATE_NODE_INFO_RECEIVED)
+					EnqueueJob(eJobs::INTERVIEW, frame.payload[1]);
+			}
 		case eCommandIds::ZW_API_GET_NODE_INFO_PROTOCOL_DATA:
 		case eCommandIds::ZW_API_REQUEST_NODE_INFORMATION:
+			Log.AddL(eLogTypes::DBG, MakeTag(), "<< interviewManager {}", frame.Info());
+			return interviewManager.HandleFrame(frame);
+
 		case eCommandIds::ZW_API_CONTROLLER_SEND_DATA:
-			Log.AddL(eLogTypes::DBG, MakeTag(), "<< InterviewManager {}", frame.Info());
-	//		return InterviewManager.FrameReceived(frame);
+			//SendDataManager.HandleTransmitResult(frame.payload);
+			if (frame.type == ZW_APIFrame::FrameTypes::RES)
+				Log.AddL(eLogTypes::DBG, MakeTag(), "<< CONTROLLER_SEND_DATA: RES: txStatus=0x{:02X} len={}", frame.payload[0], frame.payload.size());
+			if (frame.type == ZW_APIFrame::FrameTypes::REQ)
+				Log.AddL(eLogTypes::DBG, MakeTag(), "<< CONTROLLER_SEND_DATA: REQ: SesesionId = {} txStatus=0x{:02X} len={}", frame.payload[0], frame.payload[1], frame.payload.size());
 			return true;
 
 		case eCommandIds::ZW_API_APPLICATION_COMMAND_HANDLER:
 			Log.AddL(eLogTypes::DBG, MakeTag(), "<< CCDispatcher {}", frame.Info());
-		//	CCDispatcher.HandleCCFrame(frame.payload);
+			CCDispatcher.HandleCCFrame(frame.payload);
 			return true;
 		}
 
@@ -121,15 +153,17 @@ protected:
 			return initializeManager.HandleFrameTimeout(frame);
 
 		case eCommandIds::ZW_API_APPLICATION_UPDATE:
+		case eCommandIds::ZW_API_GET_NODE_INFO_PROTOCOL_DATA:
 		case eCommandIds::ZW_API_REQUEST_NODE_INFORMATION:
+			Log.AddL(eLogTypes::INFO, MakeTag(), "<< interviewManager timeout {}", frame.Info());
+			return interviewManager.HandleFrameTimeout(frame);
+
 		case eCommandIds::ZW_API_CONTROLLER_SEND_DATA:
-			Log.AddL(eLogTypes::INFO, MakeTag(), "<< InterviewManager timeout {}", frame.Info());
-	//		return InterviewManager.FrameReceivedTimeout(frame);
 			return true;
 
 		case eCommandIds::ZW_API_APPLICATION_COMMAND_HANDLER:
 			Log.AddL(eLogTypes::INFO, MakeTag(), "<< CCDispatcher timeout {}", frame.Info());
-//			CCDispatcher.HandleCCFrameTimeout(frame.payload);
+			//			CCDispatcher.HandleCCFrameTimeout(frame.payload);
 			return true;
 		}
 
@@ -141,15 +175,22 @@ private:
 	ZW_Nodes nodes; // the node list
 
 	ZW_InitializeManager initializeManager;
+	ZW_InterviewManager interviewManager;
+	ZW_CCDispatcher CCDispatcher;
 
 	enum class eJobs
 	{
 		INITIALIZE,
 		INTERVIEW,
 	};
+	struct Job
+	{
+		eJobs job;
+		uint16_t nodeid;
+	};
 
 	std::mutex jobQueueMutex;
-	std::vector<eJobs> jobQueue;
+	std::vector<Job> jobQueue;
 
 	std::thread jobWorker;
 	std::atomic<bool> jobWorkerRunning{ false };
@@ -158,13 +199,13 @@ private:
 	static constexpr int kMaxJobAttempts = 5;
 	static constexpr auto kJobTimeout = std::chrono::seconds(5);
 
-	void EnqueueJob(eJobs job)
+	void EnqueueJob(eJobs job, uint16_t nodeid)
 	{
 		std::scoped_lock lock(jobQueueMutex);
-		jobQueue.push_back(job);
+		jobQueue.push_back(Job{ job, nodeid });
 	}
 
-	bool TryPeekJob(eJobs& job)
+	bool TryPeekJob(Job& job)
 	{
 		std::scoped_lock lock(jobQueueMutex);
 		if (jobQueue.empty())
@@ -187,35 +228,53 @@ private:
 		Error
 	};
 
-	eJobResult DispatchJob(eJobs job)
+	eJobResult DispatchJob(const Job& job)
 	{
-		switch (job)
+		switch (job.job)
 		{
 		case eJobs::INITIALIZE:
-			// Start or continue initialization until it reports Done.
+			//			 Start or continue initialization until it reports Done.
 			if (module.InitializationState == ZW_Module::eInitializationState::NotInitialized)
-				initializeManager.StartOrResume();
-			else if (module.InitializationState == ZW_Module::eInitializationState::Paused)
-				initializeManager.StartOrResume();
+				initializeManager.Start();
+			//			else if (module.InitializationState == ZW_Module::eInitializationState::Paused)
+				//			initializeManager.StartOrResume();
 			else if (module.InitializationState == ZW_Module::eInitializationState::Initialized)
+			{
+				Log.AddL(eLogTypes::INFO, MakeTag(), "----------------------------------- Initialization done.");
+				StartInterview();
 				return eJobResult::Done;
-
+			}
 			return eJobResult::Pending;
+
 		case eJobs::INTERVIEW:
-			// TODO: kick off node interview logic
-			return eJobResult::Done;
+			{
+				ZW_Node* node;
+				if (interviewManager.Done(job.nodeid))
+				{
+					if (node = nodes.Get(job.nodeid))
+						Log.AddL(eLogTypes::INFO, MakeTag(), "----------------------------------- Interview done. Node: {} {}", node->NodeId, node->IsListening() ? "Listening" : "Not listening");
+					else
+						Log.AddL(eLogTypes::INFO, MakeTag(), "----------------------------------- Interview done. Node: {}", job.nodeid);
+					return eJobResult::Done;
+				}
+				if ((node = nodes.Get(job.nodeid)) && node->GetInterviewState() == ZW_Node::eInterviewState::NotInterviewed)
+					Log.AddL(eLogTypes::INFO, MakeTag(), "----------------------------------- Interview started. Node: {}", node->NodeId);
+				interviewManager.Start(job.nodeid);
+			}
+			return eJobResult::Pending;
+
 		}
 		return eJobResult::Error;
 	}
 
-	void HandleJobError(eJobs job)
+	void HandleJobError(const Job& job)
 	{
-		Log.AddL(eLogTypes::ERR, MakeTag(), "Job failed: {}", static_cast<int>(job));
+		Log.AddL(eLogTypes::ERR, MakeTag(), "Job failed: {}", static_cast<int>(job.job));
 		// Reset state so it can restart.
-		if (job == eJobs::INITIALIZE)
+		if (job.job == eJobs::INITIALIZE)
 		{
-			initializeManager.Reset();
-			EnqueueJob(eJobs::INITIALIZE);
+			//			initializeManager.Reset();
+			EnqueueJob(eJobs::INITIALIZE, 0);
 		}
 	}
 
@@ -223,7 +282,7 @@ private:
 	{
 		while (jobWorkerRunning.load())
 		{
-			eJobs job{};
+			Job job{};
 			if (TryPeekJob(job))
 			{
 				// Track timing/attempts per-front-job.
@@ -234,7 +293,7 @@ private:
 				if (now - jobStartTime > kJobTimeout)
 				{
 					jobAttempts++;
-					Log.AddL(eLogTypes::INFO, MakeTag(), "Job timeout: {} attempt {}", static_cast<int>(job), jobAttempts);
+					Log.AddL(eLogTypes::INFO, MakeTag(), "Job timeout: {} attempt {}", static_cast<int>(job.job), jobAttempts);
 					jobStartTime = now;
 					if (jobAttempts >= kMaxJobAttempts)
 					{

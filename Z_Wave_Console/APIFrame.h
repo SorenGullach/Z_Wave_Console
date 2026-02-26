@@ -7,6 +7,8 @@
 #include <format>
 
 #include "APICommands.h"
+#include <cstdint>
+#include <string_view>
 
 // ===============================================================
 // Serial API frame encoder/decoder

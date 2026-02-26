@@ -1,10 +1,12 @@
 #pragma once
 
+#include "Logging.h"
 #include "Module.h"
-#include "Interface.h"
-
-#include <cstddef>
-#include <array>
+#include "APICommands.h"
+#include "APIFrame.h"
+#include <cstdint>
+#include <iterator>
+#include <vector>
 
 class ZW_InitializeManager
 {
@@ -13,25 +15,13 @@ public:
 		: enqueue(enqueue), module(module)
 	{}
 
-	void Reset()
+	void Start() 
 	{
-		module.InitializationState = ZW_Module::eInitializationState::NotInitialized;
-		currentStep = 0;
-	}
-
-	void StartOrResume() // or restart
-	{
-		if (module.InitializationState == ZW_Module::eInitializationState::NotInitialized)
+		StartSequence();
+/*		while (module.InitializationState != ZW_Module::eInitializationState::Initialized)
 		{
-			Reset();
-			Continue();
-			return;
-		}
-		if (module.InitializationState == ZW_Module::eInitializationState::Paused)
-		{
-			Continue();
-			return;
-		}
+			std::this_thread::sleep_for(std::chrono::milliseconds(100));
+		}*/
 	}
 
 	bool HandleFrame(const ZW_APIFrame& frame)
@@ -160,12 +150,19 @@ private:
 			&ZW_InitializeManager::DecodeLibraryType,            false },
 	};
 
+	void StartSequence() // start initialization
+	{
+		module.InitializationState = ZW_Module::eInitializationState::NotInitialized;
+		currentStep = 0;
+		Continue();
+	}
 	void Continue() // continue initialization
 	{
 		const size_t count = std::size(InitSequence);
 		while (currentStep < count)
 		{
 			const auto& step = InitSequence[currentStep];
+			
 			if (module.HasAPICommand(step.CmdId))
 			{
 				module.InitializationState = step.PendingState;
