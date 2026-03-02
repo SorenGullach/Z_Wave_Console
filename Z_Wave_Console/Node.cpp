@@ -4,177 +4,220 @@
 
 std::string ZW_NodeInfo::ToString() const
 {
-    DebugLockGuard lock(stateMutex);
-    std::ostringstream out;
+	DebugLockGuard lock(stateMutex);
+	std::ostringstream out;
 
-    out << "=== Node " << std::dec << NodeId
-        << " (0x" << std::hex << std::uppercase << std::setw(2)
-        << std::setfill('0') << NodeId << ") ===\n";
+	out << "=== Node " << std::dec << NodeId
+		<< " (0x" << std::hex << std::uppercase << std::setw(2)
+		<< std::setfill('0') << NodeId << ") ===\n";
 
-    //
-    // Node state
-    //
-    out << "State            : ";
-    switch (nodeState)
-    {
-    case eNodeState::Awake:  out << "Awake\n"; break;
-    case eNodeState::Sleepy: out << "Sleepy\n"; break;
-    default:                 out << "Bad\n"; break;
-    }
-
-    //
-    // Interview state
-    //
-    out << "Interview        : ";
-    switch (interviewState)
-    {
-    case eInterviewState::NotInterviewed:      out << "NotInterviewed\n"; break;
-    case eInterviewState::ProtocolInfoPending: out << "ProtocolInfoPending\n"; break;
-    case eInterviewState::ProtocolInfoDone:    out << "ProtocolInfoDone\n"; break;
-    case eInterviewState::NodeInfoPending:     out << "NodeInfoPending\n"; break;
-    case eInterviewState::NodeInfoDone:        out << "NodeInfoDone\n"; break;
-    case eInterviewState::CCVersionPending:    out << "CCVersionPending\n"; break;
-    case eInterviewState::CCVersionDone:       out << "CCVersionDone\n"; break;
-	case eInterviewState::CCMnfcSpecPending:   out << "CCMnfcSpecPending\n"; break;
-	case eInterviewState::CCMnfcSpecDone:      out << "CCMnfcSpecDone\n"; break;
-	case eInterviewState::InterviewDone:       out << "InterviewDone\n"; break;
-    default:                                   out << "Unknown\n"; break;
-    }
-
-    //
-    // Manufacturer
-    //
-    if (manufacturerInfo.hasManufacturerData)
-    {
-        out << "Manufacturer     : mfg=0x" << std::hex << std::setw(4)
-            << manufacturerInfo.mfgId
-            << " prodType=0x" << std::setw(4) << manufacturerInfo.prodType
-            << " prodId=0x" << std::setw(4) << manufacturerInfo.prodId << "\n";
-
-        if (manufacturerInfo.hasDeviceId)
-        {
-            out << "Device ID        : type=0x" << std::setw(2)
-                << unsigned(manufacturerInfo.deviceIdType)
-                << " format=0x" << std::setw(2)
-                << unsigned(manufacturerInfo.deviceIdFormat)
-                << " data=";
-
-            out << "\n";
-        }
-    }
-    else
-    {
-        out << "Manufacturer     : unknown\n";
-    }
-
-    //
-    // Battery
-    //
-    if (batteryLevel.has_value())
-        out << "Battery          : " << std::dec << unsigned(*batteryLevel) << "%\n";
-
-    //
-    // Device classes
-    //
-    out << "Device classes   : basic=0x" << std::hex << std::setw(2)
-        << unsigned(protocolInfo.basic)
-        << " generic=0x" << std::setw(2) << unsigned(protocolInfo.generic)
-        << " specific=0x" << std::setw(2) << unsigned(protocolInfo.specific) << "\n";
-
-    //
-    // Protocol flags
-    //
-    out << "Protocol flags   : listening=" << (protocolInfo.isListening ? "yes" : "no")
-        << " routing=" << (protocolInfo.isRouting ? "yes" : "no")
-        << " speed=" << std::dec << unsigned(protocolInfo.supportedSpeed)
-        << " protoVer=" << unsigned(protocolInfo.protocolVersion) << "\n";
-
-    //
-    // Optional flags
-    //
-    out << "Optional flags   : optFunc=" << (protocolInfo.optionalFunctionality ? "yes" : "no")
-        << " sensor1000ms=" << (protocolInfo.sensor1000ms ? "yes" : "no")
-        << " sensor250ms=" << (protocolInfo.sensor250ms ? "yes" : "no")
-        << " beam=" << (protocolInfo.beamCapable ? "yes" : "no")
-        << " routingEndNode=" << (protocolInfo.routingEndNode ? "yes" : "no")
-        << " specificDevice=" << (protocolInfo.specificDevice ? "yes" : "no")
-        << " controllerNode=" << (protocolInfo.controllerNode ? "yes" : "no")
-        << " security=" << (protocolInfo.security ? "yes" : "no") << "\n";
-
-    //
-    // CC values
-    //
-    if (basicValue)            out << "Basic            : " << unsigned(*basicValue) << "\n";
-    if (switchBinaryValue)     out << "Switch Binary    : " << unsigned(*switchBinaryValue) << "\n";
-    if (switchMultilevelValue) out << "Switch Multilevel: " << unsigned(*switchMultilevelValue) << "\n";
-    if (sensorBinaryValue)     out << "Sensor Binary    : " << unsigned(*sensorBinaryValue) << "\n";
-
-    if (meterInfo.hasValue)
-    {
-        out << "Meter            : type=" << unsigned(meterInfo.meterType)
-            << " value=" << unsigned(meterInfo.value) << "\n";
-    }
-
-    if (protectionState)
-        out << "Protection       : " << unsigned(*protectionState) << "\n";
-
-    //
-    // CC report structures
-    //
-    if (configurationInfo.hasLastReport)
-        out << "Configuration    : param=" << unsigned(configurationInfo.paramNumber)
-        << " bytes=" << configurationInfo.raw.size() << "\n";
-
-	for (const auto& assoc : associationInfo)
+	//
+	// Node state
+	//
+	out << "State            : ";
+	switch (nodeState)
 	{
-        out << "Association      : group=" << unsigned(assoc.groupId);
-            for(const auto& node : assoc.nodes)
-				out << " Node=" << unsigned(node);
-        out << "\n";
+	case eNodeState::Awake:  out << "Awake\n"; break;
+	case eNodeState::Sleepy: out << "Sleepy\n"; break;
+	default:                 out << "Bad\n"; break;
 	}
 
-    if (multiChannelInfo.hasLastReport)
-        out << "MultiChannel     : bytes=" << multiChannelInfo.raw.size() << "\n";
+	//
+	// Interview state
+	//
+	out << "Interview        : ";
+	switch (interviewState)
+	{
+	case eInterviewState::NotInterviewed:      out << "NotInterviewed\n"; break;
+	case eInterviewState::ProtocolInfoPending: out << "ProtocolInfoPending\n"; break;
+	case eInterviewState::ProtocolInfoDone:    out << "ProtocolInfoDone\n"; break;
+	case eInterviewState::NodeInfoPending:     out << "NodeInfoPending\n"; break;
+	case eInterviewState::NodeInfoDone:        out << "NodeInfoDone\n"; break;
+	case eInterviewState::CCVersionPending:    out << "CCVersionPending\n"; break;
+	case eInterviewState::CCVersionDone:       out << "CCVersionDone\n"; break;
+	case eInterviewState::CCMnfcSpecPending:   out << "CCMnfcSpecPending\n"; break;
+	case eInterviewState::CCMnfcSpecDone:      out << "CCMnfcSpecDone\n"; break;
+	case eInterviewState::CCMultiChannelPending:    out << "CCMultiChannelPending\n"; break;
+	case eInterviewState::CCMultiChannelDone:       out << "CCMultiChannelDone\n"; break;
 
-    if (multiChannelAssociationInfo.hasLastReport)
-        out << "MC Association   : group=" << unsigned(multiChannelAssociationInfo.groupId)
-        << " bytes=" << multiChannelAssociationInfo.raw.size() << "\n";
+	case eInterviewState::InterviewDone:       out << "InterviewDone\n"; break;
+	default:                                   out << "Unknown\n"; break;
+	}
 
-    //
-    // Command Classes
-    //
-    size_t ccCount = 0;
-    for (const auto& cc : ccs)
-        if (cc.supported)
-            ccCount++;
+	//
+	// Manufacturer
+	//
+	if (manufacturerInfo.hasManufacturerData)
+	{
+		out << "Manufacturer     : mfg=0x" << std::hex << std::setw(4)
+			<< manufacturerInfo.mfgId
+			<< " prodType=0x" << std::setw(4) << manufacturerInfo.prodType
+			<< " prodId=0x" << std::setw(4) << manufacturerInfo.prodId << "\n";
 
-    out << "Command Classes  : " << std::dec << ccCount << "\n";
+		if (manufacturerInfo.hasDeviceId)
+		{
+			out << "Device ID        : type=0x" << std::setw(2)
+				<< unsigned(manufacturerInfo.deviceIdType)
+				<< " format=0x" << std::setw(2)
+				<< unsigned(manufacturerInfo.deviceIdFormat)
+				<< " data=";
 
-    if (ccCount > 0)
-    {
-        out << "  ";
-        int col = 0;
+			out << "\n";
+		}
+	}
+	else
+	{
+		out << "Manufacturer     : unknown\n";
+	}
 
-        for (size_t i = 0; i < ccs.size(); ++i)
-        {
-            if (!ccs[i].supported)
-                continue;
+	//
+	// Battery
+	//
+	if (batteryLevel.has_value())
+		out << "Battery          : " << std::dec << unsigned(*batteryLevel) << "%\n";
 
-            out << "0x" << std::hex << std::setw(2) << std::setfill('0')
-                << std::uppercase << i
-                << " v=" << std::dec << unsigned(ccs[i].version);
+	//
+	// Device classes
+	//
+	out << "Device classes   : basic=0x" << std::hex << std::setw(2)
+		<< unsigned(protocolInfo.basic)
+		<< " generic=0x" << std::setw(2) << unsigned(protocolInfo.generic)
+		<< " specific=0x" << std::setw(2) << unsigned(protocolInfo.specific) << "\n";
 
-            if (ccs[i].versionOk)
-                out << "(ok)";
+	//
+	// Protocol flags
+	//
+	out << "Protocol flags   : listening=" << (protocolInfo.isListening ? "yes" : "no")
+		<< " routing=" << (protocolInfo.isRouting ? "yes" : "no")
+		<< " speed=" << std::dec << unsigned(protocolInfo.supportedSpeed)
+		<< " protoVer=" << unsigned(protocolInfo.protocolVersion) << "\n";
 
-            col++;
-            if (col % 4 == 0)
-                out << "\n  ";
-            else
-                out << "   ";
-        }
-        out << "\n";
-    }
+	//
+	// Optional flags
+	//
+	out << "Optional flags   : optFunc=" << (protocolInfo.optionalFunctionality ? "yes" : "no")
+		<< " sensor1000ms=" << (protocolInfo.sensor1000ms ? "yes" : "no")
+		<< " sensor250ms=" << (protocolInfo.sensor250ms ? "yes" : "no")
+		<< " beam=" << (protocolInfo.beamCapable ? "yes" : "no")
+		<< " routingEndNode=" << (protocolInfo.routingEndNode ? "yes" : "no")
+		<< " specificDevice=" << (protocolInfo.specificDevice ? "yes" : "no")
+		<< " controllerNode=" << (protocolInfo.controllerNode ? "yes" : "no")
+		<< " security=" << (protocolInfo.security ? "yes" : "no") << "\n";
 
-    return out.str();
+	//
+	// CC values
+	//
+	if (basicValue)            out << "Basic            : " << unsigned(*basicValue) << "\n";
+	if (switchBinaryValue)     out << "Switch Binary    : " << unsigned(*switchBinaryValue) << "\n";
+	if (switchMultilevelValue) out << "Switch Multilevel: " << unsigned(*switchMultilevelValue) << "\n";
+	if (sensorBinaryValue)     out << "Sensor Binary    : " << unsigned(*sensorBinaryValue) << "\n";
+
+	if (meterInfo.hasValue)
+	{
+		out << "Meter            : type=" << unsigned(meterInfo.meterType)
+			<< " value=" << unsigned(meterInfo.value) << "\n";
+	}
+
+	if (protectionState)
+		out << "Protection       : " << unsigned(*protectionState) << "\n";
+
+	//
+// CC report structures
+//
+
+// ----- Configuration -----
+	if (configurationInfo.hasLastReport)
+	{
+		out << "Configuration    : param=" << unsigned(configurationInfo.paramNumber)
+			<< " bytes=" << configurationInfo.raw.size() << "\n";
+	}
+
+
+	// ----- Association (0x85) -----
+	for (const auto& grp : associationGroups)
+	{
+		out << "Association      : group=" << unsigned(grp.groupId);
+
+		for (const auto& nodeId : grp.nodeList)
+			out << " node=" << unsigned(nodeId);
+
+		out << "\n";
+	}
+
+
+	// ----- Multi Channel Endpoints (0x60) -----
+	if (multiChannel.hasEndpointReport)
+	{
+		out << "MultiChannel EP  : endpoints=" << unsigned(multiChannel.endpointCount) << "\n";
+
+		for (const auto& ep : multiChannel.endpoints)
+		{
+			out << "  EP " << unsigned(ep.endpointId)
+				<< " generic=0x" << std::hex << unsigned(ep.generic)
+				<< " specific=0x" << unsigned(ep.specific)
+				<< std::dec;
+
+			out << " CCs=[";
+			for (auto cc : ep.supportedCCs)
+				out << "0x" << std::hex << unsigned(cc) << " ";
+			out << std::dec << "]\n";
+		}
+	}
+
+
+	// ----- Multi Channel Association (0x8E) -----
+	for (const auto& grp : multiChannelAssociationGroups)
+	{
+		out << "MC Association   : group=" << unsigned(grp.groupId) << " members=";
+
+		for (const auto& m : grp.members)
+		{
+			if (m.endpointId == 0)
+				out << " node=" << unsigned(m.nodeId);
+			else
+				out << " node=" << unsigned(m.nodeId)
+				<< ".ep=" << unsigned(m.endpointId);
+		}
+
+		out << "\n";
+	}
+
+
+	//
+	// Command Classes
+	//
+	size_t ccCount = 0;
+	for (const auto& cc : ccs)
+		if (cc.supported)
+			ccCount++;
+
+	out << "Command Classes  : " << std::dec << ccCount << "\n";
+
+	if (ccCount > 0)
+	{
+		out << "  ";
+		int col = 0;
+
+		for (size_t i = 0; i < ccs.size(); ++i)
+		{
+			if (!ccs[i].supported)
+				continue;
+
+			out << "0x" << std::hex << std::setw(2) << std::setfill('0')
+				<< std::uppercase << i
+				<< " v=" << std::dec << unsigned(ccs[i].version);
+
+			if (ccs[i].versionOk)
+				out << "(ok)";
+
+			col++;
+			if (col % 4 == 0)
+				out << "\n  ";
+			else
+				out << "   ";
+		}
+		out << "\n";
+	}
+
+	return out.str();
 }

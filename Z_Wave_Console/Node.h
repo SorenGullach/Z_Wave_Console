@@ -23,33 +23,28 @@
 
 class ZW_NodeInfo
 {
-
 public:
-	ZW_NodeInfo(uint16_t nodeId)
-		: NodeId{ nodeId }, device(*this)
-	{};
+	// ===================== Enums =====================
+	enum class eInterviewState
+	{
+		NotInterviewed, ProtocolInfoPending, ProtocolInfoDone, NodeInfoPending, NodeInfoDone,
+		CCVersionPending, CCVersionDone, CCMnfcSpecPending, CCMnfcSpecDone, CCMultiChannelPending, CCMultiChannelDone, InterviewDone,
+	};
+	enum class eNodeState { Bad, Awake, Sleepy };
 
-	ZW_NodeInfo(const ZW_NodeInfo&) = delete;
-	ZW_NodeInfo& operator=(const ZW_NodeInfo&) = delete;
-	ZW_NodeInfo(ZW_NodeInfo&&) noexcept = default;
-	ZW_NodeInfo& operator=(ZW_NodeInfo&&) noexcept = default;
+	// ===================== Members =====================
+	const uint16_t NodeId;
 
-const uint16_t NodeId;
-
-	//
-	// Protocol info (decoded)
-	//
+	// ---------- Protocol Info ----------
 	struct ProtocolInfo
 	{
 		uint8_t basic = 0;
 		uint8_t generic = 0;
 		uint8_t specific = 0;
-
 		bool isListening = false;
 		bool isRouting = false;
 		uint8_t supportedSpeed = 0;
 		uint8_t protocolVersion = 0;
-
 		bool optionalFunctionality = false;
 		bool sensor1000ms = false;
 		bool sensor250ms = false;
@@ -58,130 +53,52 @@ const uint16_t NodeId;
 		bool specificDevice = false;
 		bool controllerNode = false;
 		bool security = false;
-	};
-
-	// WakeUp struct for ZW_CC_WakeUp variables
-	struct WakeUpInfo
-	{
-		std::chrono::system_clock::time_point lastWakeUp; // Last lastWakeUp
-		uint32_t wakeUpInterval = 0; // Current wakeUpInterval
-		uint32_t wakeUpMin = 0; // Minimum wakeUpInterval
-		uint32_t wakeUpMax = 0; // Maximum wakeUpInterval
-		uint32_t wakeUpDefault = 0; // Default wakeUpInterval
-		bool hasLastReport = false; // Whether last report was received
-	};
-
-	enum class eInterviewState
-	{
-		NotInterviewed,
-		ProtocolInfoPending,
-		ProtocolInfoDone,
-		NodeInfoPending,
-		NodeInfoDone,
-		CCVersionPending,
-		CCVersionDone,
-		CCMnfcSpecPending,
-		CCMnfcSpecDone,
-		InterviewDone,
-	};
-	void SetInterviewState(eInterviewState state)
-	{
-		DebugLockGuard lock(stateMutex);
-		interviewState = state;
-	}
-
-	eInterviewState GetInterviewState() const
-	{
-		DebugLockGuard lock(stateMutex);
-		return interviewState;
-	}
-
-	enum class eNodeState { Bad, Awake, Sleepy };
-
-private:
-	ProtocolInfo protocolInfo;
-
-	WakeUpInfo wakeUpInfo;
-
-protected:
-	mutable DebugMutex stateMutex;
-	eNodeState nodeState = eNodeState::Bad;
-	eInterviewState interviewState = eInterviewState::NotInterviewed;
-	ZW_Device device;
-
-public:
-	eNodeState GetState() const
-	{
-		DebugLockGuard lock(stateMutex);
-		return nodeState;
-	}
-
-	virtual void WakeUp()
-	{
-		DebugLockGuard lock(stateMutex);
-		nodeState = eNodeState::Awake;
-	}
-
-	virtual void Sleeping()
-	{
-		DebugLockGuard lock(stateMutex);
-		nodeState = eNodeState::Sleepy;
-	}
-
-
-	bool IsListening() const
-	{
-		DebugLockGuard lock(stateMutex);
-		return protocolInfo.isListening;
-	}
+	} protocolInfo;
 	void SetProtocolInfo(const ProtocolInfo& info)
 	{
 		DebugLockGuard lock(stateMutex);
 		protocolInfo = info;
 	}
+	bool IsListening() const
+	{
+		DebugLockGuard lock(stateMutex);
+		return protocolInfo.isListening;
+	}
 
-	void SetWakeUpInfo(const WakeUpInfo& wakeup) 
+	// ---------- WakeUp Info ----------
+	struct WakeUpInfo
+	{
+		std::chrono::system_clock::time_point lastWakeUp;
+		uint32_t wakeUpInterval = 0;
+		uint32_t wakeUpMin = 0;
+		uint32_t wakeUpMax = 0;
+		uint32_t wakeUpDefault = 0;
+		bool hasLastReport = false;
+	} wakeUpInfo;
+	void SetWakeUpInfo(const WakeUpInfo& wakeup)
 	{
 		DebugLockGuard lock(stateMutex);
 		wakeUpInfo = wakeup;
 	}
-
 	WakeUpInfo GetWakeUpInfo() const
 	{
 		DebugLockGuard lock(stateMutex);
 		return wakeUpInfo;
 	}
 
-	//
-	// Manufacturer info
-	//
-    struct ManufacturerInfo
-    {
-        uint16_t mfgId = 0;
-        uint16_t prodType = 0;
-        uint16_t prodId = 0;
+	// ---------- Manufacturer Info ----------
+	struct ManufacturerInfo
+	{
+		uint16_t mfgId = 0;
+		uint16_t prodType = 0;
+		uint16_t prodId = 0;
+		uint8_t deviceIdType = 0;
+		uint8_t deviceIdFormat = 0;
+		bool hasDeviceId = false;
+		bool hasManufacturerData = false;
+	} manufacturerInfo;
 
-        uint8_t deviceIdType = 0;
-        uint8_t deviceIdFormat = 0;
-
-        bool hasDeviceId = false;
-        bool hasManufacturerData = false;
-    };
-    ManufacturerInfo manufacturerInfo;
-
-	//
-	// CC values
-	//
-	std::optional<uint8_t> batteryLevel;
-	std::optional<uint8_t> basicValue;
-	std::optional<uint8_t> switchBinaryValue;
-	std::optional<uint8_t> switchMultilevelValue;
-	std::optional<uint8_t> sensorBinaryValue;
-	std::optional<uint8_t> protectionState;
-
-	//
-	// CC report structures
-	//
+	// ---------- Meter Info ----------
 	struct MeterInfo
 	{
 		bool hasValue = false;
@@ -189,6 +106,7 @@ public:
 		uint8_t value = 0;
 	} meterInfo;
 
+	// ---------- Configuration Info ----------
 	struct ConfigurationInfo
 	{
 		bool hasLastReport = false;
@@ -196,30 +114,49 @@ public:
 		std::vector<uint8_t> raw;
 	} configurationInfo;
 
-	struct AssociationInfo
+	// ---------- Association Info (CC 0x85) ----------
+	struct AssociationGroup
 	{
 		uint8_t groupId = 0;
-		std::vector<uint8_t> nodes;
+		std::vector<uint8_t> nodeList;     // normale node-id'er
 		bool hasLastReport = false;
 	};
-	std::vector<AssociationInfo> associationInfo;
+	std::vector<AssociationGroup> associationGroups;
 
-	struct MultiChannelInfo
+	// ---------- Multi Channel Endpoints (CC 0x60) ----------
+	struct EndpointInfo
 	{
-		bool hasLastReport = false;
-		std::vector<uint8_t> raw;
-	} multiChannelInfo;
+		uint8_t endpointId = 0;
+		uint8_t generic = 0;
+		uint8_t specific = 0;
+		std::vector<uint8_t> supportedCCs; // CC-liste for endpoint
+		bool hasCapabilityReport = false;
+	};
 
-	struct MultiChannelAssociationInfo
+	struct MultiChannelEndpointInfo
 	{
-		bool hasLastReport = false;
+		uint8_t endpointCount = 0;
+		bool hasEndpointReport = false;
+		std::vector<EndpointInfo> endpoints;
+	};
+	MultiChannelEndpointInfo multiChannel;
+
+	// ---------- Multi Channel Association (CC 0x8E) ----------
+	struct MultiChannelAssociationMember
+	{
+		uint8_t nodeId = 0;
+		uint8_t endpointId = 0; // 0 = root endpoint
+	};
+
+	struct MultiChannelAssociationGroup
+	{
 		uint8_t groupId = 0;
-		std::vector<uint8_t> raw;
-	} multiChannelAssociationInfo;
+		std::vector<MultiChannelAssociationMember> members;
+		bool hasLastReport = false;
+	};
+	std::vector<MultiChannelAssociationGroup> multiChannelAssociationGroups;
 
-	//
-	// Command class table
-	//
+	// ---------- Command Class Table ----------
 	struct CommandClassTag
 	{
 		eCommandClass id = static_cast<eCommandClass>(0);
@@ -228,18 +165,15 @@ public:
 		bool versionOk = false;
 	};
 	std::array<CommandClassTag, 256> ccs{};
-
 	CommandClassTag* GetCC(eCommandClass ccId)
 	{
 		auto& cc = ccs[static_cast<uint8_t>(ccId)];
 		return cc.supported ? &cc : nullptr;
 	}
-
 	bool HasCC(eCommandClass ccId) const
 	{
 		return ccs[static_cast<uint8_t>(ccId)].supported;
 	}
-
 	std::vector<eCommandClass> GetSupportedCCs() const
 	{
 		std::vector<eCommandClass> result;
@@ -249,9 +183,58 @@ public:
 		return result;
 	}
 
-	//
-	// NIF assignment + CC handler creation
-	//
+	// ---------- CC Values ----------
+	std::optional<uint8_t> batteryLevel;
+	std::optional<uint8_t> basicValue;
+	std::optional<uint8_t> switchBinaryValue;
+	std::optional<uint8_t> switchMultilevelValue;
+	std::optional<uint8_t> sensorBinaryValue;
+	std::optional<uint8_t> protectionState;
+
+protected:
+	mutable DebugMutex stateMutex;
+	eNodeState nodeState = eNodeState::Bad;
+	eInterviewState interviewState = eInterviewState::NotInterviewed;
+	ZW_Device device;
+
+public:
+	// ===================== Constructors =====================
+	ZW_NodeInfo(uint16_t nodeId)
+		: NodeId{ nodeId }, device(*this)
+	{}
+	ZW_NodeInfo(const ZW_NodeInfo&) = delete;
+	ZW_NodeInfo& operator=(const ZW_NodeInfo&) = delete;
+	ZW_NodeInfo(ZW_NodeInfo&&) noexcept = default;
+	ZW_NodeInfo& operator=(ZW_NodeInfo&&) noexcept = default;
+
+	// ===================== State/Interview =====================
+	void SetInterviewState(eInterviewState state)
+	{
+		DebugLockGuard lock(stateMutex);
+		interviewState = state;
+	}
+	eInterviewState GetInterviewState() const
+	{
+		DebugLockGuard lock(stateMutex);
+		return interviewState;
+	}
+	eNodeState GetState() const
+	{
+		DebugLockGuard lock(stateMutex);
+		return nodeState;
+	}
+	virtual void WakeUp()
+	{
+		DebugLockGuard lock(stateMutex);
+		nodeState = eNodeState::Awake;
+	}
+	virtual void Sleeping()
+	{
+		DebugLockGuard lock(stateMutex);
+		nodeState = eNodeState::Sleepy;
+	}
+
+	// ---------- NIF/CC Handler ----------
 	void SetNIF(uint8_t basicType, uint8_t genericClass, uint8_t specificClass,
 				const std::vector<uint8_t>& commandClasses)
 	{
@@ -259,14 +242,12 @@ public:
 		protocolInfo.basic = basicType;
 		protocolInfo.generic = genericClass;
 		protocolInfo.specific = specificClass;
-
 		ccs.fill({});
 		for (auto cc : commandClasses)
 		{
 			ccs[cc].id = static_cast<eCommandClass>(cc);
 			ccs[cc].supported = true;
 		}
-
 		if (HasCC(eCommandClass::VERSION)) device.AddHandler<ZW_CC_Version>();
 		if (HasCC(eCommandClass::MANUFACTURER_SPECIFIC)) device.AddHandler<ZW_CC_ManufacturerSpecific>();
 		if (HasCC(eCommandClass::BATTERY)) device.AddHandler<ZW_CC_Battery>();
@@ -280,12 +261,10 @@ public:
 		if (HasCC(eCommandClass::PROTECTION)) device.AddHandler<ZW_CC_Protection>();
 		if (HasCC(eCommandClass::ASSOCIATION)) device.AddHandler<ZW_CC_Association>();
 		if (HasCC(eCommandClass::MULTI_CHANNEL_ASSOCIATION)) device.AddHandler<ZW_CC_MultiChannelAssociation>();
+		if (HasCC(eCommandClass::WAKE_UP)) device.AddHandler<ZW_CC_WakeUp>();
 	}
 
-	
-	//
-	// CC dispatch
-	//
+	// ---------- CC Dispatch ----------
 	void HandleCCDeviceReport(uint8_t cmdClass, uint8_t cmdId, const std::vector<uint8_t>& cmdParams)
 	{
 		auto handler = device.GetHandler(static_cast<eCommandClass>(cmdClass));
@@ -294,7 +273,6 @@ public:
 		else
 			Log.AddL(eLogTypes::INFO, MakeTag(), "Unknown command class handler: 0x{:02X}", cmdClass);
 	}
-
 	bool GetFrame(ZW_APIFrame& frame, eCommandClass cmdClass, uint8_t cmdId,
 				  const std::vector<uint8_t>& params = {})
 	{
@@ -304,24 +282,19 @@ public:
 					 static_cast<uint8_t>(cmdClass));
 			return false;
 		}
-
 		auto handler = device.GetHandler(cmdClass);
 		if (handler)
 		{
 			handler->MakeFrame(frame, cmdId, params);
 			return true;
 		}
-
 		Log.AddL(eLogTypes::INFO, MakeTag(), "Unknown command class handler: 0x{:02X}",
 				 static_cast<uint8_t>(cmdClass));
 		return false;
 	}
 
-	//
-	// ToString()
-	//
+	// ---------- ToString ----------
 	std::string ToString() const;
-
 };
 
 class ZW_Node : public ZW_NodeInfo
@@ -368,7 +341,8 @@ public:
 	void Sleeping() override
 	{
 		DebugLockGuard lock(stateMutex);
-		nodeState = eNodeState::Sleepy;
+		if (!protocolInfo.isListening)
+			nodeState = eNodeState::Sleepy;
 	}
 
 
@@ -378,9 +352,23 @@ public:
 	enum class eJobs
 	{
 		BATTERY_GET,
+		ASSOCIATION_INTERVIEW,
 	};
 	void EnqueueJob(eJobs job)
 	{
+		if (!SupportsJob(job))
+		{
+			Log.AddL(eLogTypes::INFO, MakeTag(), "Node {} does not support job: {}", NodeId, (uint8_t)job);
+			return;
+		}
+
+		// if job already in queue, dont enqueue
+		for (auto& j : jobQueue)
+		{
+			//			if (j.job == job)
+				//			return;
+		}
+		Log.AddL(eLogTypes::INFO, MakeTag(), "EnqueueJob: {}", (uint8_t)job);
 		DebugLockGuard lock(stateMutex);
 		jobQueue.push_back(Job{ job });
 	}
@@ -397,12 +385,36 @@ private:
 	};
 	std::vector<Job> jobQueue;
 
+	bool SupportsJob(eJobs type)
+	{
+		switch (type)
+		{
+		case eJobs::BATTERY_GET:
+			return HasCC(eCommandClass::BATTERY);
+		case eJobs::ASSOCIATION_INTERVIEW:
+			return HasCC(eCommandClass::ASSOCIATION);
+		default:
+			Log.AddL(eLogTypes::INFO, MakeTag(), "Unknown job: {}", (uint8_t)type);
+			return true;
+		}
+	}
+	/*
+	bool IsJobQueueEmpty() const
+	{
+		DebugLockGuard lock(stateMutex);
+		return jobQueue.empty();
+	}
+	*/
 	bool TryPeekJob(Job& job)
 	{
 		DebugLockGuard lock(stateMutex);
 		if (jobQueue.empty())
+		{
+			//			Log.AddL(eLogTypes::INFO, MakeTag(), "Job queue empty");
 			return false;
+		}
 		job = jobQueue.front();
+		Log.AddL(eLogTypes::INFO, MakeTag(), "Job peeked: {}", (uint8_t)job.job);
 		return true;
 	}
 
@@ -411,8 +423,8 @@ private:
 		DebugLockGuard lock(stateMutex);
 		if (!jobQueue.empty())
 			jobQueue.erase(jobQueue.begin());
+		Log.AddL(eLogTypes::INFO, MakeTag(), "Job erased queue size: {}", jobQueue.size());
 	}
-
 
 	template <typename Pred>
 	bool WaitUntil(std::chrono::milliseconds timeout, Pred&& predicate)
@@ -444,34 +456,35 @@ private:
 
 			if (nodeState == eNodeState::Awake)
 			{
-				if (GetInterviewState() == eInterviewState::InterviewDone || jobQueue.empty())
+				if (GetInterviewState() != eInterviewState::InterviewDone)
 				{
-					std::this_thread::sleep_for(std::chrono::milliseconds(50));
+					RunInterview();
 					continue;
 				}
 
-				if( GetInterviewState() != eInterviewState::InterviewDone)
-					RunInterview();
-
-				if(!jobQueue.empty())
-					CheckJobQueue();
+				Job job;
+				if (TryPeekJob(job))
+				{
+					ExecuteJob(job);
+					continue;
+				}
+				std::this_thread::sleep_for(std::chrono::milliseconds(50));
 			}
 		}
 	}
 
-	void CheckJobQueue()
+	void ExecuteJob(Job job)
 	{
-		Job job;
-		if (!TryPeekJob(job))
-			return;
-
 		switch (job.job)
 		{
 		case eJobs::BATTERY_GET:
-			// TODO: Implement BATTERY_GET job handling
+			RunBatteryGetJob();
+			break;
+		case eJobs::ASSOCIATION_INTERVIEW:
+			RunAssociationInterview();
 			break;
 		default:
-			// TODO: Handle unknown or unsupported jobs
+			Log.AddL(eLogTypes::INFO, MakeTag(), "Unknown job: {}", (uint8_t)job.job);
 			break;
 		}
 
@@ -505,7 +518,7 @@ private:
 						Log.AddL(eLogTypes::INFO, MakeTag(), ">> NODE VERSION_COMMAND_CLASS_GET CC [0x{:02X}] to node {}", (uint8_t)ccId, NodeId);
 
 						ZW_APIFrame frame;
-						handler->MakeFrame(frame, static_cast<uint8_t>(eVersionCommand::VERSION_COMMAND_CLASS_GET), { static_cast<uint8_t>(ccId) });
+						handler->MakeFrame(frame, static_cast<uint8_t>(ZW_CC_Version::eVersionCommand::VERSION_COMMAND_CLASS_GET), { static_cast<uint8_t>(ccId) });
 						enqueue(frame);
 						std::this_thread::sleep_for(std::chrono::milliseconds(10));
 
@@ -534,7 +547,7 @@ private:
 					if (version >= 1)
 					{
 						ZW_APIFrame frame;
-						handler->MakeFrame(frame, static_cast<uint8_t>(eManufacturerSpecificCommand::DEVICE_SPECIFIC_GET), { 0 });
+						handler->MakeFrame(frame, static_cast<uint8_t>(ZW_CC_ManufacturerSpecific::eManufacturerSpecificCommand::DEVICE_SPECIFIC_GET), { 0 });
 						enqueue(frame);
 
 						// Wait for MANUFACTURER_SPECIFIC_COMMAND_CLASS_REPORT which sets `hasManufacturerData`.
@@ -547,7 +560,7 @@ private:
 					if (version >= 2)
 					{
 						ZW_APIFrame frame;
-						handler->MakeFrame(frame, static_cast<uint8_t>(eManufacturerSpecificCommand::DEVICE_SPECIFIC_GET_V2), { 0 });
+						handler->MakeFrame(frame, static_cast<uint8_t>(ZW_CC_ManufacturerSpecific::eManufacturerSpecificCommand::DEVICE_SPECIFIC_GET_V2), { 0 });
 						enqueue(frame);
 
 						// Wait for MANUFACTURER_SPECIFIC_COMMAND_CLASS_REPORT which sets `hasDeviceId`.
@@ -561,7 +574,122 @@ private:
 				SetInterviewState(eInterviewState::CCMnfcSpecDone);
 			}
 			break;
+		
+		case eInterviewState::CCMnfcSpecDone:
+		case eInterviewState::CCMultiChannelPending:
+			if (auto* cc = GetCC(eCommandClass::MULTI_CHANNEL))
+			{
+				SetInterviewState(eInterviewState::CCMultiChannelPending);
+				if (auto* handler = device.GetHandler(eCommandClass::MULTI_CHANNEL))
+				{
+					Log.AddL(eLogTypes::INFO, MakeTag(), ">> NODE MULTI_CHANNEL_CAPABILITY_GET to node {}", NodeId);
+
+					ZW_APIFrame frame;
+					handler->MakeFrame(frame, static_cast<uint8_t>(ZW_CC_MultiChannel::eMultiChannelCommand::MULTI_CHANNEL_CAPABILITY_GET), {});
+					enqueue(frame);
+
+					// Wait for MULTI_CHANNEL_CAPABILITY_GET which sets `hasMultiChannel`.
+					if (!WaitUntil(std::chrono::seconds(5), [&]() { return multiChannelAssociationGroups.hasLastReport; }))
+					{
+						Log.AddL(eLogTypes::ERR, MakeTag(), "Multi-channel timeout: node {}", NodeId);
+						break;
+					}
+				}
+				SetInterviewState(eInterviewState::CCMultiChannelDone);
+			}
+			break;
+
+		case eInterviewState::CCMultiChannelDone:
+			break;
+
+		case eInterviewState::InterviewDone:
+			break;
 		}
 	}
-};
 
+	void RunBatteryGetJob()
+	{
+		if (!HasCC(eCommandClass::BATTERY))
+		{
+			Log.AddL(eLogTypes::INFO, MakeTag(), "Node does not support BATTERY CC node {}", NodeId);
+			return;
+		}
+		auto* batteryHandler = device.GetHandler(eCommandClass::BATTERY);
+		if (!batteryHandler)
+		{
+			Log.AddL(eLogTypes::INFO, MakeTag(), "No handler for BATTERY CC node {}", NodeId);
+			return;
+		}
+		ZW_APIFrame frame;
+		batteryHandler->MakeFrame(frame, static_cast<uint8_t>(ZW_CC_Battery::eBatteryCommand::BATTERY_GET), {});
+		Log.AddL(eLogTypes::INFO, MakeTag(), ">> BATTERY_GET: node {}", NodeId);
+		enqueue(frame);
+	}
+
+	void RunAssociationInterview()
+	{
+		if (!HasCC(eCommandClass::ASSOCIATION))
+		{
+			Log.AddL(eLogTypes::INFO, MakeTag(), "Node does not support ASSOCIATION CC node {}", NodeId);
+			return;
+		}
+		auto* associationHandler = device.GetHandler(eCommandClass::ASSOCIATION);
+		if (!associationHandler)
+		{
+			Log.AddL(eLogTypes::INFO, MakeTag(), "No handler for ASSOCIATION CC node {}", NodeId);
+			return;
+		}
+
+		associationGroups.clear();
+		ZW_APIFrame frame;
+		associationHandler->MakeFrame(frame, (uint8_t)ZW_CC_Association::eAssociationCommand::ASSOCIATION_GROUPINGS_GET, {});
+		Log.AddL(eLogTypes::INFO, MakeTag(), ">> ASSOCIATION_GROUPINGS_GET: node {}", NodeId);
+		enqueue(frame);
+
+		if (!WaitUntil(std::chrono::seconds(5), [&]() { return associationGroups.size() > 0; }))
+		{
+			Log.AddL(eLogTypes::ERR, MakeTag(), "Association groupings timeout: node {}", NodeId);
+			return;
+		}
+
+		for (size_t i = 0; i < associationGroups.size(); i++)
+		{
+			uint8_t groupId = associationGroups[i].groupId;
+			associationGroups[i].hasLastReport = false;
+			associationHandler->MakeFrame(frame, (uint8_t)ZW_CC_Association::eAssociationCommand::ASSOCIATION_GET, { groupId });
+			Log.AddL(eLogTypes::INFO, MakeTag(), ">> ASSOCIATION_GET: node {} group {}", NodeId, groupId);
+			enqueue(frame);
+
+			if (!WaitUntil(std::chrono::seconds(5), [&]() { return associationGroups[i].hasLastReport; }))
+			{
+				Log.AddL(eLogTypes::ERR, MakeTag(), "Association get timeout: node {} group {}", NodeId, groupId);
+				return;
+			}
+		}
+
+		if (!associationGroups.empty())
+		{
+			bool found = false;
+			uint8_t controllerId = 1;
+			for (auto info : associationGroups[0].nodeList)
+			{
+				if (info == controllerId)
+				{
+					found = true;
+					break;
+				}
+			}
+			if (!found)
+			{
+				associationHandler->MakeFrame(frame, (uint8_t)ZW_CC_Association::eAssociationCommand::ASSOCIATION_SET, { 1, controllerId });
+				Log.AddL(eLogTypes::INFO, MakeTag(), ">> ASSOCIATION_SET: node {} group 1 + controllerId", NodeId);
+				enqueue(frame);
+				EnqueueJob(eJobs::ASSOCIATION_INTERVIEW);
+				return;
+			}
+		}
+
+		Sleeping();
+	}
+
+};

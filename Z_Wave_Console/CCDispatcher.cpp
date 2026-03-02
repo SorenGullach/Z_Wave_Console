@@ -57,22 +57,24 @@ void ZW_CCDispatcher::HandleCCFrame(const std::vector<uint8_t>& payload)
 		//
 		// All device CCs handled by ZW_Node / ZW_Device
 		//
-		case (static_cast<uint16_t>(eCommandClass::VERSION) << 8) | static_cast<uint8_t>(eVersionCommand::VERSION_COMMAND_CLASS_REPORT) :
-			case (static_cast<uint16_t>(eCommandClass::MANUFACTURER_SPECIFIC) << 8) | static_cast<uint8_t>(eManufacturerSpecificCommand::DEVICE_SPECIFIC_REPORT) :
-			case (static_cast<uint16_t>(eCommandClass::MANUFACTURER_SPECIFIC) << 8) | static_cast<uint8_t>(eManufacturerSpecificCommand::DEVICE_SPECIFIC_REPORT_V2) :
+		case (static_cast<uint16_t>(eCommandClass::VERSION) << 8) | static_cast<uint8_t>(ZW_CC_Version::eVersionCommand::VERSION_COMMAND_CLASS_REPORT) :
+			case (static_cast<uint16_t>(eCommandClass::MANUFACTURER_SPECIFIC) << 8) | static_cast<uint8_t>(ZW_CC_ManufacturerSpecific::eManufacturerSpecificCommand::DEVICE_SPECIFIC_REPORT) :
+			case (static_cast<uint16_t>(eCommandClass::MANUFACTURER_SPECIFIC) << 8) | static_cast<uint8_t>(ZW_CC_ManufacturerSpecific::eManufacturerSpecificCommand::DEVICE_SPECIFIC_REPORT_V2) :
 
-			case (static_cast<uint16_t>(eCommandClass::BATTERY) << 8) | static_cast<uint8_t>(eBatteryCommand::BATTERY_REPORT) :
-			case (static_cast<uint16_t>(eCommandClass::BASIC) << 8) | static_cast<uint8_t>(eBasicCommand::BASIC_REPORT) :
-			case (static_cast<uint16_t>(eCommandClass::SWITCH_BINARY) << 8) | static_cast<uint8_t>(eSwitchBinaryCommand::SWITCH_BINARY_REPORT) :
-			case (static_cast<uint16_t>(eCommandClass::SWITCH_MULTILEVEL) << 8) | static_cast<uint8_t>(eSwitchMultilevelCommand::SWITCH_MULTILEVEL_REPORT) :
-			case (static_cast<uint16_t>(eCommandClass::SENSOR_BINARY) << 8) | static_cast<uint8_t>(eSensorBinaryCommand::SENSOR_BINARY_REPORT) :
-			case (static_cast<uint16_t>(eCommandClass::METER) << 8) | static_cast<uint8_t>(eMeterCommand::METER_REPORT) :
-			case (static_cast<uint16_t>(eCommandClass::MULTI_CHANNEL) << 8) | static_cast<uint8_t>(eMultiChannelCommand::MULTI_CHANNEL_CAPABILITY_REPORT) :
-			case (static_cast<uint16_t>(eCommandClass::CONFIGURATION) << 8) | static_cast<uint8_t>(eConfigurationCommand::CONFIGURATION_REPORT) :
-			case (static_cast<uint16_t>(eCommandClass::PROTECTION) << 8) | static_cast<uint8_t>(eProtectionCommand::PROTECTION_REPORT) :
-			case (static_cast<uint16_t>(eCommandClass::ASSOCIATION) << 8) | static_cast<uint8_t>(eAssociationCommand::ASSOCIATION_REPORT) :
-			case (static_cast<uint16_t>(eCommandClass::ASSOCIATION) << 8) | static_cast<uint8_t>(eAssociationCommand::ASSOCIATION_GROUPINGS_REPORT) :
-			case (static_cast<uint16_t>(eCommandClass::MULTI_CHANNEL_ASSOCIATION) << 8) | static_cast<uint8_t>(eMultiChannelAssociationCommand::MULTI_CHANNEL_ASSOCIATION_REPORT) :
+			case (static_cast<uint16_t>(eCommandClass::BATTERY) << 8) | static_cast<uint8_t>(ZW_CC_Battery::eBatteryCommand::BATTERY_REPORT) :
+			case (static_cast<uint16_t>(eCommandClass::BASIC) << 8) | static_cast<uint8_t>(ZW_CC_Basic::eBasicCommand::BASIC_REPORT) :
+			case (static_cast<uint16_t>(eCommandClass::BASIC) << 8) | static_cast<uint8_t>(ZW_CC_Basic::eBasicCommand::BASIC_SET) :
+			case (static_cast<uint16_t>(eCommandClass::BASIC) << 8) | static_cast<uint8_t>(ZW_CC_Basic::eBasicCommand::BASIC_GET) :
+			case (static_cast<uint16_t>(eCommandClass::SWITCH_BINARY) << 8) | static_cast<uint8_t>(ZW_CC_SwitchBinary::eSwitchBinaryCommand::SWITCH_BINARY_REPORT) :
+			case (static_cast<uint16_t>(eCommandClass::SWITCH_MULTILEVEL) << 8) | static_cast<uint8_t>(ZW_CC_SwitchMultilevel::eSwitchMultilevelCommand::SWITCH_MULTILEVEL_REPORT) :
+			case (static_cast<uint16_t>(eCommandClass::SENSOR_BINARY) << 8) | static_cast<uint8_t>(ZW_CC_SensorBinary::eSensorBinaryCommand::SENSOR_BINARY_REPORT) :
+			case (static_cast<uint16_t>(eCommandClass::METER) << 8) | static_cast<uint8_t>(ZW_CC_Meter::eMeterCommand::METER_REPORT) :
+			case (static_cast<uint16_t>(eCommandClass::MULTI_CHANNEL) << 8) | static_cast<uint8_t>(ZW_CC_MultiChannel::eMultiChannelCommand::MULTI_CHANNEL_CAPABILITY_REPORT) :
+			case (static_cast<uint16_t>(eCommandClass::CONFIGURATION) << 8) | static_cast<uint8_t>(ZW_CC_Configuration::eConfigurationCommand::CONFIGURATION_REPORT) :
+			case (static_cast<uint16_t>(eCommandClass::PROTECTION) << 8) | static_cast<uint8_t>(ZW_CC_Protection::eProtectionCommand::PROTECTION_REPORT) :
+			case (static_cast<uint16_t>(eCommandClass::ASSOCIATION) << 8) | static_cast<uint8_t>(ZW_CC_Association::eAssociationCommand::ASSOCIATION_REPORT) :
+			case (static_cast<uint16_t>(eCommandClass::ASSOCIATION) << 8) | static_cast<uint8_t>(ZW_CC_Association::eAssociationCommand::ASSOCIATION_GROUPINGS_REPORT) :
+			case (static_cast<uint16_t>(eCommandClass::MULTI_CHANNEL_ASSOCIATION) << 8) | static_cast<uint8_t>(ZW_CC_MultiChannelAssociation::eMultiChannelAssociationCommand::MULTI_CHANNEL_ASSOCIATION_REPORT) :
 
 			// All device CCs handled here
 			nodes.HandleCCDeviceReport(nodeId, cmdClass, cmdId, cmdParams);

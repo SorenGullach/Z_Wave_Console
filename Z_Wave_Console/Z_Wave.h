@@ -10,6 +10,7 @@
 
 #include <atomic>
 #include <chrono>
+#include <cstdint>
 #include <mutex>
 #include <thread>
 #include <vector>
@@ -94,10 +95,18 @@ public:
 		node->EnqueueJob(ZW_Node::eJobs::BATTERY_GET);
 	}
 
+	void AssociationInterview(uint16_t nodeid)
+	{
+		ZW_Node* node = nodes.Get(nodeid);
+		if (!node) return;
+		node->EnqueueJob(ZW_Node::eJobs::ASSOCIATION_INTERVIEW);
+	}
+
 protected:
 
 	bool OnFrameReceived(const ZW_APIFrame& frame) override
 	{
+		Log.AddL(eLogTypes::INFO, MakeTag(), "<< {}", frame.Info());
 		switch (frame.APICmd.CmdId)
 		{
 		case eCommandIds::FUNC_ID_GET_INIT_DATA:
@@ -252,7 +261,7 @@ private:
 				if (interviewManager.Done(job.nodeid))
 				{
 					if (node = nodes.Get(job.nodeid))
-						Log.AddL(eLogTypes::INFO, MakeTag(), "----------------------------------- Interview done. Node: {} {}", node->NodeId, node->IsListening() ? "Listening" : "Not listening");
+						Log.AddL(eLogTypes::INFO, MakeTag(), "----------------------------------- Interview pending. Node: {} {}", node->NodeId, node->IsListening() ? "Listening" : "Not listening");
 					else
 						Log.AddL(eLogTypes::INFO, MakeTag(), "----------------------------------- Interview done. Node: {}", job.nodeid);
 					return eJobResult::Done;

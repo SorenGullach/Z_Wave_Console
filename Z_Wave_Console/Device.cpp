@@ -146,6 +146,7 @@ void ZW_CC_SwitchBinary::HandleReport(uint8_t cmdId, const std::vector<uint8_t>&
 void ZW_CC_Basic::MakeFrame(ZW_APIFrame& frame, uint8_t cmdId, const std::vector<uint8_t>&)
 {
 	Log.AddL(eLogTypes::INFO, MakeTag(), ">> BASIC_GET: node {}", node.NodeId);
+
 	frame.MakeSendData(static_cast<uint8_t>(node.NodeId), 3,
 					   { static_cast<uint8_t>(eCommandClass::BASIC),
 						 static_cast<uint8_t>(eBasicCommand::BASIC_GET) });
@@ -153,18 +154,36 @@ void ZW_CC_Basic::MakeFrame(ZW_APIFrame& frame, uint8_t cmdId, const std::vector
 
 void ZW_CC_Basic::HandleReport(uint8_t cmdId, const std::vector<uint8_t>& params)
 {
-	if (cmdId != static_cast<uint8_t>(eBasicCommand::BASIC_REPORT))
-	{
-		Log.AddL(eLogTypes::ERR, MakeTag(), "<< BASIC unknowen CC: node={} cmdId={}", node.NodeId, cmdId);
-		return;
-	}
 	if (params.empty())
 		return;
 
 	const uint8_t value = params[0];
-	node.basicValue = value;
-	Log.AddL(eLogTypes::INFO, MakeTag(), "<< BASIC_REPORT: node={} value=0x{:02X}",
-			 node.NodeId, value);
+
+	switch (cmdId)
+	{
+	case static_cast<uint8_t>(eBasicCommand::BASIC_SET):
+		// unsolicited state change from device
+		node.basicValue = value;
+		Log.AddL(eLogTypes::INFO, MakeTag(),
+				 "<< BASIC_SET: node={} value=0x{:02X}", node.NodeId, value);
+		break;
+
+	case static_cast<uint8_t>(eBasicCommand::BASIC_REPORT):
+		// response to BASIC_GET
+		node.basicValue = value;
+		Log.AddL(eLogTypes::INFO, MakeTag(),
+				 "<< BASIC_REPORT: node={} value=0x{:02X}", node.NodeId, value);
+		break;
+
+	case static_cast<uint8_t>(eBasicCommand::BASIC_GET):
+		// Device SHOULD not send this to controller – just ignore
+		Log.AddL(eLogTypes::INFO, MakeTag(), "<< BASIC_GET from node={} (ignored)", node.NodeId);
+		break;
+	
+	default:
+		Log.AddL(eLogTypes::ERR, MakeTag(), "<< BASIC unknown cmd: node={} cmdId=0x{:02X}", node.NodeId, cmdId);
+		break;
+	}
 }
 
 //
@@ -276,8 +295,8 @@ void ZW_CC_MultiChannel::HandleReport(uint8_t cmdId, const std::vector<uint8_t>&
 	Log.AddL(eLogTypes::INFO, MakeTag(), "<< MULTI_CHANNEL_REPORT: node={} paramsLen={}",
 			 node.NodeId, params.size());
 
-	node.multiChannelInfo.hasLastReport = true;
-	node.multiChannelInfo.raw = params;
+	node.multiChannel.hasEndpointReport = true;
+	// keep raw params if needed by storing in endpoints later
 }
 
 //
@@ -343,77 +362,135 @@ void ZW_CC_Protection::HandleReport(uint8_t cmdId, const std::vector<uint8_t>& p
 //
 void ZW_CC_Association::MakeFrame(ZW_APIFrame& frame, uint8_t cmdId, const std::vector<uint8_t>& params)
 {
+	std::vector<uint8_t> payload;
+	payload.reserve(2 + params.size());
+	payload.push_back(static_cast<uint8_t>(eCommandClass::ASSOCIATION));
+	payload.push_back(cmdId);
+	payload.insert(payload.end(), params.begin(), params.end());
+
+	uint8_t cb = 5; // node.GetNextCallbackId();
+
 	switch (cmdId)
 	{
+	case (uint8_t)eAssociationCommand::ASSOCIATION_SET:
+		{
+			std::string oss;
+			for (size_t i = 1; i < params.size(); i++)
+				oss += std::to_string(params[i]) + " ";
+
+			Log.AddL(eLogTypes::INFO, MakeTag(),
+					 ">> ASSOCIATION_SET: node {} group {} = {}",
+					 node.NodeId, params[0], oss);
+
+			frame.MakeSendData(node.NodeId, cb, payload);
+			break;
+		}
+
+	case (uint8_t)eAssociationCommand::ASSOCIATION_REMOVE:
+		{
+			std::string oss;
+			for (size_t i = 1; i < params.size(); i++)
+				oss += std::to_string(params[i]) + " ";
+
+			Log.AddL(eLogTypes::INFO, MakeTag(),
+					 ">> ASSOCIATION_REMOVE: node {} group {} - {}",
+					 node.NodeId, params[0], oss);
+
+			frame.MakeSendData(node.NodeId, cb, payload);
+			break;
+		}
+
 	case (uint8_t)eAssociationCommand::ASSOCIATION_GET:
-		Log.AddL(eLogTypes::INFO, MakeTag(), ">> ASSOCIATION_GET: node {} group {}", node.NodeId, params[0]);
-		frame.MakeSendData(static_cast<uint8_t>(node.NodeId), 4,
-						   { static_cast<uint8_t>(eCommandClass::ASSOCIATION),
-							 static_cast<uint8_t>(eAssociationCommand::ASSOCIATION_GET),
-							 params[0] });
-		break;
+		{
+			Log.AddL(eLogTypes::INFO, MakeTag(),
+					 ">> ASSOCIATION_GET: node {} group {}",
+					 node.NodeId, params[0]);
+
+			frame.MakeSendData(node.NodeId, cb, payload);
+			break;
+		}
+
 	case (uint8_t)eAssociationCommand::ASSOCIATION_GROUPINGS_GET:
-		Log.AddL(eLogTypes::INFO, MakeTag(), ">> ASSOCIATION_GROUPINGS_GET: node {}", node.NodeId);
-		frame.MakeSendData(static_cast<uint8_t>(node.NodeId), 3,
-						   { static_cast<uint8_t>(eCommandClass::ASSOCIATION),
-							 static_cast<uint8_t>(eAssociationCommand::ASSOCIATION_GROUPINGS_GET) });
-		break;
+		{
+			Log.AddL(eLogTypes::INFO, MakeTag(),
+					 ">> ASSOCIATION_GROUPINGS_GET: node {}",
+					 node.NodeId);
+
+			frame.MakeSendData(node.NodeId, cb, payload);
+			break;
+		}
+
 	default:
-		Log.AddL(eLogTypes::ERR, MakeTag(), "<< ASSOCIATION unknowen CC: node={} cmdId={}", node.NodeId, cmdId);
+		Log.AddL(eLogTypes::ERR, MakeTag(),
+				 "<< ASSOCIATION unknown CC: node={} cmdId={}",
+				 node.NodeId, cmdId);
 		break;
 	}
 }
+
 void ZW_CC_Association::HandleReport(uint8_t cmdId, const std::vector<uint8_t>& params)
 {
 	switch (cmdId)
 	{
 	case (uint8_t)eAssociationCommand::ASSOCIATION_REPORT:
-
-		Log.AddL(eLogTypes::INFO, MakeTag(), "<< ASSOCIATION_REPORT: node={} {}",
-				 node.NodeId, ParamsToString(params));
-
-		if (!params.empty())
 		{
-			const uint8_t group = params[0];
-			const uint8_t maxNodesCount = (params.size() > 1) ? params[1] : 0;
-			const uint8_t reports = (params.size() > 2) ? params[2] : 0;
+			Log.AddL(eLogTypes::INFO, MakeTag(),
+					 "<< ASSOCIATION_REPORT: node={} {}",
+					 node.NodeId, ParamsToString(params));
 
-			if (group > 0)
+			if (params.size() < 3)
+				return;
+
+			const uint8_t groupId = params[0];
+			const uint8_t maxNodes = params[1];
+			const uint8_t reportsToFollow = params[2];
+
+			if (groupId == 0)
+				return;
+
+			// Ensure vector size
+			if (node.associationGroups.size() < groupId)
+				node.associationGroups.resize(groupId);
+
+			auto& g = node.associationGroups[groupId - 1];
+			g.groupId = groupId;
+			g.nodeList.clear();
+
+			// Parse node list
+			for (size_t i = 0; i < maxNodes; i++)
 			{
-				const size_t idx = static_cast<size_t>(group - 1);
-				if (node.associationInfo.size() <= idx)
-					node.associationInfo.resize(idx + 1);
-
-				auto& g = node.associationInfo[group - 1];
-				g.groupId = group;
-				g.nodes.clear();
-				g.nodes.reserve(maxNodesCount);
-				for (size_t i = 0; i < maxNodesCount; ++i)
-				{
-					const size_t p = 3 + i;
-					if (p >= params.size())
-						break;
-					g.nodes.push_back(params[p]);
-				}
+				size_t p = 3 + i;
+				if (p >= params.size())
+					break;
+				g.nodeList.push_back(params[p]);
 			}
+
+			g.hasLastReport = (reportsToFollow == 0);
+			break;
 		}
-		break;
 
 	case (uint8_t)eAssociationCommand::ASSOCIATION_GROUPINGS_REPORT:
-
-		Log.AddL(eLogTypes::INFO, MakeTag(), "<< ASSOCIATION_GROUPINGS_REPORT: node={} {}",
-				 node.NodeId, ParamsToString(params));
-
-		if (!params.empty())
 		{
-			uint8_t Groupings = params[0];
-			node.associationInfo.resize(Groupings);
-			for (int i = 0; i < Groupings; i++)
-				node.associationInfo[i].groupId = i + 1;
+			Log.AddL(eLogTypes::INFO, MakeTag(),
+					 "<< ASSOCIATION_GROUPINGS_REPORT: node={} {}",
+					 node.NodeId, ParamsToString(params));
+
+			if (params.empty())
+				return;
+
+			uint8_t groupCount = params[0];
+			node.associationGroups.resize(groupCount);
+
+			for (uint8_t i = 0; i < groupCount; i++)
+				node.associationGroups[i].groupId = i + 1;
+
+			break;
 		}
-		break;
+
 	default:
-		Log.AddL(eLogTypes::ERR, MakeTag(), "<< ASSOCIATION unknowen CC: node={} cmdId={}", node.NodeId, cmdId);
+		Log.AddL(eLogTypes::ERR, MakeTag(),
+				 "<< ASSOCIATION unknown CC: node={} cmdId={}",
+				 node.NodeId, cmdId);
 		break;
 	}
 }
@@ -421,30 +498,114 @@ void ZW_CC_Association::HandleReport(uint8_t cmdId, const std::vector<uint8_t>& 
 //
 // MULTI CHANNEL ASSOCIATION (0x8E)
 //
-void ZW_CC_MultiChannelAssociation::MakeFrame(ZW_APIFrame& frame, uint8_t cmdId, const std::vector<uint8_t>& params)
+void ZW_CC_MultiChannelAssociation::MakeFrame(
+	ZW_APIFrame& frame,
+	uint8_t cmdId,
+	const std::vector<uint8_t>& params)
 {
-	Log.AddL(eLogTypes::INFO, MakeTag(), ">> MULTI_CHANNEL_ASSOCIATION_GET: node {} group {}", node.NodeId, params[0]);
-	frame.MakeSendData(static_cast<uint8_t>(node.NodeId), 4,
-					   { static_cast<uint8_t>(eCommandClass::MULTI_CHANNEL_ASSOCIATION),
-						 static_cast<uint8_t>(eMultiChannelAssociationCommand::MULTI_CHANNEL_ASSOCIATION_GET),
-						 params[0] });
+	uint8_t cb = 6; // node.GetNextCallbackId();
+
+	std::vector<uint8_t> payload;
+	payload.reserve(2 + params.size());
+	payload.push_back(static_cast<uint8_t>(eCommandClass::MULTI_CHANNEL_ASSOCIATION));
+	payload.push_back(cmdId);
+	payload.insert(payload.end(), params.begin(), params.end());
+
+	switch (cmdId)
+	{
+	case (uint8_t)eMultiChannelAssociationCommand::MULTI_CHANNEL_ASSOCIATION_GET:
+		{
+			Log.AddL(eLogTypes::INFO, MakeTag(),
+					 ">> MULTI_CHANNEL_ASSOCIATION_GET: node {} group {}",
+					 node.NodeId, params[0]);
+
+			frame.MakeSendData(node.NodeId, cb, payload);
+			break;
+		}
+
+	case (uint8_t)eMultiChannelAssociationCommand::MULTI_CHANNEL_ASSOCIATION_SET:
+		{
+			// params = [groupId, node1, node2, 0x00, nodeX, endpointX, ...]
+			Log.AddL(eLogTypes::INFO, MakeTag(),
+					 ">> MULTI_CHANNEL_ASSOCIATION_SET: node {} group {} params={}",
+					 node.NodeId, params[0], ParamsToString(params));
+
+			frame.MakeSendData(node.NodeId, cb, payload);
+			break;
+		}
+
+	case (uint8_t)eMultiChannelAssociationCommand::MULTI_CHANNEL_ASSOCIATION_REMOVE:
+		{
+			Log.AddL(eLogTypes::INFO, MakeTag(),
+					 ">> MULTI_CHANNEL_ASSOCIATION_REMOVE: node {} group {} params={}",
+					 node.NodeId, params[0], ParamsToString(params));
+
+			frame.MakeSendData(node.NodeId, cb, payload);
+			break;
+		}
+
+	default:
+		Log.AddL(eLogTypes::ERR, MakeTag(),
+				 "<< MULTI_CHANNEL_ASSOCIATION unknown CC: node={} cmdId={}",
+				 node.NodeId, cmdId);
+		break;
+	}
 }
 
-void ZW_CC_MultiChannelAssociation::HandleReport(uint8_t cmdId, const std::vector<uint8_t>& params)
+void ZW_CC_MultiChannelAssociation::HandleReport(
+	uint8_t cmdId,
+	const std::vector<uint8_t>& params)
 {
 	if (cmdId != (uint8_t)eMultiChannelAssociationCommand::MULTI_CHANNEL_ASSOCIATION_REPORT)
 	{
-		Log.AddL(eLogTypes::ERR, MakeTag(), "<< MULTI_CHANNEL_ASSOCIATION unknowen CC: node={} cmdId={}", node.NodeId, cmdId);
+		Log.AddL(eLogTypes::ERR, MakeTag(),
+				 "<< MULTI_CHANNEL_ASSOCIATION unknown CC: node={} cmdId={}",
+				 node.NodeId, cmdId);
+		return;
 	}
-	return;
 
-	Log.AddL(eLogTypes::INFO, MakeTag(), "<< MULTI_CHANNEL_ASSOCIATION_REPORT: node={} paramsLen={}",
-			 node.NodeId, params.size());
+	Log.AddL(eLogTypes::INFO, MakeTag(),
+			 "<< MULTI_CHANNEL_ASSOCIATION_REPORT: node={} {}",
+			 node.NodeId, ParamsToString(params));
 
-	node.multiChannelAssociationInfo.hasLastReport = true;
-	node.multiChannelAssociationInfo.raw = params;
-	if (!params.empty())
-		node.multiChannelAssociationInfo.groupId = params[0];
+	if (params.size() < 3)
+		return;
+
+	const uint8_t groupId = params[0];
+	const uint8_t maxNodes = params[1];
+	const uint8_t reportsToFollow = params[2];
+
+	// Ensure vector size
+	if (node.multiChannelAssociationGroups.size() < groupId)
+		node.multiChannelAssociationGroups.resize(groupId);
+
+	auto& g = node.multiChannelAssociationGroups[groupId - 1];
+	g.groupId = groupId;
+	g.members.clear();
+
+	size_t i = 3;
+
+	// Parse nodeId entries
+	for (uint8_t n = 0; n < maxNodes && i < params.size(); n++)
+	{
+		uint8_t nodeId = params[i++];
+		g.members.push_back({ nodeId, 0 }); // endpoint 0 = root
+	}
+
+	// Parse endpoint entries
+	while (i + 2 < params.size())
+	{
+		if (params[i] != 0x00)
+			break; // no more endpoint entries
+
+		uint8_t nodeId = params[i + 1];
+		uint8_t endpointId = params[i + 2];
+		g.members.push_back({ nodeId, endpointId });
+
+		i += 3;
+	}
+
+	g.hasLastReport = (reportsToFollow == 0);
 }
 
 //

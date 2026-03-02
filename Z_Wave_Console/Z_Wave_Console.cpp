@@ -236,7 +236,7 @@ static std::string ReadCommand()
 }
 int main()
 {
-	Log.SetLogType(eLogTypes::DBG);
+	Log.SetLogType(eLogTypes::INFO);
 
 	DrawUiFrame();
 
@@ -282,24 +282,37 @@ int main()
 			return 0;
 		}
 
-		if (cmd == "INTERVIEW")
-		{
-			ZW.StartInterview();
-			continue;
-		}
+        if (cmd == "INTERVIEW")
+        {
+            ZW.StartInterview();
+            continue;
+        }
 
-		if (cmd.rfind("BATT ", 0) == 0)
-		{
-			try
-			{
+        if (cmd.rfind("BATT", 0) == 0)
+        {
+            try
+            {
+                const int nodeId = std::stoi(cmd.substr(5));
+                ZW.RequestBattery(static_cast<uint16_t>(nodeId));
+            }
+            catch (...)
+            {
+            }
+            continue;
+        }
+
+        if (cmd.rfind("BIND?", 0) == 0)
+        {
+            try
+            {
 				const int nodeId = std::stoi(cmd.substr(5));
-				ZW.RequestBattery(static_cast<uint16_t>(nodeId));
-			}
-			catch (...)
-			{
-			}
-			continue;
-		}
+				ZW.AssociationInterview(static_cast<uint16_t>(nodeId));
+            }
+            catch (...)
+            {
+            }
+            continue;
+        }
 	}
 
 	ZW.ClosePort();

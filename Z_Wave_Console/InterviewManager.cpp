@@ -128,6 +128,12 @@ void ZW_InterviewManager::DecodeNodeInfo(const std::vector<uint8_t>& payload)
 		Log.AddL(eLogTypes::ERR, MakeTag(), "DecodeNodeInfo: node {} not found", nodeId);
 		return;
 	}
+	if (node->GetInterviewState() == ZW_Node::eInterviewState::InterviewDone)
+	{
+		Log.AddL(eLogTypes::INFO, MakeTag(), "----------------------------------- DecodeNodeInfo: node {} already interviewed", nodeId);
+		node->WakeUp();
+		return;
+	}
 	node->SetInterviewState(ZW_Node::eInterviewState::NodeInfoPending);
 
 	size_t index = 2;
