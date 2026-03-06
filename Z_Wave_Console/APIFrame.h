@@ -109,43 +109,91 @@ struct ZW_APIFrame
 		return 1;
 	}
 
-	std::string Info() const 
-	{ 
+	std::string Info() const
+	{
 #ifdef _DEBUG
-		const auto cmdId = static_cast<uint8_t>(APICmd.CmdId);
+		const char* typeStr =
+			(type == FrameTypes::REQ) ? "REQ" :
+			(type == FrameTypes::RES) ? "RES" : "??";
 
-		const char* typeStr = "REQ";
-		switch (type)
-		{
-		case FrameTypes::REQ: typeStr = "REQ"; break;
-		case FrameTypes::RES: typeStr = "RES"; break;
-		}
+		std::string name =
+			APICmd.Name.empty() ? "UNKNOWN" : APICmd.Name;
 
-		const std::string_view name = APICmd.Name.empty() ? std::string_view("UNKNOWN") : std::string_view(APICmd.Name);
+		// Hex dump of payload
+		auto hexDump = [&](const std::vector<uint8_t>& data)
+			{
+				if (data.empty()) return std::string("—");
+				std::string out;
+				out.reserve(data.size() * 3);
+				for (size_t i = 0; i < data.size(); ++i)
+				{
+					out += std::format("{:02X}", data[i]);
+					if (i + 1 < data.size()) out += ' ';
+				}
+				return out;
+			};
 
 		std::string extra;
+
+		// ----------------------------------------------------
+		// 0x49 ZW_API_APPLICATION_UPDATE
+		// ----------------------------------------------------
 		if (APICmd.CmdId == eCommandIds::ZW_API_APPLICATION_UPDATE)
 		{
 			if (!payload.empty())
 			{
-				const ApplicationUpdateEvent ev = static_cast<ApplicationUpdateEvent>(payload[0]);
-				extra = std::format(" | event={}", ToString(ev));
+				auto ev = static_cast<ApplicationUpdateEvent>(payload[0]);
+				uint8_t nodeId = payload[1];
+				extra = std::format(" | event={} ({})",
+									ToString(ev), hexDump(payload) );
 			}
 			else
 			{
 				extra = " | event=<missing>";
 			}
 		}
-		else
+
+		// ----------------------------------------------------
+		// 0x13 ZW_API_CONTROLLER_SEND_DATA
+		// ----------------------------------------------------
+		else if (APICmd.CmdId == eCommandIds::ZW_API_CONTROLLER_SEND_DATA)
 		{
-			if (!payload.empty())
-				extra = std::format(" | payload={}B [0]=0x{:02X}", payload.size(), payload[0]);
+			if (payload.size() >= 4)
+			{
+				uint8_t nodeId = payload[0];
+				uint8_t rfLen = payload[1];
+				uint8_t callbackId = payload[payload.size() - 2];
+				uint8_t txOptions = payload[payload.size() - 1];
+
+				// Extract RF payload
+				std::vector<uint8_t> rf;
+				if (payload.size() >= 2 + rfLen)
+					rf.assign(payload.begin() + 2, payload.begin() + 2 + rfLen);
+
+				extra = std::format(
+					" | node=0x{:02X} rf=[{}] cb=0x{:02X} txOpt=0x{:02X}",
+					nodeId,
+					hexDump(rf),
+					callbackId,
+					txOptions
+				);
+			}
 			else
-				extra = " | payload=0B";
+			{
+				extra = " | malformed SEND_DATA payload";
+			}
 		}
 
-		return std::format("[{}] 0x{:02X} {}{}", typeStr, cmdId, name, extra);
-#endif // _DEBUG
+		return std::format(
+			"[{}] cmdId=0x{:02X} {} | payload={}{}",
+			typeStr,
+			(int)APICmd.CmdId,
+			name,
+			hexDump(payload),
+			extra
+		);
+#endif
+
 		return std::format("0x{:02X}", static_cast<uint8_t>(APICmd.CmdId));
 	}
 
@@ -167,7 +215,7 @@ struct ZW_APIFrame
 		payload.push_back(nodeId);
 		payload.insert(payload.end(), params.begin(), params.end());
 	}
-
+	/*
 	// Make a request for a specific node (base type 16-bit)
 	void Make(const eCommandIds cmd, const uint16_t nodeId, const std::vector<uint8_t>& params = {})
 	{
@@ -179,7 +227,7 @@ struct ZW_APIFrame
 		payload.push_back(static_cast<uint8_t>(nodeId>>8));
 		payload.insert(payload.end(), params.begin(), params.end());
 	}
-
+	*/
 	// Make a request for a specific node (base type 8-bit)
 	void MakeSendData(const uint8_t nodeId, uint8_t callbackId, const std::vector<uint8_t>& params = {})
 	{
@@ -193,7 +241,7 @@ struct ZW_APIFrame
 		payload.push_back(static_cast<uint8_t>(callbackId));
 		payload.push_back(0x05); // Tx options	
 	}
-
+	/*
 	// Make a request for a specific node (base type 16-bit)
 	void MakeSendData(const uint16_t nodeId, uint8_t callbackId, const std::vector<uint8_t>& params = {})
 	{
@@ -208,7 +256,7 @@ struct ZW_APIFrame
 		payload.push_back(static_cast<uint8_t>(callbackId));
 		payload.push_back(0x05); // Tx options	
 	}
-
+	*/
 };
 
 using EnqueueFn = std::function<void(const ZW_APIFrame&)>;

@@ -39,7 +39,7 @@ void ZW_InterviewManager::DecodeNodeProtocolInfo(uint16_t nodeId, const std::vec
 	// [5]=Specific Device Class
 	if (payload.size() < 6)
 	{
-		Log.AddL(eLogTypes::ERR, MakeTag(), "DecodeNodeProtocolInfo: node={} payload too short (len={})", nodeId, payload.size());
+		Log.AddL(eLogTypes::INFO_LOW, MakeTag(), "DecodeNodeProtocolInfo: node={} payload too short (len={})", nodeId, payload.size());
 		return;
 	}
 
@@ -117,7 +117,7 @@ void ZW_InterviewManager::DecodeNodeInfo(const std::vector<uint8_t>& payload)
 {
 	if (payload.size() < 3)
 	{
-		Log.AddL(eLogTypes::ERR, MakeTag(), "DecodeNodeInfo: payload too short (len={})", payload.size());
+		Log.AddL(eLogTypes::INFO_LOW, MakeTag(), "DecodeNodeInfo: payload too short (len={})", payload.size());
 		return;
 	}
 
@@ -125,7 +125,7 @@ void ZW_InterviewManager::DecodeNodeInfo(const std::vector<uint8_t>& payload)
 	ZW_Node* node = activeNode = nodes.GetOrCreate(nodeId, enqueue);
 	if (!node)
 	{
-		Log.AddL(eLogTypes::ERR, MakeTag(), "DecodeNodeInfo: node {} not found", nodeId);
+		Log.AddL(eLogTypes::INFO_LOW, MakeTag(), "DecodeNodeInfo: node {} not found", nodeId);
 		return;
 	}
 	if (node->GetInterviewState() == ZW_Node::eInterviewState::InterviewDone)

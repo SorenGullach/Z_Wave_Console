@@ -27,8 +27,9 @@
 enum class eLogTypes
 {
 	ERR = 1,
-	INFO = 2,
-	DBG = 3,
+	INFO_LOW = 2,
+	INFO = 3,
+	DBG = 4,
 };
 
 inline std::string ZW_BaseName(const char* file)
@@ -92,6 +93,7 @@ private:
 	{
 		switch (lt)
 		{
+		case eLogTypes::INFO_LOW: return "INF-";
 		case eLogTypes::INFO: return "INFO";
 		case eLogTypes::ERR: return "ERR ";
 		case eLogTypes::DBG: return "DBG ";
@@ -114,7 +116,10 @@ private:
 
 	void AddInternal(eLogTypes lt, const std::string& tag, const std::string& msg)
 	{
-		if (CurrentLogType < lt)
+		// Filtering: lower numeric values are more important (ERR=1).
+		// A configured CurrentLogType includes everything up to that verbosity.
+		// Example: INFO shows ERR/INFO_LOW/INFO; DBG shows everything.
+		if ((int)lt > (int)CurrentLogType)
 			return;
 
 		std::string line = std::format("{:3} [{:30}] {}", ToString(lt), tag, msg);

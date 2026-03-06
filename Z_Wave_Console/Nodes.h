@@ -33,7 +33,7 @@ public:
 	auto begin() const { return nodes.begin(); }
 	auto end() const { return nodes.end(); }
 
-	void HandleCCDeviceReport(uint16_t nodeid, uint8_t cmdclass, uint8_t cmdid, const std::vector<uint8_t>& cmdparams);
+	void HandleCCDeviceReport(uint16_t nodeid, eCommandClass cmdclass, ZW_CmdId cmdid, const ZW_ByteVector& cmdparams);
 
 private:
 	std::unordered_map<uint16_t, std::unique_ptr<ZW_Node>> nodes;

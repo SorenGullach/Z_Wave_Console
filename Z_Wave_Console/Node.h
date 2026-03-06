@@ -106,13 +106,16 @@ public:
 		uint8_t value = 0;
 	} meterInfo;
 
-	// ---------- Configuration Info ----------
+	// ---------- Configuration Info (CC 0x70) ----------
 	struct ConfigurationInfo
 	{
-		bool hasLastReport = false;
-		uint8_t paramNumber = 0;
-		std::vector<uint8_t> raw;
-	} configurationInfo;
+		uint8_t paramNumber = 0;          // Parameter number (1..255)
+		uint8_t size = 0;                 // Size in bytes (1..4)
+		int32_t value = 0;                // Signed big-endian interpreted value
+		std::vector<uint8_t> raw;         // Raw value bytes (size bytes)
+		bool valid = false;               // True when a REPORT has been received
+	};
+	std::array<ConfigurationInfo, 255> configurationInfo{};
 
 	// ---------- Association Info (CC 0x85) ----------
 	struct AssociationGroup
@@ -197,6 +200,8 @@ protected:
 	eInterviewState interviewState = eInterviewState::NotInterviewed;
 	ZW_Device device;
 
+	bool supportsCC(eCommandClass cc) const;
+
 public:
 	// ===================== Constructors =====================
 	ZW_NodeInfo(uint16_t nodeId)
@@ -246,8 +251,9 @@ public:
 		for (auto cc : commandClasses)
 		{
 			ccs[cc].id = static_cast<eCommandClass>(cc);
-			ccs[cc].supported = true;
+			ccs[cc].supported = supportsCC(ccs[cc].id);
 		}
+		if (HasCC(eCommandClass::BASIC)) device.AddHandler<ZW_CC_Basic>();
 		if (HasCC(eCommandClass::VERSION)) device.AddHandler<ZW_CC_Version>();
 		if (HasCC(eCommandClass::MANUFACTURER_SPECIFIC)) device.AddHandler<ZW_CC_ManufacturerSpecific>();
 		if (HasCC(eCommandClass::BATTERY)) device.AddHandler<ZW_CC_Battery>();
@@ -265,31 +271,31 @@ public:
 	}
 
 	// ---------- CC Dispatch ----------
-	void HandleCCDeviceReport(uint8_t cmdClass, uint8_t cmdId, const std::vector<uint8_t>& cmdParams)
+	void HandleCCDeviceReport(eCommandClass cmdClass, ZW_CmdId cmdId, const ZW_ByteVector& cmdParams)
 	{
-		auto handler = device.GetHandler(static_cast<eCommandClass>(cmdClass));
+		auto handler = device.GetHandler(cmdClass);
 		if (handler)
-			handler->HandleReport(cmdId, cmdParams);
+			handler->HandleReport(ZW_CmdId(cmdId), cmdParams);
 		else
-			Log.AddL(eLogTypes::INFO, MakeTag(), "Unknown command class handler: 0x{:02X}", cmdClass);
+			Log.AddL(eLogTypes::INFO, MakeTag(), "Unknown command class handler: 0x{:02X} {}", (uint8_t)cmdClass, CommandClassToString(cmdClass));
 	}
-	bool GetFrame(ZW_APIFrame& frame, eCommandClass cmdClass, uint8_t cmdId,
-				  const std::vector<uint8_t>& params = {})
+	bool GetFrame(ZW_APIFrame& frame, eCommandClass cmdClass, ZW_CmdId cmdId,
+				  const ZW_ByteVector& params = {})
 	{
 		if (!HasCC(cmdClass))
 		{
-			Log.AddL(eLogTypes::INFO, MakeTag(), "Node does not support command class: 0x{:02X}",
-					 static_cast<uint8_t>(cmdClass));
+			Log.AddL(eLogTypes::INFO, MakeTag(), "Node does not support command class: 0x{:02X} {}",
+					 (uint8_t)cmdClass, CommandClassToString(cmdClass));
 			return false;
 		}
 		auto handler = device.GetHandler(cmdClass);
 		if (handler)
 		{
-			handler->MakeFrame(frame, cmdId, params);
+			handler->MakeFrame(frame, ZW_CmdId(cmdId), params);
 			return true;
 		}
-		Log.AddL(eLogTypes::INFO, MakeTag(), "Unknown command class handler: 0x{:02X}",
-				 static_cast<uint8_t>(cmdClass));
+		Log.AddL(eLogTypes::INFO, MakeTag(), "Unknown command class handler: 0x{:02X} {}",
+				 (uint8_t)cmdClass, CommandClassToString(cmdClass));
 		return false;
 	}
 
@@ -309,8 +315,11 @@ public:
 
 	ZW_Node(const ZW_Node&) = delete;
 	ZW_Node& operator=(const ZW_Node&) = delete;
-	ZW_Node(ZW_Node&&) noexcept = default;
-	ZW_Node& operator=(ZW_Node&&) noexcept = default;
+	// Non-movable: the worker thread captures `this`. Moving would leave the thread
+	// running against a moved-from object, causing use-after-move/dangling member
+	// access (e.g., invalid `device` handlers).
+	ZW_Node(ZW_Node&&) = delete;
+	ZW_Node& operator=(ZW_Node&&) = delete;
 
 	void Start()
 	{
@@ -353,8 +362,13 @@ public:
 	{
 		BATTERY_GET,
 		ASSOCIATION_INTERVIEW,
+		MULTI_CHANNEL_ASSOCIATION_INTERVIEW,
+		CONFIGURATION_INTERVIEW,
+		BIND_COMMAND,
+		UNBIND_COMMAND,
+		CONFIGURATION_COMMAND
 	};
-	void EnqueueJob(eJobs job)
+	void EnqueueJob(eJobs job, std::vector<uint32_t> params = {})
 	{
 		if (!SupportsJob(job))
 		{
@@ -370,8 +384,9 @@ public:
 		}
 		Log.AddL(eLogTypes::INFO, MakeTag(), "EnqueueJob: {}", (uint8_t)job);
 		DebugLockGuard lock(stateMutex);
-		jobQueue.push_back(Job{ job });
+		jobQueue.push_back(Job{ job, std::move(params) });
 	}
+	enum class eConfigSize : uint8_t { OneByte = 1, TwoBytes = 2, FourBytes = 4 };
 
 private:
 	EnqueueFn enqueue;
@@ -382,6 +397,7 @@ private:
 	struct Job
 	{
 		eJobs job;
+		std::vector<uint32_t> param{}; // Add param array for job parameters
 	};
 	std::vector<Job> jobQueue;
 
@@ -393,6 +409,16 @@ private:
 			return HasCC(eCommandClass::BATTERY);
 		case eJobs::ASSOCIATION_INTERVIEW:
 			return HasCC(eCommandClass::ASSOCIATION);
+		case eJobs::MULTI_CHANNEL_ASSOCIATION_INTERVIEW:
+			return HasCC(eCommandClass::MULTI_CHANNEL_ASSOCIATION);
+		case eJobs::CONFIGURATION_INTERVIEW:
+			return HasCC(eCommandClass::CONFIGURATION);
+		case eJobs::BIND_COMMAND:
+			return HasCC(eCommandClass::ASSOCIATION);
+		case eJobs::UNBIND_COMMAND:
+			return HasCC(eCommandClass::ASSOCIATION);
+		case eJobs::CONFIGURATION_COMMAND:
+			return HasCC(eCommandClass::CONFIGURATION);
 		default:
 			Log.AddL(eLogTypes::INFO, MakeTag(), "Unknown job: {}", (uint8_t)type);
 			return true;
@@ -454,11 +480,11 @@ private:
 			if (!running.load())
 				break;
 
-			if (nodeState == eNodeState::Awake)
+			if (GetState() == eNodeState::Awake)
 			{
 				if (GetInterviewState() != eInterviewState::InterviewDone)
 				{
-					RunInterview();
+					ProcessInterviewState();
 					continue;
 				}
 
@@ -469,227 +495,77 @@ private:
 					continue;
 				}
 				std::this_thread::sleep_for(std::chrono::milliseconds(50));
+
 			}
 		}
 	}
 
 	void ExecuteJob(Job job)
 	{
+		bool doneOrError = true;
 		switch (job.job)
 		{
 		case eJobs::BATTERY_GET:
-			RunBatteryGetJob();
+			doneOrError = ExecuteBatteryCommandJob();
 			break;
 		case eJobs::ASSOCIATION_INTERVIEW:
-			RunAssociationInterview();
+			doneOrError = ExecuteAssociationInterviewJob();
+			break;
+		case eJobs::MULTI_CHANNEL_ASSOCIATION_INTERVIEW:
+			doneOrError = ExecuteMultiChannelAssociationInterviewJob();
+			break;
+		case eJobs::CONFIGURATION_INTERVIEW:
+			doneOrError = ExecuteConfigurationInterviewJob();
+			break;
+		case eJobs::BIND_COMMAND:
+			if (job.param.size() < 2)
+			{
+				Log.AddL(eLogTypes::INFO, MakeTag(), "BIND_COMMAND missing params");
+				doneOrError = true;
+			}
+			else
+				doneOrError = ExecuteBindCommandJob((uint8_t)job.param[0], (uint8_t)job.param[1]);
+			break;
+		case eJobs::UNBIND_COMMAND:
+			if (job.param.size() < 2)
+			{
+				Log.AddL(eLogTypes::INFO, MakeTag(), "UNBIND_COMMAND missing params");
+				doneOrError = true;
+			}
+			else
+				doneOrError = ExecuteUnBindCommandJob((uint8_t)job.param[0], (uint8_t)job.param[1]);
+			break;
+		case eJobs::CONFIGURATION_COMMAND:
+			if (job.param.size() < 3)
+			{
+				Log.AddL(eLogTypes::INFO, MakeTag(), "CONFIGURATION_COMMAND missing params");
+				doneOrError = true;
+			}
+			else
+				doneOrError = ExecuteConfigurationCommandJob((uint8_t)job.param[0], (ZW_Node::eConfigSize)job.param[1], job.param[2]);
 			break;
 		default:
 			Log.AddL(eLogTypes::INFO, MakeTag(), "Unknown job: {}", (uint8_t)job.job);
 			break;
 		}
 
-		PopJob();
-	}
-
-	void RunInterview()
-	{
-		switch (GetInterviewState())
+		if (doneOrError)
 		{
-		case eInterviewState::NotInterviewed:
-		case eInterviewState::ProtocolInfoPending:
-		case eInterviewState::ProtocolInfoDone:
-		case eInterviewState::NodeInfoPending:
-			break;
-		case eInterviewState::NodeInfoDone:
-			// fallthrough
-		case eInterviewState::CCVersionPending:
-			SetInterviewState(eInterviewState::CCVersionPending);
-			if (auto* handler = device.GetHandler(eCommandClass::VERSION))
-			{
-				for (const auto ccId : GetSupportedCCs())
-				{
-					auto* cc = GetCC(ccId);
-					if (!cc || cc->versionOk)
-						continue;
-
-					int retryCount = 0;
-					do
-					{
-						Log.AddL(eLogTypes::INFO, MakeTag(), ">> NODE VERSION_COMMAND_CLASS_GET CC [0x{:02X}] to node {}", (uint8_t)ccId, NodeId);
-
-						ZW_APIFrame frame;
-						handler->MakeFrame(frame, static_cast<uint8_t>(ZW_CC_Version::eVersionCommand::VERSION_COMMAND_CLASS_GET), { static_cast<uint8_t>(ccId) });
-						enqueue(frame);
-						std::this_thread::sleep_for(std::chrono::milliseconds(10));
-
-						// Wait for VERSION_COMMAND_CLASS_REPORT which sets `versionOk`.
-						if (!WaitUntil(std::chrono::seconds(5), [&]() { return cc->versionOk; }))
-						{
-							Log.AddL(eLogTypes::ERR, MakeTag(), "Version timeout: CC 0x{:02X} for node {}", static_cast<uint8_t>(ccId), NodeId);
-						}
-					} while (!cc->versionOk && retryCount++ < 3);
-				}
-				SetInterviewState(eInterviewState::CCVersionDone);
-			}
-			break;
-
-		case eInterviewState::CCVersionDone:
-		case eInterviewState::CCMnfcSpecPending:
-			if (auto* cc = GetCC(eCommandClass::MANUFACTURER_SPECIFIC))
-			{
-				uint8_t version = cc->version; // TODO: support v2+ servers
-
-				SetInterviewState(eInterviewState::CCMnfcSpecPending);
-				if (auto* handler = device.GetHandler(eCommandClass::MANUFACTURER_SPECIFIC))
-				{
-					Log.AddL(eLogTypes::INFO, MakeTag(), ">> NODE MANUFACTURER_SPECIFIC_COMMAND_CLASS_GET to node {}", NodeId);
-
-					if (version >= 1)
-					{
-						ZW_APIFrame frame;
-						handler->MakeFrame(frame, static_cast<uint8_t>(ZW_CC_ManufacturerSpecific::eManufacturerSpecificCommand::DEVICE_SPECIFIC_GET), { 0 });
-						enqueue(frame);
-
-						// Wait for MANUFACTURER_SPECIFIC_COMMAND_CLASS_REPORT which sets `hasManufacturerData`.
-						if (!WaitUntil(std::chrono::seconds(5), [&]() { return manufacturerInfo.hasManufacturerData; }))
-						{
-							Log.AddL(eLogTypes::ERR, MakeTag(), "Manufacturer timeout: node {}", NodeId);
-							break;
-						}
-					}
-					if (version >= 2)
-					{
-						ZW_APIFrame frame;
-						handler->MakeFrame(frame, static_cast<uint8_t>(ZW_CC_ManufacturerSpecific::eManufacturerSpecificCommand::DEVICE_SPECIFIC_GET_V2), { 0 });
-						enqueue(frame);
-
-						// Wait for MANUFACTURER_SPECIFIC_COMMAND_CLASS_REPORT which sets `hasDeviceId`.
-						if (!WaitUntil(std::chrono::seconds(5), [&]() { return manufacturerInfo.hasDeviceId; }))
-						{
-							Log.AddL(eLogTypes::ERR, MakeTag(), "Manufacturer timeout: node {}", NodeId);
-							break;
-						}
-					}
-				}
-				SetInterviewState(eInterviewState::CCMnfcSpecDone);
-			}
-			break;
-		
-		case eInterviewState::CCMnfcSpecDone:
-		case eInterviewState::CCMultiChannelPending:
-			if (auto* cc = GetCC(eCommandClass::MULTI_CHANNEL))
-			{
-				SetInterviewState(eInterviewState::CCMultiChannelPending);
-				if (auto* handler = device.GetHandler(eCommandClass::MULTI_CHANNEL))
-				{
-					Log.AddL(eLogTypes::INFO, MakeTag(), ">> NODE MULTI_CHANNEL_CAPABILITY_GET to node {}", NodeId);
-
-					ZW_APIFrame frame;
-					handler->MakeFrame(frame, static_cast<uint8_t>(ZW_CC_MultiChannel::eMultiChannelCommand::MULTI_CHANNEL_CAPABILITY_GET), {});
-					enqueue(frame);
-
-					// Wait for MULTI_CHANNEL_CAPABILITY_GET which sets `hasMultiChannel`.
-					if (!WaitUntil(std::chrono::seconds(5), [&]() { return multiChannelAssociationGroups.hasLastReport; }))
-					{
-						Log.AddL(eLogTypes::ERR, MakeTag(), "Multi-channel timeout: node {}", NodeId);
-						break;
-					}
-				}
-				SetInterviewState(eInterviewState::CCMultiChannelDone);
-			}
-			break;
-
-		case eInterviewState::CCMultiChannelDone:
-			break;
-
-		case eInterviewState::InterviewDone:
-			break;
+			PopJob();
+		}
+		else // timeout
+		{
+			Sleeping();
 		}
 	}
 
-	void RunBatteryGetJob()
-	{
-		if (!HasCC(eCommandClass::BATTERY))
-		{
-			Log.AddL(eLogTypes::INFO, MakeTag(), "Node does not support BATTERY CC node {}", NodeId);
-			return;
-		}
-		auto* batteryHandler = device.GetHandler(eCommandClass::BATTERY);
-		if (!batteryHandler)
-		{
-			Log.AddL(eLogTypes::INFO, MakeTag(), "No handler for BATTERY CC node {}", NodeId);
-			return;
-		}
-		ZW_APIFrame frame;
-		batteryHandler->MakeFrame(frame, static_cast<uint8_t>(ZW_CC_Battery::eBatteryCommand::BATTERY_GET), {});
-		Log.AddL(eLogTypes::INFO, MakeTag(), ">> BATTERY_GET: node {}", NodeId);
-		enqueue(frame);
-	}
+	void ProcessInterviewState();
 
-	void RunAssociationInterview()
-	{
-		if (!HasCC(eCommandClass::ASSOCIATION))
-		{
-			Log.AddL(eLogTypes::INFO, MakeTag(), "Node does not support ASSOCIATION CC node {}", NodeId);
-			return;
-		}
-		auto* associationHandler = device.GetHandler(eCommandClass::ASSOCIATION);
-		if (!associationHandler)
-		{
-			Log.AddL(eLogTypes::INFO, MakeTag(), "No handler for ASSOCIATION CC node {}", NodeId);
-			return;
-		}
-
-		associationGroups.clear();
-		ZW_APIFrame frame;
-		associationHandler->MakeFrame(frame, (uint8_t)ZW_CC_Association::eAssociationCommand::ASSOCIATION_GROUPINGS_GET, {});
-		Log.AddL(eLogTypes::INFO, MakeTag(), ">> ASSOCIATION_GROUPINGS_GET: node {}", NodeId);
-		enqueue(frame);
-
-		if (!WaitUntil(std::chrono::seconds(5), [&]() { return associationGroups.size() > 0; }))
-		{
-			Log.AddL(eLogTypes::ERR, MakeTag(), "Association groupings timeout: node {}", NodeId);
-			return;
-		}
-
-		for (size_t i = 0; i < associationGroups.size(); i++)
-		{
-			uint8_t groupId = associationGroups[i].groupId;
-			associationGroups[i].hasLastReport = false;
-			associationHandler->MakeFrame(frame, (uint8_t)ZW_CC_Association::eAssociationCommand::ASSOCIATION_GET, { groupId });
-			Log.AddL(eLogTypes::INFO, MakeTag(), ">> ASSOCIATION_GET: node {} group {}", NodeId, groupId);
-			enqueue(frame);
-
-			if (!WaitUntil(std::chrono::seconds(5), [&]() { return associationGroups[i].hasLastReport; }))
-			{
-				Log.AddL(eLogTypes::ERR, MakeTag(), "Association get timeout: node {} group {}", NodeId, groupId);
-				return;
-			}
-		}
-
-		if (!associationGroups.empty())
-		{
-			bool found = false;
-			uint8_t controllerId = 1;
-			for (auto info : associationGroups[0].nodeList)
-			{
-				if (info == controllerId)
-				{
-					found = true;
-					break;
-				}
-			}
-			if (!found)
-			{
-				associationHandler->MakeFrame(frame, (uint8_t)ZW_CC_Association::eAssociationCommand::ASSOCIATION_SET, { 1, controllerId });
-				Log.AddL(eLogTypes::INFO, MakeTag(), ">> ASSOCIATION_SET: node {} group 1 + controllerId", NodeId);
-				enqueue(frame);
-				EnqueueJob(eJobs::ASSOCIATION_INTERVIEW);
-				return;
-			}
-		}
-
-		Sleeping();
-	}
-
+	bool ExecuteBatteryCommandJob();
+	bool ExecuteAssociationInterviewJob();
+	bool ExecuteMultiChannelAssociationInterviewJob();
+	bool ExecuteConfigurationInterviewJob();
+	bool ExecuteBindCommandJob(uint8_t groupId, uint8_t nodeid);
+	bool ExecuteUnBindCommandJob(uint8_t groupId, uint8_t nodeid);
+	bool ExecuteConfigurationCommandJob(uint8_t paramNumber, eConfigSize size, uint32_t value);
 };

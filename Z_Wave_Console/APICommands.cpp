@@ -2,9 +2,6 @@
 #include "APICommands.h"
 #include <cassert>
 
-// This file is intended to be generated from `commands_with_parents.json` / `commands.json`.
-// It maps Z-Wave API Command ID (FUNC_ID) to the expected frame flow.
-
 static const APICommand kUnknown{};
 
 void TestAPICommands()

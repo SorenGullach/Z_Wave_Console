@@ -30,15 +30,17 @@ public:
 			RequestNodeProtocolInfo(nodeid);
 			break;
 
-			//case ZW_Node::eInterviewState::ProtocolInfoDone: // handled in HandleFrame
-			//case ZW_Node::eInterviewState::NodeInfoDone: // handled in InteviewManager
-			//case ZW_Node::eInterviewState::CCVersionDone: // handled in Device
-			//case ZW_Node::eInterviewState::CCMnfcSpecDone: // handled in Device
+			//case ZW_Node::eInterviewState::ProtocolInfoDone:	// handled in HandleFrame
+			//case ZW_Node::eInterviewState::NodeInfoDone:		// handled in InteviewManager
+			//case ZW_Node::eInterviewState::CCVersionDone:		// handled in Device
+			//case ZW_Node::eInterviewState::CCMnfcSpecDone:	// handled in Device
+			// CCMultiChannelPending, CCMultiChannelDone // handled in 
 
-		case ZW_Node::eInterviewState::CCMnfcSpecDone:
-			if (!node->IsListening())
-				node->Sleeping();
+		case ZW_Node::eInterviewState::CCMultiChannelDone:
 			node->SetInterviewState(ZW_Node::eInterviewState::InterviewDone);
+			node->EnqueueJob(ZW_Node::eJobs::ASSOCIATION_INTERVIEW);
+			node->EnqueueJob(ZW_Node::eJobs::MULTI_CHANNEL_ASSOCIATION_INTERVIEW);
+			node->EnqueueJob(ZW_Node::eJobs::CONFIGURATION_INTERVIEW);
 			break;
 		}
 	}

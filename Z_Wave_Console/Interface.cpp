@@ -107,7 +107,7 @@ void ZW_Interface::SendCommand(Command& cmd)
         ::ToString(LastCmd.cmd.APICmd.CmdId),
         static_cast<uint8_t>(LastCmd.cmd.APICmd.Flow),
         LastCmd.attempts);
-    Log.AddL(eLogTypes::DBG, MakeTag(), "       : bytesLen={} bytes=[{}]",
+    Log.AddL(eLogTypes::DBG, MakeTag(), ">> FrameBytes: len={} bytes=[{}]",
              LastCmd.FrameBytes.size(),
              ToString(LastCmd.FrameBytes));
     SerialWrite(LastCmd.FrameBytes);
@@ -180,7 +180,7 @@ void ZW_Interface::HandleTimeouts()
 
         if (LastCmd.attempts < maxRetries)
         {
-			Log.AddL(eLogTypes::ERR, MakeTag(), "ACK timeout: cmdId=0x{:02X} name={} attempt={}/{} -> retransmit",
+			Log.AddL(eLogTypes::INFO_LOW, MakeTag(), "ACK timeout: cmdId=0x{:02X} name={} attempt={}/{} -> retransmit",
                 static_cast<uint8_t>(LastCmd.cmd.APICmd.CmdId),
                 ::ToString(LastCmd.cmd.APICmd.CmdId),
                 LastCmd.attempts,
@@ -189,7 +189,7 @@ void ZW_Interface::HandleTimeouts()
         }
         else
         {
-			Log.AddL(eLogTypes::ERR, MakeTag(), "ACK timeout: cmdId=0x{:02X} name={} attempt={}/{} -> give up",
+			Log.AddL(eLogTypes::INFO_LOW, MakeTag(), "ACK timeout: cmdId=0x{:02X} name={} attempt={}/{} -> give up",
                 static_cast<uint8_t>(LastCmd.cmd.APICmd.CmdId),
                 ::ToString(LastCmd.cmd.APICmd.CmdId),
                 LastCmd.attempts,
@@ -203,7 +203,7 @@ void ZW_Interface::HandleTimeouts()
     case SendState::WaitingForCallback:
         //logger.AddLogLock(MakeTag(), "Response/Callback timeout");
         if(!OnFrameReceivedTimeout(LastCmd.cmd))
-			Log.AddL(eLogTypes::ERR, MakeTag(), "Frame timeout: cmdId=0x{:02X} name={} state={} info={}",
+			Log.AddL(eLogTypes::INFO_LOW, MakeTag(), "Frame timeout: cmdId=0x{:02X} name={} state={} info={}",
                 static_cast<uint8_t>(LastCmd.cmd.APICmd.CmdId),
                 ::ToString(LastCmd.cmd.APICmd.CmdId),
                 static_cast<int>(state),

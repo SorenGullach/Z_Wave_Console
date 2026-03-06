@@ -78,7 +78,7 @@ std::string ZW_Nodes::ToString() const
 	return out;
 }
 
-void ZW_Nodes::HandleCCDeviceReport(uint16_t nodeid, uint8_t cmdclass, uint8_t cmdid, const std::vector<uint8_t>& cmdparams)
+void ZW_Nodes::HandleCCDeviceReport(uint16_t nodeid, eCommandClass cmdclass, ZW_CmdId cmdid, const ZW_ByteVector& cmdparams)
 {
 	// Dispatch a command-class report to the owning node/device.
 	auto* n = Get(nodeid);

@@ -5,6 +5,7 @@
 #include <algorithm>
 #include <conio.h>
 #include <iostream>
+#include <sstream>
 #include <vector>
 
 #include "Logging.h"
@@ -148,7 +149,7 @@ static void DrawUiFrame()
 		WriteFixedLine(0, y, MakeUiLine(""));
 
 	WriteFixedLineColor(0, borderY, border, cyan);
-	WriteFixedLine(0, commandsY, MakeUiLine(" Commands: EXIT, INTERVIEW, BATT <node>, ISDEAD <node>, REMOVE <node>, BIND <node> <group> <targetnodeid>, UNBIND <node> <group> <targetnodeid>, BIND? <node> <group>, CONFIG <node> <param> <value>, CONFIG? <node> <param>"));
+	WriteFixedLine(0, commandsY, MakeUiLine(" Commands: EXIT, INTERVIEW, BATT <node>, ISDEAD <node>, REMOVE <node>, BIND <node> <group><targetnodeid>, UNBIND <node> <group> <targetnodeid>, BIND? <node>, CONFIG <node> <param> <value>, CONFIG? <node> "));
 	WriteFixedLine(0, promptY, "> ");
 }
 
@@ -236,7 +237,8 @@ static std::string ReadCommand()
 }
 int main()
 {
-	Log.SetLogType(eLogTypes::INFO);
+	//Log.SetLogType(eLogTypes::INFO);
+	Log.SetLogType(eLogTypes::DBG);
 
 	DrawUiFrame();
 
@@ -282,7 +284,7 @@ int main()
 			return 0;
 		}
 
-        if (cmd == "INTERVIEW")
+		if (cmd.rfind("INTERVIEW", 0) == 0)
         {
             ZW.StartInterview();
             continue;
@@ -313,6 +315,99 @@ int main()
             }
             continue;
         }
+
+		if (cmd.rfind("ISDEAD", 0) == 0)
+		{
+			try
+			{
+				const int nodeId = std::stoi(cmd.substr(7));
+				ZW.IsDead(static_cast<uint16_t>(nodeId));
+			}
+			catch (...)
+			{
+			}
+			continue;
+		}
+
+		if (cmd.rfind("REMOVE", 0) == 0)
+		{
+			try
+			{
+				const int nodeId = std::stoi(cmd.substr(7));
+				ZW.Remove(static_cast<uint16_t>(nodeId));
+			}
+			catch (...)
+			{
+			}
+			continue;
+		}
+
+		if (cmd.rfind("CONFIG?", 0) == 0)
+		{
+			try
+			{
+				const int nodeId = std::stoi(cmd.substr(7));
+				ZW.ConfigurationInterview(static_cast<uint16_t>(nodeId));
+			}
+			catch (...)
+			{
+			}
+			continue;
+		}
+
+		if (cmd.rfind("BIND ", 0) == 0)
+		{
+			try
+			{
+				std::istringstream iss(cmd);
+				std::string keyword;
+				int nodeId = 0;
+				int groupId = 0;
+				int targetNodeId = 0;
+				iss >> keyword >> nodeId >> groupId >> targetNodeId;
+				ZW.Bind(static_cast<uint16_t>(nodeId), static_cast<uint8_t>(groupId), static_cast<uint16_t>(targetNodeId));
+			}
+			catch (...)
+			{
+			}
+			continue;
+		}
+
+		if (cmd.rfind("UNBIND ", 0) == 0)
+		{
+			try
+			{
+				std::istringstream iss(cmd);
+				std::string keyword;
+				int nodeId = 0;
+				int groupId = 0;
+				int targetNodeId = 0;
+				iss >> keyword >> nodeId >> groupId >> targetNodeId;
+				ZW.Unbind(static_cast<uint16_t>(nodeId), static_cast<uint8_t>(groupId), static_cast<uint16_t>(targetNodeId));
+			}
+			catch (...)
+			{
+			}
+			continue;
+		}
+
+		if (cmd.rfind("CONFIG ", 0) == 0)
+		{
+			try
+			{
+				std::istringstream iss(cmd);
+				std::string keyword;
+				int nodeId = 0;
+				int param = 0;
+				int value = 0;
+				iss >> keyword >> nodeId >> param >> value;
+				ZW.Configure(static_cast<uint16_t>(nodeId), static_cast<uint8_t>(param), static_cast<uint16_t>(value));
+			}
+			catch (...)
+			{
+			}
+			continue;
+		}
 	}
 
 	ZW.ClosePort();

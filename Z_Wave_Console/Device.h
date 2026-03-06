@@ -10,6 +10,18 @@ class ZW_NodeInfo;
 #include "CommandClass.h"
 #include "APIFrame.h"
 
+struct ZW_CmdId
+{
+	uint8_t value;
+	constexpr ZW_CmdId(uint8_t v) : value(v) {}
+
+	template <typename E>
+		requires std::is_enum_v<E>
+	constexpr ZW_CmdId(E e) : value(static_cast<uint8_t>(e)) {}
+};
+
+using ZW_ByteVector = std::vector<uint8_t>;
+
 class ZW_CCHandler
 {
 protected:
@@ -19,12 +31,12 @@ public:
 	ZW_CCHandler(ZW_NodeInfo& n) : node(n) {}
 	virtual ~ZW_CCHandler() = default;
 
-	virtual void HandleReport(uint8_t cmdId, const std::vector<uint8_t>& params) = 0;
-	virtual void MakeFrame(ZW_APIFrame& frame, uint8_t cmdId, const std::vector<uint8_t>& params) = 0;
+	virtual void HandleReport(ZW_CmdId cmdid, const ZW_ByteVector& params) = 0;
+	virtual void MakeFrame(ZW_APIFrame& frame, ZW_CmdId cmdid, const ZW_ByteVector& params) = 0;
 	virtual void SetValue(int value) {}
 	virtual std::string ToString() const { return ""; }
 
-	std::string ParamsToString(const std::vector<uint8_t>& params) const
+	std::string ParamsToString(const ZW_ByteVector& params) const
 	{
 		std::string result = "Params = ";
 		for (size_t i = 0; i < params.size(); i++)
@@ -82,8 +94,8 @@ public:
 
 	using ZW_CCHandler::ZW_CCHandler;
 
-	void MakeFrame(ZW_APIFrame& frame, uint8_t cmdId, const std::vector<uint8_t>& params) override;
-	void HandleReport(uint8_t cmdId, const std::vector<uint8_t>& params) override;
+	void MakeFrame(ZW_APIFrame& frame, ZW_CmdId cmdid, const ZW_ByteVector& params) override;
+	void HandleReport(ZW_CmdId cmdid, const ZW_ByteVector& params) override;
 };
 
 class ZW_CC_Battery : public ZW_CCHandler
@@ -99,8 +111,8 @@ public:
 
 	using ZW_CCHandler::ZW_CCHandler;
 
-	void MakeFrame(ZW_APIFrame& frame, uint8_t cmdId, const std::vector<uint8_t>& params) override;
-	void HandleReport(uint8_t cmdId, const std::vector<uint8_t>& params) override;
+	void MakeFrame(ZW_APIFrame& frame, ZW_CmdId cmdid, const ZW_ByteVector& params) override;
+	void HandleReport(ZW_CmdId cmdid, const ZW_ByteVector& params) override;
 };
 
 class ZW_CC_ManufacturerSpecific : public ZW_CCHandler
@@ -118,8 +130,8 @@ public:
 
 	using ZW_CCHandler::ZW_CCHandler;
 
-	void MakeFrame(ZW_APIFrame& frame, uint8_t cmdId, const std::vector<uint8_t>& params) override;
-	void HandleReport(uint8_t cmdId, const std::vector<uint8_t>& params) override;
+	void MakeFrame(ZW_APIFrame& frame, ZW_CmdId cmdid, const ZW_ByteVector& params) override;
+	void HandleReport(ZW_CmdId cmdid, const ZW_ByteVector& params) override;
 };
 
 class ZW_CC_SwitchBinary : public ZW_CCHandler
@@ -136,8 +148,8 @@ public:
 
 	using ZW_CCHandler::ZW_CCHandler;
 
-	void MakeFrame(ZW_APIFrame& frame, uint8_t cmdId, const std::vector<uint8_t>& params) override;
-	void HandleReport(uint8_t cmdId, const std::vector<uint8_t>& params) override;
+	void MakeFrame(ZW_APIFrame& frame, ZW_CmdId cmdid, const ZW_ByteVector& params) override;
+	void HandleReport(ZW_CmdId cmdid, const ZW_ByteVector& params) override;
 
 	void SetValue(int value) override
 	{
@@ -159,8 +171,8 @@ public:
 
 	using ZW_CCHandler::ZW_CCHandler;
 
-	void MakeFrame(ZW_APIFrame& frame, uint8_t cmdId, const std::vector<uint8_t>& params) override;
-	void HandleReport(uint8_t cmdId, const std::vector<uint8_t>& params) override;
+	void MakeFrame(ZW_APIFrame& frame, ZW_CmdId cmdid, const ZW_ByteVector& params) override;
+	void HandleReport(ZW_CmdId cmdid, const ZW_ByteVector& params) override;
 };
 
 class ZW_CC_SwitchMultilevel : public ZW_CCHandler
@@ -177,8 +189,8 @@ public:
 
 	using ZW_CCHandler::ZW_CCHandler;
 
-	void MakeFrame(ZW_APIFrame& frame, uint8_t cmdId, const std::vector<uint8_t>& params) override;
-	void HandleReport(uint8_t cmdId, const std::vector<uint8_t>& params) override;
+	void MakeFrame(ZW_APIFrame& frame, ZW_CmdId cmdid, const ZW_ByteVector& params) override;
+	void HandleReport(ZW_CmdId cmdid, const ZW_ByteVector& params) override;
 
 	void SetValue(int value) override
 	{
@@ -199,8 +211,8 @@ public:
 
 	using ZW_CCHandler::ZW_CCHandler;
 
-	void MakeFrame(ZW_APIFrame& frame, uint8_t cmdId, const std::vector<uint8_t>& params) override;
-	void HandleReport(uint8_t cmdId, const std::vector<uint8_t>& params) override;
+	void MakeFrame(ZW_APIFrame& frame, ZW_CmdId cmdid, const ZW_ByteVector& params) override;
+	void HandleReport(ZW_CmdId cmdid, const ZW_ByteVector& params) override;
 };
 
 class ZW_CC_Meter : public ZW_CCHandler
@@ -216,8 +228,8 @@ public:
 
 	using ZW_CCHandler::ZW_CCHandler;
 
-	void MakeFrame(ZW_APIFrame& frame, uint8_t cmdId, const std::vector<uint8_t>& params) override;
-	void HandleReport(uint8_t cmdId, const std::vector<uint8_t>& params) override;
+	void MakeFrame(ZW_APIFrame& frame, ZW_CmdId cmdid, const ZW_ByteVector& params) override;
+	void HandleReport(ZW_CmdId cmdid, const ZW_ByteVector& params) override;
 };
 
 class ZW_CC_MultiChannel : public ZW_CCHandler
@@ -225,16 +237,32 @@ class ZW_CC_MultiChannel : public ZW_CCHandler
 public:
 	enum class eMultiChannelCommand : uint8_t
 	{
+		// End Point discovery
+		MULTI_CHANNEL_END_POINT_GET = 0x07,
+		MULTI_CHANNEL_END_POINT_REPORT = 0x08,
+
+		// Capability discovery
 		MULTI_CHANNEL_CAPABILITY_GET = 0x09,
 		MULTI_CHANNEL_CAPABILITY_REPORT = 0x0A,
+
+		// End Point Find
+		MULTI_CHANNEL_END_POINT_FIND = 0x0B,
+		MULTI_CHANNEL_END_POINT_FIND_REPORT = 0x0C,
+
+		// Encapsulation
+		MULTI_CHANNEL_CMD_ENCAP = 0x0D,
+
+		// Aggregated endpoints
+		MULTI_CHANNEL_AGGREGATED_MEMBERS_GET = 0x0E,
+		MULTI_CHANNEL_AGGREGATED_MEMBERS_REPORT = 0x0F
 	};
 
 	static constexpr eCommandClass CC = eCommandClass::MULTI_CHANNEL;
 
 	using ZW_CCHandler::ZW_CCHandler;
 
-	void MakeFrame(ZW_APIFrame& frame, uint8_t cmdId, const std::vector<uint8_t>& params) override;
-	void HandleReport(uint8_t cmdId, const std::vector<uint8_t>& params) override;
+	void MakeFrame(ZW_APIFrame& frame, ZW_CmdId cmdid, const ZW_ByteVector& params) override;
+	void HandleReport(ZW_CmdId cmdid, const ZW_ByteVector& params) override;
 };
 
 class ZW_CC_Configuration : public ZW_CCHandler
@@ -242,16 +270,17 @@ class ZW_CC_Configuration : public ZW_CCHandler
 public:
 	enum class eConfigurationCommand : uint8_t
 	{
+		CONFIGURATION_SET = 0x04,
 		CONFIGURATION_GET = 0x05,
-		CONFIGURATION_REPORT = 0x06,
+		CONFIGURATION_REPORT = 0x06
 	};
 
 	static constexpr eCommandClass CC = eCommandClass::CONFIGURATION;
 
 	using ZW_CCHandler::ZW_CCHandler;
 
-	void MakeFrame(ZW_APIFrame& frame, uint8_t cmdId, const std::vector<uint8_t>& params) override;
-	void HandleReport(uint8_t cmdId, const std::vector<uint8_t>& params) override;
+	void MakeFrame(ZW_APIFrame& frame, ZW_CmdId cmdid, const ZW_ByteVector& params) override;
+	void HandleReport(ZW_CmdId cmdid, const ZW_ByteVector& params) override;
 };
 
 class ZW_CC_Protection : public ZW_CCHandler
@@ -267,8 +296,8 @@ public:
 
 	using ZW_CCHandler::ZW_CCHandler;
 
-	void MakeFrame(ZW_APIFrame& frame, uint8_t cmdId, const std::vector<uint8_t>& params) override;
-	void HandleReport(uint8_t cmdId, const std::vector<uint8_t>& params) override;
+	void MakeFrame(ZW_APIFrame& frame, ZW_CmdId cmdid, const ZW_ByteVector& params) override;
+	void HandleReport(ZW_CmdId cmdid, const ZW_ByteVector& params) override;
 };
 
 class ZW_CC_Association : public ZW_CCHandler
@@ -288,8 +317,8 @@ public:
 
 	using ZW_CCHandler::ZW_CCHandler;
 
-	void MakeFrame(ZW_APIFrame& frame, uint8_t cmdId, const std::vector<uint8_t>& params) override;
-	void HandleReport(uint8_t cmdId, const std::vector<uint8_t>& params) override;
+	void MakeFrame(ZW_APIFrame& frame, ZW_CmdId cmdid, const ZW_ByteVector& params) override;
+	void HandleReport(ZW_CmdId cmdid, const ZW_ByteVector& params) override;
 };
 
 class ZW_CC_MultiChannelAssociation : public ZW_CCHandler
@@ -300,15 +329,17 @@ public:
 		MULTI_CHANNEL_ASSOCIATION_SET = 0x01,
 		MULTI_CHANNEL_ASSOCIATION_GET = 0x02,
 		MULTI_CHANNEL_ASSOCIATION_REPORT = 0x03,
-		MULTI_CHANNEL_ASSOCIATION_REMOVE = 0x04
+		MULTI_CHANNEL_ASSOCIATION_REMOVE = 0x04,
+		MULTI_CHANNEL_ASSOCIATION_GROUPINGS_GET = 0x05,
+		MULTI_CHANNEL_ASSOCIATION_GROUPINGS_REPORT = 0x06
 	};
 
 	static constexpr eCommandClass CC = eCommandClass::MULTI_CHANNEL_ASSOCIATION;
 
 	using ZW_CCHandler::ZW_CCHandler;
 
-	void MakeFrame(ZW_APIFrame& frame, uint8_t cmdId, const std::vector<uint8_t>& params) override;
-	void HandleReport(uint8_t cmdId, const std::vector<uint8_t>& params) override;
+	void MakeFrame(ZW_APIFrame& frame, ZW_CmdId cmdid, const ZW_ByteVector& params) override;
+	void HandleReport(ZW_CmdId cmdid, const ZW_ByteVector& params) override;
 };
 
 class ZW_CC_WakeUp : public ZW_CCHandler
@@ -330,6 +361,6 @@ public:
 		WAKE_UP_INTERVAL_CAPABILITIES_REPORT = 0x0A
 	};
 
-	void MakeFrame(ZW_APIFrame& frame, uint8_t cmdId, const std::vector<uint8_t>& params) override;
-	void HandleReport(uint8_t cmdId, const std::vector<uint8_t>& params) override;
+	void MakeFrame(ZW_APIFrame& frame, ZW_CmdId cmdid, const std::vector<uint8_t>& params) override;
+	void HandleReport(ZW_CmdId cmdid, const std::vector<uint8_t>& params) override;
 };

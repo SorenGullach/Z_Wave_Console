@@ -100,6 +100,50 @@ public:
 		ZW_Node* node = nodes.Get(nodeid);
 		if (!node) return;
 		node->EnqueueJob(ZW_Node::eJobs::ASSOCIATION_INTERVIEW);
+		node->EnqueueJob(ZW_Node::eJobs::MULTI_CHANNEL_ASSOCIATION_INTERVIEW);
+	}
+
+	void ConfigurationInterview(uint16_t nodeid)
+	{
+		ZW_Node* node = nodes.Get(nodeid);
+		if (!node) return;
+		node->EnqueueJob(ZW_Node::eJobs::CONFIGURATION_INTERVIEW);
+	}
+
+	void IsDead(uint16_t nodeid)
+	{
+		ZW_APIFrame frame;
+		frame.Make(eCommandIds::ZW_API_IS_NODE_FAILED, static_cast<uint8_t>(nodeid));
+		Enqueue(frame);
+	}
+
+	void Remove(uint16_t nodeid)
+	{
+		ZW_APIFrame frame;
+		frame.Make(eCommandIds::ZW_API_REMOVE_FAILED_NODE, static_cast<uint8_t>(nodeid));
+		Enqueue(frame);
+	}
+
+	void Bind(uint16_t nodeid, uint8_t groupid, uint16_t targetnodeid)
+	{
+		ZW_Node* node = nodes.Get(nodeid);
+		if (!node) return;
+		node->EnqueueJob(ZW_Node::eJobs::BIND_COMMAND, { static_cast<uint32_t>(groupid), static_cast<uint32_t>(targetnodeid) });
+	}
+
+	void Unbind(uint16_t nodeid, uint8_t groupid, uint16_t targetnodeid)
+	{
+		ZW_Node* node = nodes.Get(nodeid);
+		if (!node) return;
+		node->EnqueueJob(ZW_Node::eJobs::UNBIND_COMMAND, { static_cast<uint32_t>(groupid), static_cast<uint32_t>(targetnodeid) });
+	}
+
+	void Configure(uint16_t nodeid, uint8_t param, uint32_t value)
+	{
+		ZW_Node* node = nodes.Get(nodeid);
+		if (!node) return;
+		node->EnqueueJob(ZW_Node::eJobs::CONFIGURATION_COMMAND, { static_cast<uint32_t>(param), (uint32_t)ZW_Node::eConfigSize::OneByte, value });
+		ConfigurationInterview(nodeid);
 	}
 
 protected:
@@ -116,7 +160,7 @@ protected:
 		case eCommandIds::ZW_API_GET_NETWORK_IDS_FROM_MEMORY:
 		case eCommandIds::FUNC_ID_GET_LIBRARY_VERSION:
 		case eCommandIds::FUNC_ID_GET_LIBRARY_TYPE:
-			Log.AddL(eLogTypes::DBG, MakeTag(), "<< initializeManager {}", frame.Info());
+			Log.AddL(eLogTypes::DBG, MakeTag(), "<< route=initializeManager {}", frame.Info());
 			return initializeManager.HandleFrame(frame);
 
 		case eCommandIds::ZW_API_APPLICATION_UPDATE:
@@ -127,19 +171,19 @@ protected:
 			}
 		case eCommandIds::ZW_API_GET_NODE_INFO_PROTOCOL_DATA:
 		case eCommandIds::ZW_API_REQUEST_NODE_INFORMATION:
-			Log.AddL(eLogTypes::DBG, MakeTag(), "<< interviewManager {}", frame.Info());
+			Log.AddL(eLogTypes::DBG, MakeTag(), "<< route=interviewManager {}", frame.Info());
 			return interviewManager.HandleFrame(frame);
 
 		case eCommandIds::ZW_API_CONTROLLER_SEND_DATA:
 			//SendDataManager.HandleTransmitResult(frame.payload);
 			if (frame.type == ZW_APIFrame::FrameTypes::RES)
-				Log.AddL(eLogTypes::DBG, MakeTag(), "<< CONTROLLER_SEND_DATA: RES: txStatus=0x{:02X} len={}", frame.payload[0], frame.payload.size());
+				Log.AddL(eLogTypes::DBG, MakeTag(), "<< route=sendData type=RES txStatus=0x{:02X} len={}", frame.payload[0], frame.payload.size());
 			if (frame.type == ZW_APIFrame::FrameTypes::REQ)
-				Log.AddL(eLogTypes::DBG, MakeTag(), "<< CONTROLLER_SEND_DATA: REQ: SesesionId = {} txStatus=0x{:02X} len={}", frame.payload[0], frame.payload[1], frame.payload.size());
+				Log.AddL(eLogTypes::DBG, MakeTag(), "<< route=sendData type=REQ sessionId={} txStatus=0x{:02X} len={}", frame.payload[0], frame.payload[1], frame.payload.size());
 			return true;
 
 		case eCommandIds::ZW_API_APPLICATION_COMMAND_HANDLER:
-			Log.AddL(eLogTypes::DBG, MakeTag(), "<< CCDispatcher {}", frame.Info());
+			Log.AddL(eLogTypes::DBG, MakeTag(), "<< route=ccDispatcher {}", frame.Info());
 			CCDispatcher.HandleCCFrame(frame.payload);
 			return true;
 		}
@@ -158,20 +202,20 @@ protected:
 		case eCommandIds::ZW_API_GET_NETWORK_IDS_FROM_MEMORY:
 		case eCommandIds::FUNC_ID_GET_LIBRARY_VERSION:
 		case eCommandIds::FUNC_ID_GET_LIBRARY_TYPE:
-			Log.AddL(eLogTypes::DBG, MakeTag(), "<< initializeManager timeout {}", frame.Info());
+			Log.AddL(eLogTypes::DBG, MakeTag(), "<< route=initializeManager TIMEOUT {}", frame.Info());
 			return initializeManager.HandleFrameTimeout(frame);
 
 		case eCommandIds::ZW_API_APPLICATION_UPDATE:
 		case eCommandIds::ZW_API_GET_NODE_INFO_PROTOCOL_DATA:
 		case eCommandIds::ZW_API_REQUEST_NODE_INFORMATION:
-			Log.AddL(eLogTypes::INFO, MakeTag(), "<< interviewManager timeout {}", frame.Info());
+			Log.AddL(eLogTypes::INFO, MakeTag(), "<< route=interviewManager TIMEOUT {}", frame.Info());
 			return interviewManager.HandleFrameTimeout(frame);
 
 		case eCommandIds::ZW_API_CONTROLLER_SEND_DATA:
 			return true;
 
 		case eCommandIds::ZW_API_APPLICATION_COMMAND_HANDLER:
-			Log.AddL(eLogTypes::INFO, MakeTag(), "<< CCDispatcher timeout {}", frame.Info());
+			Log.AddL(eLogTypes::INFO, MakeTag(), "<< route=ccDispatcher TIMEOUT {}", frame.Info());
 			//			CCDispatcher.HandleCCFrameTimeout(frame.payload);
 			return true;
 		}
