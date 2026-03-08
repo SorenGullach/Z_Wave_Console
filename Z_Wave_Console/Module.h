@@ -23,7 +23,7 @@ public:
 	uint8_t ApiCapabilities = 0;
 	bool IsEndNode = false, HasTimerFunctions = false, IsPrimarayController = false, HasSISFunctions = false;
 	uint8_t NodeListLength = 0;
-	std::vector<uint16_t> NodeIds;
+	std::vector<uint8_t> NodeIds;
 	uint8_t ChipType = 0;
 	uint8_t ChipVersion = 0;
 

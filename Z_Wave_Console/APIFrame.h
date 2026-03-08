@@ -158,7 +158,7 @@ struct ZW_APIFrame
 		// ----------------------------------------------------
 		else if (APICmd.CmdId == eCommandIds::ZW_API_CONTROLLER_SEND_DATA)
 		{
-			if (payload.size() >= 4)
+			if (type == FrameTypes::REQ && payload.size() >= 4)
 			{
 				uint8_t nodeId = payload[0];
 				uint8_t rfLen = payload[1];
@@ -177,6 +177,17 @@ struct ZW_APIFrame
 					callbackId,
 					txOptions
 				);
+			}
+			else if (type == FrameTypes::REQ && payload.size() >= 2)
+			{
+				uint8_t sesionsid = payload[0];
+				uint8_t txStatus = payload[1]; // TODO: decode status
+				extra = std::format(" | sessionid=0x{:02X} tx status 0x{:02X}", sesionsid, txStatus);
+			}
+			else if (type == FrameTypes::RES && payload.size() == 1)
+			{
+				uint8_t rspStatus = payload[payload.size() - 1];
+				extra = std::format(" | rsp status 0x{:02X}", rspStatus);
 			}
 			else
 			{

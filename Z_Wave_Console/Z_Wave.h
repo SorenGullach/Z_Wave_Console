@@ -83,67 +83,112 @@ public:
 		return module.ToString();
 	}
 
-	std::string NodesToString() const
+	std::string NodesToString(int width) const
 	{
-		return this->nodes.ToString();
+		return this->nodes.ToString(width);
 	}
 
-	void RequestBattery(uint16_t nodeid)
-	{
-		ZW_Node* node = nodes.Get(nodeid);
-		if(!node) return;	
-		node->EnqueueJob(ZW_Node::eJobs::BATTERY_GET);
-	}
-
-	void AssociationInterview(uint16_t nodeid)
+	void RequestBattery(uint8_t nodeid)
 	{
 		ZW_Node* node = nodes.Get(nodeid);
-		if (!node) return;
-		node->EnqueueJob(ZW_Node::eJobs::ASSOCIATION_INTERVIEW);
-		node->EnqueueJob(ZW_Node::eJobs::MULTI_CHANNEL_ASSOCIATION_INTERVIEW);
+		if(!node) return;
+		ZW_Node::Job job;
+		job.job = ZW_Node::eJobs::BATTERY_GET;
+		node->EnqueueJob(job);
 	}
 
-	void ConfigurationInterview(uint16_t nodeid)
+	void AssociationInterview(uint8_t nodeid)
 	{
 		ZW_Node* node = nodes.Get(nodeid);
 		if (!node) return;
-		node->EnqueueJob(ZW_Node::eJobs::CONFIGURATION_INTERVIEW);
+		ZW_Node::Job job;
+		job.job = ZW_Node::eJobs::ASSOCIATION_INTERVIEW;
+		node->EnqueueJob(job);
+		job.job = ZW_Node::eJobs::MULTI_CHANNEL_ASSOCIATION_INTERVIEW;
+		node->EnqueueJob(job);
 	}
 
-	void IsDead(uint16_t nodeid)
+	void ConfigurationInterview(uint8_t nodeid)
+	{
+		ZW_Node* node = nodes.Get(nodeid);
+		if (!node) return;
+		ZW_Node::Job job;
+		job.job = ZW_Node::eJobs::CONFIGURATION_INTERVIEW;
+		node->EnqueueJob(job);
+	}
+
+	void IsDead(uint8_t nodeid)
+	{
+//		EnqueueJob(eJobs::IS_DEAD, nodeid);
+	}
+
+	void Remove(uint8_t nodeid)
 	{
 		ZW_APIFrame frame;
-		frame.Make(eCommandIds::ZW_API_IS_NODE_FAILED, static_cast<uint8_t>(nodeid));
+		frame.Make(eCommandIds::ZW_API_REMOVE_FAILED_NODE, {nodeid, 0x0A});
 		Enqueue(frame);
+		StartInitialization();
 	}
 
-	void Remove(uint16_t nodeid)
-	{
-		ZW_APIFrame frame;
-		frame.Make(eCommandIds::ZW_API_REMOVE_FAILED_NODE, static_cast<uint8_t>(nodeid));
-		Enqueue(frame);
-	}
-
-	void Bind(uint16_t nodeid, uint8_t groupid, uint16_t targetnodeid)
+	void Bind(uint8_t nodeid, uint8_t groupid, uint8_t targetnodeid)
 	{
 		ZW_Node* node = nodes.Get(nodeid);
 		if (!node) return;
-		node->EnqueueJob(ZW_Node::eJobs::BIND_COMMAND, { static_cast<uint32_t>(groupid), static_cast<uint32_t>(targetnodeid) });
+		ZW_Node::Job job;
+		job.job = ZW_Node::eJobs::BIND_COMMAND;
+		job.group = groupid;
+		job.nodeId = targetnodeid;
+		node->EnqueueJob(job);
+//		AssociationInterview(nodeid);
 	}
 
-	void Unbind(uint16_t nodeid, uint8_t groupid, uint16_t targetnodeid)
+	void Unbind(uint8_t nodeid, uint8_t groupid, uint8_t targetnodeid)
 	{
 		ZW_Node* node = nodes.Get(nodeid);
 		if (!node) return;
-		node->EnqueueJob(ZW_Node::eJobs::UNBIND_COMMAND, { static_cast<uint32_t>(groupid), static_cast<uint32_t>(targetnodeid) });
+		ZW_Node::Job job;
+		job.job = ZW_Node::eJobs::UNBIND_COMMAND;
+		job.group = groupid;
+		job.nodeId = targetnodeid;
+		node->EnqueueJob(job);
+//		AssociationInterview(nodeid);
 	}
-
-	void Configure(uint16_t nodeid, uint8_t param, uint32_t value)
+	void MCBind(uint8_t nodeid, uint8_t groupid, uint8_t targetNodeid, uint8_t targetEndpoint)
 	{
 		ZW_Node* node = nodes.Get(nodeid);
 		if (!node) return;
-		node->EnqueueJob(ZW_Node::eJobs::CONFIGURATION_COMMAND, { static_cast<uint32_t>(param), (uint32_t)ZW_Node::eConfigSize::OneByte, value });
-		ConfigurationInterview(nodeid);
+		ZW_Node::Job job;
+		job.job = ZW_Node::eJobs::MULTI_CHANNEL_BIND_COMMAND;
+		job.group = groupid;
+		job.nodeId = targetNodeid;
+		job.endpoint = targetEndpoint;
+		node->EnqueueJob(job);
+		//		AssociationInterview(nodeid);
+	}
+	void MCUnbind(uint8_t nodeid, uint8_t groupid, uint8_t targetNodeid, uint8_t targetEndpoint)
+	{
+		ZW_Node* node = nodes.Get(nodeid);
+		if (!node) return;
+		ZW_Node::Job job;
+		job.job = ZW_Node::eJobs::MULTI_CHANNEL_UNBIND_COMMAND;
+		job.group = groupid;
+		job.nodeId = targetNodeid;
+		job.endpoint = targetEndpoint;
+		node->EnqueueJob(job);
+//		AssociationInterview(nodeid);
+	}
+
+	void Configure(uint8_t nodeid, uint8_t param, uint32_t value)
+	{
+		ZW_Node* node = nodes.Get(nodeid);
+		if (!node) return;
+		ZW_Node::Job job;
+		job.job = ZW_Node::eJobs::CONFIGURATION_COMMAND;
+		job.group = param;
+		job.value = value;
+		job.cfgSize = ZW_Node::eConfigSize::OneByte;
+		node->EnqueueJob(job);
+//		ConfigurationInterview(nodeid);
 	}
 
 protected:
@@ -186,8 +231,15 @@ protected:
 			Log.AddL(eLogTypes::DBG, MakeTag(), "<< route=ccDispatcher {}", frame.Info());
 			CCDispatcher.HandleCCFrame(frame.payload);
 			return true;
-		}
 
+		case eCommandIds::ZW_API_IS_NODE_FAILED:
+			nodes.HandleNodeFailed(frame.payload[0]);
+			return true;
+
+		case eCommandIds::ZW_API_REMOVE_FAILED_NODE:
+		case eCommandIds::ZW_API_REMOVE_NODE_FROM_NETWORK:
+			return true;
+		}
 		return false;
 	}
 
@@ -239,7 +291,7 @@ private:
 	struct Job
 	{
 		eJobs job;
-		uint16_t nodeid;
+		uint8_t nodeid;
 	};
 
 	std::mutex jobQueueMutex;
@@ -252,7 +304,7 @@ private:
 	static constexpr int kMaxJobAttempts = 5;
 	static constexpr auto kJobTimeout = std::chrono::seconds(5);
 
-	void EnqueueJob(eJobs job, uint16_t nodeid)
+	void EnqueueJob(eJobs job, uint8_t nodeid)
 	{
 		std::scoped_lock lock(jobQueueMutex);
 		jobQueue.push_back(Job{ job, nodeid });
@@ -315,7 +367,6 @@ private:
 				interviewManager.Start(job.nodeid);
 			}
 			return eJobResult::Pending;
-
 		}
 		return eJobResult::Error;
 	}

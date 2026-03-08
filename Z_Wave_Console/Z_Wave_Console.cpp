@@ -156,7 +156,7 @@ static void DrawUiFrame()
 static void DrawStatus()
 {
 	SHORT consoleWidth = kConsoleWidth;
-	int leftWidth = consoleWidth / 3 - 2;
+	int leftWidth = consoleWidth / 2 - 2;
 	int rightWidth = consoleWidth - leftWidth - 5;
 
 	int firstRow = FirstContentY;
@@ -179,7 +179,7 @@ static void DrawStatus()
 	// Nodes
 	leftLines.push_back("=== Nodes ===");
 	{
-		std::istringstream iss(ZW.NodesToString());
+		std::istringstream iss(ZW.NodesToString(leftWidth));
 		std::string line;
 		while (std::getline(iss, line))
 			leftLines.push_back(line);
@@ -294,8 +294,8 @@ int main()
         {
             try
             {
-                const int nodeId = std::stoi(cmd.substr(5));
-                ZW.RequestBattery(static_cast<uint16_t>(nodeId));
+				const uint8_t nodeid = static_cast<uint8_t>(std::stoi(cmd.substr(5)));
+				ZW.RequestBattery(nodeid);
             }
             catch (...)
             {
@@ -307,8 +307,8 @@ int main()
         {
             try
             {
-				const int nodeId = std::stoi(cmd.substr(5));
-				ZW.AssociationInterview(static_cast<uint16_t>(nodeId));
+				const uint8_t nodeid = static_cast<uint8_t>(std::stoi(cmd.substr(5)));
+				ZW.AssociationInterview(nodeid);
             }
             catch (...)
             {
@@ -320,8 +320,8 @@ int main()
 		{
 			try
 			{
-				const int nodeId = std::stoi(cmd.substr(7));
-				ZW.IsDead(static_cast<uint16_t>(nodeId));
+				const uint8_t nodeid = static_cast<uint8_t>(std::stoi(cmd.substr(7)));
+				ZW.IsDead(nodeid);
 			}
 			catch (...)
 			{
@@ -333,8 +333,8 @@ int main()
 		{
 			try
 			{
-				const int nodeId = std::stoi(cmd.substr(7));
-				ZW.Remove(static_cast<uint16_t>(nodeId));
+				const uint8_t nodeid = static_cast<uint8_t>(std::stoi(cmd.substr(7)));
+				ZW.Remove(nodeid);
 			}
 			catch (...)
 			{
@@ -346,8 +346,8 @@ int main()
 		{
 			try
 			{
-				const int nodeId = std::stoi(cmd.substr(7));
-				ZW.ConfigurationInterview(static_cast<uint16_t>(nodeId));
+				const uint8_t nodeid = static_cast<uint8_t>(std::stoi(cmd.substr(7)));
+				ZW.ConfigurationInterview(nodeid);
 			}
 			catch (...)
 			{
@@ -365,7 +365,33 @@ int main()
 				int groupId = 0;
 				int targetNodeId = 0;
 				iss >> keyword >> nodeId >> groupId >> targetNodeId;
-				ZW.Bind(static_cast<uint16_t>(nodeId), static_cast<uint8_t>(groupId), static_cast<uint16_t>(targetNodeId));
+				const uint8_t nodeid = static_cast<uint8_t>(nodeId);
+				const uint8_t groupid = static_cast<uint8_t>(groupId);
+				const uint8_t targetnodeid = static_cast<uint8_t>(targetNodeId);
+				ZW.Bind(nodeid, groupid, targetnodeid);
+			}
+			catch (...)
+			{
+			}
+			continue;
+		}
+
+		if (cmd.rfind("MCBIND ", 0) == 0)
+		{
+			try
+			{
+				std::istringstream iss(cmd);
+				std::string keyword;
+				int nodeId = 0;
+				int groupId = 0;
+				int targetNodeId = 0;
+				int targetEndpoint = 0;
+				iss >> keyword >> nodeId >> groupId >> targetNodeId >> targetEndpoint;
+				const uint8_t nodeid = static_cast<uint8_t>(nodeId);
+				const uint8_t groupid = static_cast<uint8_t>(groupId);
+				const uint8_t targetnodeid = static_cast<uint8_t>(targetNodeId);
+				const uint8_t targetendpoint = static_cast<uint8_t>(targetEndpoint);
+				ZW.MCBind(nodeid, groupid, targetnodeid, targetendpoint);
 			}
 			catch (...)
 			{
@@ -383,7 +409,33 @@ int main()
 				int groupId = 0;
 				int targetNodeId = 0;
 				iss >> keyword >> nodeId >> groupId >> targetNodeId;
-				ZW.Unbind(static_cast<uint16_t>(nodeId), static_cast<uint8_t>(groupId), static_cast<uint16_t>(targetNodeId));
+				const uint8_t nodeid = static_cast<uint8_t>(nodeId);
+				const uint8_t groupid = static_cast<uint8_t>(groupId);
+				const uint8_t targetnodeid = static_cast<uint8_t>(targetNodeId);
+				ZW.Unbind(nodeid, groupid, targetnodeid);
+			}
+			catch (...)
+			{
+			}
+			continue;
+		}
+
+		if (cmd.rfind("MCUNBIND ", 0) == 0)
+		{
+			try
+			{
+				std::istringstream iss(cmd);
+				std::string keyword;
+				int nodeId = 0;
+				int groupId = 0;
+				int targetNodeId = 0;
+				int targetEndpoint = 0;
+				iss >> keyword >> nodeId >> groupId >> targetNodeId >> targetEndpoint;
+				const uint8_t nodeid = static_cast<uint8_t>(nodeId);
+				const uint8_t groupid = static_cast<uint8_t>(groupId);
+				const uint8_t targetnodeid = static_cast<uint8_t>(targetNodeId);
+				const uint8_t targetendpoint = static_cast<uint8_t>(targetEndpoint);
+				ZW.MCUnbind(nodeid, groupid, targetnodeid, targetendpoint);
 			}
 			catch (...)
 			{
@@ -401,7 +453,10 @@ int main()
 				int param = 0;
 				int value = 0;
 				iss >> keyword >> nodeId >> param >> value;
-				ZW.Configure(static_cast<uint16_t>(nodeId), static_cast<uint8_t>(param), static_cast<uint16_t>(value));
+				const uint8_t nodeid = static_cast<uint8_t>(nodeId);
+				const uint8_t paramid = static_cast<uint8_t>(param);
+				const uint32_t cfgvalue = static_cast<uint32_t>(value);
+				ZW.Configure(nodeid, paramid, cfgvalue);
 			}
 			catch (...)
 			{

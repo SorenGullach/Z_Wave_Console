@@ -78,11 +78,11 @@ std::string ZW_Module::ToString()
 
     // Capabilities
     out += std::format("App Version      : {}.{}\n", AppVersion, AppRevision);
-    out += std::format("Manufacturer     : {}  Type={}  Product={}\n",
+    out += std::format("Manufacturer     : 0x{:02X} Type=0x{:02X} Product=0x{:02X}\n",
                        ManufacturerId, ProductType, ProductId);
 
     // Home ID
-    out += std::format("HomeId/NodeId    : 0x{:08X} / 0x{:04X}\n",
+    out += std::format("HomeId/NodeId    : 0x{:08X} / {}\n",
                        HomeId, NodeId);
 
     return out;

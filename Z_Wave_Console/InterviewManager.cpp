@@ -7,21 +7,21 @@
 #include "Node.h"
 #include "CommandClass.h"
 
-void ZW_InterviewManager::RequestNodeProtocolInfo(uint16_t nodeId)
+void ZW_InterviewManager::RequestNodeProtocolInfo(uint8_t nodeid)
 {
-	if (nodeId == 0 || nodeId == 1) return;
+	if (nodeid == 0 || nodeid == 1) return;
 
-	activeNode = nodes.GetOrCreate(nodeId, enqueue);
+	activeNode = nodes.GetOrCreate(nodeid, enqueue);
 	activeNode->SetInterviewState(ZW_Node::eInterviewState::ProtocolInfoPending);
 
 	ZW_APIFrame frame;
-	frame.Make(eCommandIds::ZW_API_GET_NODE_INFO_PROTOCOL_DATA, static_cast<uint8_t>(nodeId));
+	frame.Make(eCommandIds::ZW_API_GET_NODE_INFO_PROTOCOL_DATA, nodeid);
 
-	Log.AddL(eLogTypes::INFO, MakeTag(), ">> {}: node={}", ToString(eCommandIds::ZW_API_GET_NODE_INFO_PROTOCOL_DATA), nodeId);
+	Log.AddL(eLogTypes::INFO, MakeTag(), ">> {}: node={}", ToString(eCommandIds::ZW_API_GET_NODE_INFO_PROTOCOL_DATA), nodeid);
 	enqueue(frame);
 }
 
-void ZW_InterviewManager::DecodeNodeProtocolInfo(uint16_t nodeId, const std::vector<uint8_t>& payload)
+void ZW_InterviewManager::DecodeNodeProtocolInfo(uint8_t nodeid, const std::vector<uint8_t>& payload)
 {
 	// Table 4.92: Get Node Information Protocol Data response payload (excluding FUNC_ID)
 	// [0]=Byte1 (Listening, Routing, Supported speed[3], Protocol version[3])
@@ -39,7 +39,7 @@ void ZW_InterviewManager::DecodeNodeProtocolInfo(uint16_t nodeId, const std::vec
 	// [5]=Specific Device Class
 	if (payload.size() < 6)
 	{
-		Log.AddL(eLogTypes::INFO_LOW, MakeTag(), "DecodeNodeProtocolInfo: node={} payload too short (len={})", nodeId, payload.size());
+		Log.AddL(eLogTypes::INFO_LOW, MakeTag(), "DecodeNodeProtocolInfo: node={} payload too short (len={})", nodeid, payload.size());
 		return;
 	}
 
@@ -69,10 +69,10 @@ void ZW_InterviewManager::DecodeNodeProtocolInfo(uint16_t nodeId, const std::vec
 		MakeTag(),
 		"<< {}: node={} listening={} routing={} speed={} proto={} basic=0x{:02X} generic=0x{:02X} specific=0x{:02X} opt=0x{:02X} speedExt=0x{:02X} (payloadLen={})",
 		ToString(eCommandIds::ZW_API_GET_NODE_INFO_PROTOCOL_DATA),
-		nodeId, listening, routing, supportedSpeed, protocolVersion, basic, generic, specific, b2, b3
+		nodeid, listening, routing, supportedSpeed, protocolVersion, basic, generic, specific, b2, b3
 		, payload.size());
 
-	ZW_Node* node = nodes.GetOrCreate(nodeId,enqueue);
+	ZW_Node* node = nodes.GetOrCreate(nodeid, enqueue);
 	listening ? node->WakeUp(): node->Sleeping();
 	
 	ZW_NodeInfo::ProtocolInfo protocolInfo;
@@ -98,17 +98,17 @@ void ZW_InterviewManager::DecodeNodeProtocolInfo(uint16_t nodeId, const std::vec
 	node->SetInterviewState(ZW_Node::eInterviewState::ProtocolInfoDone); 
 }
 
-void ZW_InterviewManager::RequestNodeInformation(const uint16_t nodeId)
+void ZW_InterviewManager::RequestNodeInformation(uint8_t nodeid)
 {
-	if (nodeId == 0 || nodeId == 1) return;
+	if (nodeid == 0 || nodeid == 1) return;
 
-	ZW_Node* node = nodes.GetOrCreate(nodeId, enqueue);
+	ZW_Node* node = nodes.GetOrCreate(nodeid, enqueue);
 	node->SetInterviewState(ZW_Node::eInterviewState::NodeInfoPending);
 
 	ZW_APIFrame frame;
-	frame.Make(eCommandIds::ZW_API_REQUEST_NODE_INFORMATION, static_cast<uint8_t>(nodeId));
+	frame.Make(eCommandIds::ZW_API_REQUEST_NODE_INFORMATION, nodeid);
 
-	Log.AddL(eLogTypes::INFO, MakeTag(), ">> {}: node={}", ToString(eCommandIds::ZW_API_REQUEST_NODE_INFORMATION), nodeId);
+	Log.AddL(eLogTypes::INFO, MakeTag(), ">> {}: node={}", ToString(eCommandIds::ZW_API_REQUEST_NODE_INFORMATION), nodeid);
 	enqueue(frame);
 }
 
@@ -121,16 +121,16 @@ void ZW_InterviewManager::DecodeNodeInfo(const std::vector<uint8_t>& payload)
 		return;
 	}
 
-	uint16_t nodeId = payload[1];
-	ZW_Node* node = activeNode = nodes.GetOrCreate(nodeId, enqueue);
+	uint8_t nodeid = payload[1];
+	ZW_Node* node = activeNode = nodes.GetOrCreate(nodeid, enqueue);
 	if (!node)
 	{
-		Log.AddL(eLogTypes::INFO_LOW, MakeTag(), "DecodeNodeInfo: node {} not found", nodeId);
+		Log.AddL(eLogTypes::INFO_LOW, MakeTag(), "DecodeNodeInfo: node {} not found", nodeid);
 		return;
 	}
 	if (node->GetInterviewState() == ZW_Node::eInterviewState::InterviewDone)
 	{
-		Log.AddL(eLogTypes::INFO, MakeTag(), "----------------------------------- DecodeNodeInfo: node {} already interviewed", nodeId);
+		Log.AddL(eLogTypes::INFO, MakeTag(), "----------------------------------- DecodeNodeInfo: node {} already interviewed", nodeid);
 		node->WakeUp();
 		return;
 	}
@@ -139,14 +139,14 @@ void ZW_InterviewManager::DecodeNodeInfo(const std::vector<uint8_t>& payload)
 	size_t index = 2;
 	if (payload.size() < index + 1)
 	{
-		Log.AddL(eLogTypes::ERR, MakeTag(), "DecodeNodeInfo: truncated payload for node {}", nodeId);
+		Log.AddL(eLogTypes::ERR, MakeTag(), "DecodeNodeInfo: truncated payload for node {}", nodeid);
 		return;
 	}
 
 	const uint8_t ccLen = payload[index++];
 	if (ccLen < 3 || payload.size() < index + ccLen)
 	{
-		Log.AddL(eLogTypes::ERR, MakeTag(), "DecodeNodeInfo: invalid ccLen={} or truncated payload for node {}", ccLen, nodeId);
+		Log.AddL(eLogTypes::ERR, MakeTag(), "DecodeNodeInfo: invalid ccLen={} or truncated payload for node {}", ccLen, nodeid);
 		return;
 	}
 
@@ -162,7 +162,7 @@ void ZW_InterviewManager::DecodeNodeInfo(const std::vector<uint8_t>& payload)
 
 	node->SetNIF(basic, generic, specific, ccList);
 
-	Log.AddL(eLogTypes::INFO, MakeTag(), "<< Decoded NodeInfo: node={} basic=0x{:02X} generic=0x{:02X} specific=0x{:02X} ccCount={}", nodeId, basic, generic, specific, ccList.size());
+	Log.AddL(eLogTypes::INFO, MakeTag(), "<< Decoded NodeInfo: node={} basic=0x{:02X} generic=0x{:02X} specific=0x{:02X} ccCount={}", nodeid, basic, generic, specific, ccList.size());
 
 	node->SetInterviewState(ZW_Node::eInterviewState::NodeInfoDone);  
 

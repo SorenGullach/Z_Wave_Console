@@ -37,12 +37,12 @@ bool ZW_NodeInfo::supportsCC(eCommandClass cc) const
 	return true;
 }
 
-std::string ZW_NodeInfo::ToString() const
+std::string ZW_NodeInfo::ToString(int width) const
 {
 	DebugLockGuard lock(stateMutex);
 	std::ostringstream out;
 
-	auto WrapAndPrint = [&](std::ostream& out, const std::string& text, size_t width = 80)
+	auto WrapAndPrint = [&](std::ostream& out, const std::string& text)
 		{
 			std::istringstream words(text);
 			std::string word;
@@ -66,41 +66,39 @@ std::string ZW_NodeInfo::ToString() const
 				out << line << "\n";
 		};
 
-	out << "=== Node " << std::dec << NodeId
-		<< " (0x" << std::hex << std::uppercase << std::setw(2)
-		<< std::setfill('0') << NodeId << ") ===\n";
+	out << "=== Node " << std::dec << (int)NodeId << " ===\n";
 
 	//
 	// Node state
 	//
-	out << "State            : ";
+	out << "State: ";
 	switch (nodeState)
 	{
-	case eNodeState::Awake:  out << "Awake\n"; break;
-	case eNodeState::Sleepy: out << "Sleepy\n"; break;
-	default:                 out << "Bad\n"; break;
+	case eNodeState::Awake:  out << "Awake "; break;
+	case eNodeState::Sleepy: out << "Sleepy "; break;
+	default:                 out << "Bad "; break;
 	}
 
 	//
 	// Interview state
 	//
-	out << "Interview        : ";
+	out << " Interview: ";
 	switch (interviewState)
 	{
-	case eInterviewState::NotInterviewed:      out << "NotInterviewed\n"; break;
-	case eInterviewState::ProtocolInfoPending: out << "ProtocolInfoPending\n"; break;
-	case eInterviewState::ProtocolInfoDone:    out << "ProtocolInfoDone\n"; break;
-	case eInterviewState::NodeInfoPending:     out << "NodeInfoPending\n"; break;
-	case eInterviewState::NodeInfoDone:        out << "NodeInfoDone\n"; break;
-	case eInterviewState::CCVersionPending:    out << "CCVersionPending\n"; break;
-	case eInterviewState::CCVersionDone:       out << "CCVersionDone\n"; break;
-	case eInterviewState::CCMnfcSpecPending:   out << "CCMnfcSpecPending\n"; break;
-	case eInterviewState::CCMnfcSpecDone:      out << "CCMnfcSpecDone\n"; break;
-	case eInterviewState::CCMultiChannelPending:    out << "CCMultiChannelPending\n"; break;
-	case eInterviewState::CCMultiChannelDone:       out << "CCMultiChannelDone\n"; break;
+	case eInterviewState::NotInterviewed:      out << "NotInterviewed "; break;
+	case eInterviewState::ProtocolInfoPending: out << "ProtocolInfoPending "; break;
+	case eInterviewState::ProtocolInfoDone:    out << "ProtocolInfoDone "; break;
+	case eInterviewState::NodeInfoPending:     out << "NodeInfoPending "; break;
+	case eInterviewState::NodeInfoDone:        out << "NodeInfoDone "; break;
+	case eInterviewState::CCVersionPending:    out << "CCVersionPending "; break;
+	case eInterviewState::CCVersionDone:       out << "CCVersionDone "; break;
+	case eInterviewState::CCMnfcSpecPending:   out << "CCMnfcSpecPending "; break;
+	case eInterviewState::CCMnfcSpecDone:      out << "CCMnfcSpecDone "; break;
+	case eInterviewState::CCMultiChannelPending:    out << "CCMultiChannelPending "; break;
+	case eInterviewState::CCMultiChannelDone:       out << "CCMultiChannelDone "; break;
 
-	case eInterviewState::InterviewDone:       out << "InterviewDone\n"; break;
-	default:                                   out << "Unknown\n"; break;
+	case eInterviewState::InterviewDone:       out << "InterviewDone "; break;
+	default:                                   out << "Unknown "; break;
 	}
 
 	//
@@ -108,7 +106,7 @@ std::string ZW_NodeInfo::ToString() const
 	//
 	if (manufacturerInfo.hasManufacturerData)
 	{
-		out << "Manufacturer     : mfg=0x" << std::hex << std::setw(4)
+		out << "Manufacturer     : mfg=0x" << std::hex << std::setw(4) << std::setfill('0')
 			<< manufacturerInfo.mfgId
 			<< " prodType=0x" << std::setw(4) << manufacturerInfo.prodType
 			<< " prodId=0x" << std::setw(4) << manufacturerInfo.prodId << "\n";
@@ -154,14 +152,18 @@ std::string ZW_NodeInfo::ToString() const
 	//
 	// Optional flags
 	//
-	out << "Optional flags   : optFunc=" << (protocolInfo.optionalFunctionality ? "yes" : "no")
-		<< " sensor1000ms=" << (protocolInfo.sensor1000ms ? "yes" : "no")
-		<< " sensor250ms=" << (protocolInfo.sensor250ms ? "yes" : "no")
-		<< " beam=" << (protocolInfo.beamCapable ? "yes" : "no")
-		<< " routingEndNode=" << (protocolInfo.routingEndNode ? "yes" : "no")
-		<< " specificDevice=" << (protocolInfo.specificDevice ? "yes" : "no")
-		<< " controllerNode=" << (protocolInfo.controllerNode ? "yes" : "no")
-		<< " security=" << (protocolInfo.security ? "yes" : "no") << "\n";
+	{
+		std::ostringstream s;
+		s << "Optional flags   : optFunc=" << (protocolInfo.optionalFunctionality ? "yes" : "no")
+			<< " sensor1000ms=" << (protocolInfo.sensor1000ms ? "yes" : "no")
+			<< " sensor250ms=" << (protocolInfo.sensor250ms ? "yes" : "no")
+			<< " beam=" << (protocolInfo.beamCapable ? "yes" : "no")
+			<< " routingEndNode=" << (protocolInfo.routingEndNode ? "yes" : "no")
+			<< " specificDevice=" << (protocolInfo.specificDevice ? "yes" : "no")
+			<< " controllerNode=" << (protocolInfo.controllerNode ? "yes" : "no")
+			<< " security=" << (protocolInfo.security ? "yes" : "no") << "\n";
+		WrapAndPrint(out, s.str());
+	}
 
 	//
 	// CC values
@@ -205,20 +207,6 @@ std::string ZW_NodeInfo::ToString() const
 		WrapAndPrint(out, s.str());
 	}
 
-	// ----- Association (0x85) -----
-	{
-		std::ostringstream s;
-		s << "Assoc: ";
-		for (const auto& g : associationGroups)
-		{
-			s << "G" << unsigned(g.groupId) << "=[";
-			for (auto n : g.nodeList)
-				s << unsigned(n) << " ";
-			s << "] ";
-		}
-		WrapAndPrint(out, s.str());
-	}
-
 	// ----- Multi Channel Endpoints (0x60) -----
 	if (multiChannel.hasEndpointReport)
 	{
@@ -237,20 +225,36 @@ std::string ZW_NodeInfo::ToString() const
 		WrapAndPrint(out, s.str());
 	}
 
+	// ----- Association (0x85) -----
+	{
+		std::ostringstream s;
+		s << "Assoc[" << unsigned(associationGroups.size()) << "]:";
+		for (const auto& g : associationGroups)
+		{
+			s << " G" << unsigned(g.groupId) << "(" << unsigned(g.maxNodes) << ")=";
+			for (auto n : g.nodeList)
+				if (n.valid)
+					s << unsigned(n.nodeId) << ",";
+		}
+		WrapAndPrint(out, s.str());
+	}
+
 	// ----- Multi Channel Association (0x8E) -----
 	{
 		std::ostringstream s;
-		s << "MC Assoc: ";
+		s << "MC Assoc[" << unsigned(multiChannelAssociationGroups.size()) << "]:";
 		for (const auto& g : multiChannelAssociationGroups)
 		{
-			s << "G" << unsigned(g.groupId) << "=[";
+			s << " G" << unsigned(g.groupId) << "(" << unsigned(g.maxNodes) << ")=";
 			for (const auto& m : g.members)
 			{
-				s << unsigned(m.nodeId);
-				if (m.endpointId) s << "." << unsigned(m.endpointId);
-				s << " ";
+				if (m.valid)
+				{
+					s << unsigned(m.nodeId);
+					s << "." << unsigned(m.endpointId);
+					s << ",";
+				}
 			}
-			s << "] ";
 		}
 		WrapAndPrint(out, s.str());
 	}
@@ -263,32 +267,28 @@ std::string ZW_NodeInfo::ToString() const
 		if (cc.supported)
 			ccCount++;
 
-	out << "Command Classes  : " << std::dec << ccCount << "\n";
-
-	if (ccCount > 0)
 	{
-		out << "  ";
-		int col = 0;
+		std::ostringstream s;
+		s << "Command Classes  : " << std::dec << ccCount << "";
 
-		for (size_t i = 0; i < ccs.size(); ++i)
+		if (ccCount > 0)
 		{
-			if (!ccs[i].supported)
-				continue;
+			s << "  ";
 
-			out << "0x" << std::hex << std::setw(2) << std::setfill('0')
-				<< std::uppercase << i
-				<< " v=" << std::dec << unsigned(ccs[i].version);
+			for (size_t i = 0; i < ccs.size(); ++i)
+			{
+				if (!ccs[i].supported)
+					continue;
 
-			if (ccs[i].versionOk)
-				out << "(ok)";
+				s << "0x" << std::hex << std::setw(2) << std::setfill('0')
+					<< std::uppercase << i
+					<< " v=" << std::dec << unsigned(ccs[i].version);
 
-			col++;
-			if (col % 4 == 0)
-				out << "\n  ";
-			else
-				out << "   ";
+				if (ccs[i].versionOk)
+					s << "(ok)";
+			}
 		}
-		out << "\n";
+		WrapAndPrint(out, s.str());
 	}
 
 	return out.str();
@@ -427,6 +427,31 @@ void ZW_Node::ProcessInterviewState()
 	}
 }
 
+void ZW_Node::ProcessIsDead()
+{
+	ZW_APIFrame frame;
+	frame.MakeSendData(NodeId,
+					   3, // length of payload
+					   { static_cast<uint8_t>(eCommandClass::CONFIGURATION),
+						 static_cast<uint8_t>(ZW_CC_Configuration::eConfigurationCommand::CONFIGURATION_GET),
+						 1 } // parameter number
+	);
+	enqueue(frame);
+
+	auto& cfg = configurationInfo[1];
+
+	if (!WaitUntil(std::chrono::seconds(5), [&]() { return cfg.isDead; }))
+	{
+		frame.Make(eCommandIds::ZW_API_IS_NODE_FAILED, { NodeId });
+		enqueue(frame);
+	}
+}
+
+bool ZW_Node::HandleNodeFailed(uint8_t status)
+{
+	return false;
+}
+
 bool ZW_Node::ExecuteBatteryCommandJob()
 {
 	if (!HasCC(eCommandClass::BATTERY))
@@ -434,14 +459,14 @@ bool ZW_Node::ExecuteBatteryCommandJob()
 		Log.AddL(eLogTypes::INFO, MakeTag(), "Node does not support BATTERY CC node {}", NodeId);
 		return true;
 	}
-	auto* batteryHandler = device.GetHandler(eCommandClass::BATTERY);
-	if (!batteryHandler)
+	auto* handler = device.GetHandler(eCommandClass::BATTERY);
+	if (!handler)
 	{
 		Log.AddL(eLogTypes::INFO, MakeTag(), "No handler for BATTERY CC node {}", NodeId);
 		return true;
 	}
 	ZW_APIFrame frame;
-	batteryHandler->MakeFrame(frame, ZW_CC_Battery::eBatteryCommand::BATTERY_GET, {});
+	handler->MakeFrame(frame, ZW_CC_Battery::eBatteryCommand::BATTERY_GET, {});
 	Log.AddL(eLogTypes::INFO, MakeTag(), ">> BATTERY_GET: node {}", NodeId);
 	enqueue(frame);
 	return true;
@@ -457,15 +482,15 @@ bool ZW_Node::ExecuteBindCommandJob(uint8_t groupId, uint8_t nodeid)
 		Log.AddL(eLogTypes::INFO, MakeTag(), "Node does not support ASSOCIATION CC node {}", NodeId);
 		return true;
 	}
-	auto* associationHandler = device.GetHandler(eCommandClass::ASSOCIATION);
-	if (!associationHandler)
+	auto* handler = device.GetHandler(eCommandClass::ASSOCIATION);
+	if (!handler)
 	{
 		Log.AddL(eLogTypes::INFO, MakeTag(), "No handler for ASSOCIATION CC node {}", NodeId);
 		return true;
 	}
 
 	ZW_APIFrame frame;
-	associationHandler->MakeFrame(frame, ZW_CC_Association::eAssociationCommand::ASSOCIATION_SET, { groupId, nodeid });
+	handler->MakeFrame(frame, ZW_CC_Association::eAssociationCommand::ASSOCIATION_SET, { groupId, nodeid });
 	enqueue(frame);
 
 	return true;
@@ -480,18 +505,78 @@ bool ZW_Node::ExecuteUnBindCommandJob(uint8_t groupId, uint8_t nodeid)
 		Log.AddL(eLogTypes::INFO, MakeTag(), "Node does not support ASSOCIATION CC node {}", NodeId);
 		return true;
 	}
-	auto* associationHandler = device.GetHandler(eCommandClass::ASSOCIATION);
-	if (!associationHandler)
+	auto* handler = device.GetHandler(eCommandClass::ASSOCIATION);
+	if (!handler)
 	{
 		Log.AddL(eLogTypes::INFO, MakeTag(), "No handler for ASSOCIATION CC node {}", NodeId);
 		return true;
 	}
 
 	ZW_APIFrame frame;
-	associationHandler->MakeFrame(frame, ZW_CC_Association::eAssociationCommand::ASSOCIATION_REMOVE, { groupId, nodeid });
+	handler->MakeFrame(frame, ZW_CC_Association::eAssociationCommand::ASSOCIATION_REMOVE, { groupId, nodeid });
 	enqueue(frame);
 
-	return true; 
+	return true;
+}
+
+bool ZW_Node::ExecuteMultiChannelUnBindCommandJob(uint8_t groupId, uint8_t nodeid, uint8_t endpoint)
+{
+	Log.AddL(eLogTypes::INFO, MakeTag(), "ExecuteMultiChannelUnBindCommandJob: groupId={}, nodeid={}", groupId, nodeid);
+
+	if (!HasCC(eCommandClass::MULTI_CHANNEL_ASSOCIATION))
+	{
+		Log.AddL(eLogTypes::INFO, MakeTag(), "Node does not support MULTI_CHANNEL_ASSOCIATION CC node {}", NodeId);
+		return true;
+	}
+	auto* handler = device.GetHandler(eCommandClass::MULTI_CHANNEL_ASSOCIATION);
+	if (!handler)
+	{
+		Log.AddL(eLogTypes::INFO, MakeTag(), "No handler for MULTI_CHANNEL_ASSOCIATION CC node {}", NodeId);
+		return true;
+	}
+
+	ZW_ByteVector params = {
+		groupId,
+		// no nodeid's
+		(uint8_t)ZW_CC_MultiChannelAssociation::eMultiChannelAssociationCommand::MULTI_CHANNEL_ASSOCIATION_REMOVE_MARKER,
+		nodeid, endpoint
+	};
+
+	ZW_APIFrame frame;
+	handler->MakeFrame(frame, ZW_CC_MultiChannelAssociation::eMultiChannelAssociationCommand::MULTI_CHANNEL_ASSOCIATION_REMOVE, params);
+	enqueue(frame);
+
+	return true;
+}
+
+bool ZW_Node::ExecuteMultiChannelBindCommandJob(uint8_t groupId, uint8_t nodeid, uint8_t endpoint)
+{
+	Log.AddL(eLogTypes::INFO, MakeTag(), "ExecuteMultiChannelBindCommandJob: groupId={}, nodeid={} endpoint={}", groupId, nodeid, endpoint);
+
+	if (!HasCC(eCommandClass::MULTI_CHANNEL_ASSOCIATION))
+	{
+		Log.AddL(eLogTypes::INFO, MakeTag(), "Node does not support MULTI_CHANNEL_ASSOCIATION CC node {}", NodeId);
+		return true;
+	}
+	auto* handler = device.GetHandler(eCommandClass::MULTI_CHANNEL_ASSOCIATION);
+	if (!handler)
+	{
+		Log.AddL(eLogTypes::INFO, MakeTag(), "No handler for MULTI_CHANNEL_ASSOCIATION CC node {}", NodeId);
+		return true;
+	}
+
+	ZW_ByteVector params = {
+		groupId,
+		// no nodeid's
+		(uint8_t)ZW_CC_MultiChannelAssociation::eMultiChannelAssociationCommand::MULTI_CHANNEL_ASSOCIATION_SET_MARKER,
+		nodeid, endpoint
+	};
+
+	ZW_APIFrame frame;
+	handler->MakeFrame(frame, ZW_CC_MultiChannelAssociation::eMultiChannelAssociationCommand::MULTI_CHANNEL_ASSOCIATION_SET, params);
+	enqueue(frame);
+
+	return true;
 }
 
 bool ZW_Node::ExecuteConfigurationCommandJob(uint8_t paramNumber, eConfigSize size, uint32_t value)
@@ -504,8 +589,8 @@ bool ZW_Node::ExecuteConfigurationCommandJob(uint8_t paramNumber, eConfigSize si
 		return false;
 	}
 
-	auto* associationHandler = device.GetHandler(eCommandClass::CONFIGURATION);
-	if (!associationHandler)
+	auto* handler = device.GetHandler(eCommandClass::CONFIGURATION);
+	if (!handler)
 	{
 		Log.AddL(eLogTypes::INFO, MakeTag(), "No handler for CONFIGURATION CC node {}", NodeId);
 		return true;
@@ -517,16 +602,16 @@ bool ZW_Node::ExecuteConfigurationCommandJob(uint8_t paramNumber, eConfigSize si
 	params.push_back(paramNumber); // Parameter number
 	switch (size)
 	{
-		case eConfigSize::OneByte:
+	case eConfigSize::OneByte:
 		params.push_back(defaultValue | 0x01); // Size 8);
 		params.push_back(value); // Value
 		break;
-		case eConfigSize::TwoBytes:
+	case eConfigSize::TwoBytes:
 		params.push_back(defaultValue | 0x02); // Size 16);
 		params.push_back(value >> 8); // Value MSB
 		params.push_back(value); // Value
 		break;
-		case eConfigSize::FourBytes:
+	case eConfigSize::FourBytes:
 		params.push_back(defaultValue | 0x04); // Size 32);
 		params.push_back(value >> 24); // Value MSB
 		params.push_back(value >> 16); // Value
@@ -534,10 +619,11 @@ bool ZW_Node::ExecuteConfigurationCommandJob(uint8_t paramNumber, eConfigSize si
 		params.push_back(value); // Value
 		break;
 	}
-	
+
 	ZW_APIFrame frame;
-	associationHandler->MakeFrame(frame, ZW_CmdId(ZW_CC_Configuration::eConfigurationCommand::CONFIGURATION_SET), params);
+	handler->MakeFrame(frame, ZW_CmdId(ZW_CC_Configuration::eConfigurationCommand::CONFIGURATION_SET), params);
 	enqueue(frame);
+
 	return true;
 }
 
@@ -548,30 +634,32 @@ bool ZW_Node::ExecuteAssociationInterviewJob()
 		Log.AddL(eLogTypes::INFO, MakeTag(), "Node does not support ASSOCIATION CC node {}", NodeId);
 		return true;
 	}
-	auto* associationHandler = device.GetHandler(eCommandClass::ASSOCIATION);
-	if (!associationHandler)
+	auto* handler = device.GetHandler(eCommandClass::ASSOCIATION);
+	if (!handler)
 	{
 		Log.AddL(eLogTypes::INFO, MakeTag(), "No handler for ASSOCIATION CC node {}", NodeId);
 		return true;
 	}
 
-	associationGroups.clear();
 	ZW_APIFrame frame;
-	associationHandler->MakeFrame(frame, ZW_CC_Association::eAssociationCommand::ASSOCIATION_GROUPINGS_GET, {});
-	Log.AddL(eLogTypes::INFO, MakeTag(), ">> ASSOCIATION_GROUPINGS_GET: node {}", NodeId);
-	enqueue(frame);
-
-	if (!WaitUntil(std::chrono::seconds(5), [&]() { return associationGroups.size() > 0; }))
+	if (associationGroups.size() == 0) // only ask first time
 	{
-		Log.AddL(eLogTypes::ERR, MakeTag(), "Association groupings timeout: node {}", NodeId);
-		return false;
+		handler->MakeFrame(frame, ZW_CC_Association::eAssociationCommand::ASSOCIATION_GROUPINGS_GET, {});
+		Log.AddL(eLogTypes::INFO, MakeTag(), ">> ASSOCIATION_GROUPINGS_GET: node {}", NodeId);
+		enqueue(frame);
+
+		if (!WaitUntil(std::chrono::seconds(5), [&]() { return associationGroups.size() > 0; }))
+		{
+			Log.AddL(eLogTypes::ERR, MakeTag(), "Association groupings timeout: node {}", NodeId);
+			return false;
+		}
 	}
 
 	for (size_t i = 0; i < associationGroups.size(); i++)
 	{
 		uint8_t groupId = associationGroups[i].groupId;
 		associationGroups[i].hasLastReport = false;
-		associationHandler->MakeFrame(frame, ZW_CC_Association::eAssociationCommand::ASSOCIATION_GET, { groupId });
+		handler->MakeFrame(frame, ZW_CC_Association::eAssociationCommand::ASSOCIATION_GET, { groupId });
 		Log.AddL(eLogTypes::INFO, MakeTag(), ">> ASSOCIATION_GET: node {} group {}", NodeId, groupId);
 		enqueue(frame);
 
@@ -581,7 +669,7 @@ bool ZW_Node::ExecuteAssociationInterviewJob()
 			return false;
 		}
 	}
-
+	/*
 	if (!associationGroups.empty())
 	{
 		bool found = false;
@@ -599,11 +687,10 @@ bool ZW_Node::ExecuteAssociationInterviewJob()
 			associationHandler->MakeFrame(frame, ZW_CC_Association::eAssociationCommand::ASSOCIATION_SET, { 1, controllerId });
 			Log.AddL(eLogTypes::INFO, MakeTag(), ">> ASSOCIATION_SET: node {} group 1 + controllerId", NodeId);
 			enqueue(frame);
-			EnqueueJob(eJobs::ASSOCIATION_INTERVIEW);
 			return true;
 		}
 	}
-
+	*/
 	return true;
 }
 
@@ -622,27 +709,29 @@ bool ZW_Node::ExecuteMultiChannelAssociationInterviewJob()
 		return true;
 	}
 
-	multiChannelAssociationGroups.clear();
 	ZW_APIFrame frame;
-	mcaHandler->MakeFrame(frame, ZW_CC_MultiChannelAssociation::eMultiChannelAssociationCommand::MULTI_CHANNEL_ASSOCIATION_GROUPINGS_GET, {});
-	Log.AddL(eLogTypes::INFO, MakeTag(), ">> MULTI_CHANNEL_ASSOCIATION_GROUPINGS_GET: node {}", NodeId);
-	enqueue(frame);
-
-	if (!WaitUntil(std::chrono::seconds(5), [&]() { return multiChannelAssociationGroups.size() > 0; }))
+	if (multiChannelAssociationGroups.size() == 0) // only ask first time
 	{
-		Log.AddL(eLogTypes::ERR, MakeTag(), "Association groupings timeout: node {}", NodeId);
-		return false;
+		mcaHandler->MakeFrame(frame, ZW_CC_MultiChannelAssociation::eMultiChannelAssociationCommand::MULTI_CHANNEL_ASSOCIATION_GROUPINGS_GET, {});
+		Log.AddL(eLogTypes::INFO, MakeTag(), ">> MULTI_CHANNEL_ASSOCIATION_GROUPINGS_GET: node {}", NodeId);
+		enqueue(frame);
+
+		if (!WaitUntil(std::chrono::seconds(5), [&]() { return multiChannelAssociationGroups.size() > 0; }))
+		{
+			Log.AddL(eLogTypes::ERR, MakeTag(), "Association groupings timeout: node {}", NodeId);
+			return false;
+		}
 	}
 
-	for (size_t i = 0; i < multiChannelAssociationGroups.size(); i++)
+	for (auto& group : multiChannelAssociationGroups)
 	{
-		uint8_t groupId = multiChannelAssociationGroups[i].groupId;
-		multiChannelAssociationGroups[i].hasLastReport = false;
+		uint8_t groupId = group.groupId;
+		group.hasLastReport = false;
 		mcaHandler->MakeFrame(frame, ZW_CC_MultiChannelAssociation::eMultiChannelAssociationCommand::MULTI_CHANNEL_ASSOCIATION_GET, { groupId });
 		Log.AddL(eLogTypes::INFO, MakeTag(), ">> MULTI_CHANNEL_ASSOCIATION_GET: node {} group {}", NodeId, groupId);
 		enqueue(frame);
 
-		if (!WaitUntil(std::chrono::seconds(5), [&]() { return multiChannelAssociationGroups[i].hasLastReport; }))
+		if (!WaitUntil(std::chrono::seconds(5), [&]() { return group.hasLastReport; }))
 		{
 			Log.AddL(eLogTypes::ERR, MakeTag(), "Multi channel association get timeout: node {} group {}", NodeId, groupId);
 			return false;
@@ -667,15 +756,14 @@ bool ZW_Node::ExecuteConfigurationInterviewJob()
 	}
 
 	constexpr uint8_t maxParams = 10; //255;
-	for (uint16_t param = 1; param <= maxParams; param++)
+	for (uint16_t param = 0; param < maxParams; param++)
 	{
-		if (param > configurationInfo.size())
+		if (param >= configurationInfo.size())
 			break;
 
-		auto& cfg = configurationInfo[param - 1];
+		auto& cfg = configurationInfo[param];
 		cfg = {};
 
-		// Build GET frame
 		ZW_APIFrame frame;
 		cfgHandler->MakeFrame(frame, ZW_CC_Configuration::eConfigurationCommand::CONFIGURATION_GET, { static_cast<uint8_t>(param) });
 

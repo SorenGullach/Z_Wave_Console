@@ -122,7 +122,7 @@ private:
 		if ((int)lt > (int)CurrentLogType)
 			return;
 
-		std::string line = std::format("{:3} [{:30}] {}", ToString(lt), tag, msg);
+		std::string line = std::format("{:3} [{:20}] {}", ToString(lt), tag, msg);
 		{
 			auto _lock = Lock();
 

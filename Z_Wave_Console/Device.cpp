@@ -10,7 +10,7 @@
 void ZW_CC_Version::MakeFrame(ZW_APIFrame& frame, ZW_CmdId cmdid, const ZW_ByteVector& params)
 {
 	(void)cmdid;
-	frame.MakeSendData(static_cast<uint8_t>(node.NodeId), 1,
+	frame.MakeSendData(node.NodeId, 1,
 					   { static_cast<uint8_t>(eCommandClass::VERSION),
 						 static_cast<uint8_t>(eVersionCommand::VERSION_COMMAND_CLASS_GET),
 						 params[0] });
@@ -48,12 +48,12 @@ void ZW_CC_ManufacturerSpecific::MakeFrame(ZW_APIFrame& frame, ZW_CmdId cmdid, c
 	uint8_t version = mfgCc ? mfgCc->version : 1;
 
 	if (version >= 1)
-		frame.MakeSendData(static_cast<uint8_t>(node.NodeId), 1,
+		frame.MakeSendData(node.NodeId, 1,
 						   { static_cast<uint8_t>(eCommandClass::MANUFACTURER_SPECIFIC),
 							   static_cast<uint8_t>(eManufacturerSpecificCommand::DEVICE_SPECIFIC_GET), // 0x04,
 						   params[0] }); // DEVICE_SPECIFIC_GET (type 0)
 	if (version >= 2)
-		frame.MakeSendData(static_cast<uint8_t>(node.NodeId), 1,
+		frame.MakeSendData(node.NodeId, 1,
 						   { static_cast<uint8_t>(eCommandClass::MANUFACTURER_SPECIFIC),
 							   static_cast<uint8_t>(eManufacturerSpecificCommand::DEVICE_SPECIFIC_GET_V2), // 0x06,
 						   params[0], params[1] }); // DEVICE_SPECIFIC_GET (type 0)
@@ -98,7 +98,7 @@ void ZW_CC_Battery::MakeFrame(ZW_APIFrame& frame, ZW_CmdId cmdid, const ZW_ByteV
 {
 	(void)cmdid;
 	Log.AddL(eLogTypes::INFO, MakeTag(), ">> BATTERY_GET: node {}", node.NodeId);
-	frame.MakeSendData(static_cast<uint8_t>(node.NodeId), 3,
+	frame.MakeSendData(node.NodeId, 3,
 					   { static_cast<uint8_t>(eCommandClass::BATTERY),
 						 static_cast<uint8_t>(eBatteryCommand::BATTERY_GET) });
 }
@@ -126,7 +126,7 @@ void ZW_CC_SwitchBinary::MakeFrame(ZW_APIFrame& frame, ZW_CmdId cmdid, const ZW_
 {
 	(void)cmdid;
 	Log.AddL(eLogTypes::INFO, MakeTag(), ">> SWITCH_BINARY_GET: node {}", node.NodeId);
-	frame.MakeSendData(static_cast<uint8_t>(node.NodeId), 3,
+	frame.MakeSendData(node.NodeId, 3,
 					   { static_cast<uint8_t>(eCommandClass::SWITCH_BINARY),
 						 static_cast<uint8_t>(eSwitchBinaryCommand::SWITCH_BINARY_GET) });
 }
@@ -156,7 +156,7 @@ void ZW_CC_Basic::MakeFrame(ZW_APIFrame& frame, ZW_CmdId cmdid, const ZW_ByteVec
 	(void)cmdid;
 	Log.AddL(eLogTypes::INFO, MakeTag(), ">> BASIC_GET: node {}", node.NodeId);
 
-	frame.MakeSendData(static_cast<uint8_t>(node.NodeId), 3,
+	frame.MakeSendData(node.NodeId, 3,
 					   { static_cast<uint8_t>(eCommandClass::BASIC),
 						 static_cast<uint8_t>(eBasicCommand::BASIC_GET) });
 }
@@ -203,7 +203,7 @@ void ZW_CC_SwitchMultilevel::MakeFrame(ZW_APIFrame& frame, ZW_CmdId cmdid, const
 {
 	(void)cmdid;
 	Log.AddL(eLogTypes::INFO, MakeTag(), ">> SWITCH_MULTILEVEL_GET: node {}", node.NodeId);
-	frame.MakeSendData(static_cast<uint8_t>(node.NodeId), 3,
+	frame.MakeSendData(node.NodeId, 3,
 					   { static_cast<uint8_t>(eCommandClass::SWITCH_MULTILEVEL),
 						 static_cast<uint8_t>(eSwitchMultilevelCommand::SWITCH_MULTILEVEL_GET) });
 }
@@ -233,7 +233,7 @@ void ZW_CC_SensorBinary::MakeFrame(ZW_APIFrame& frame, ZW_CmdId cmdid, const ZW_
 {
 	(void)cmdid;
 	Log.AddL(eLogTypes::INFO, MakeTag(), ">> SENSOR_BINARY_GET: node {}", node.NodeId);
-	frame.MakeSendData(static_cast<uint8_t>(node.NodeId), 3,
+	frame.MakeSendData(node.NodeId, 3,
 					   { static_cast<uint8_t>(eCommandClass::SENSOR_BINARY),
 						 static_cast<uint8_t>(eSensorBinaryCommand::SENSOR_BINARY_GET) });
 }
@@ -262,7 +262,7 @@ void ZW_CC_Meter::MakeFrame(ZW_APIFrame& frame, ZW_CmdId cmdid, const ZW_ByteVec
 {
 	(void)cmdid;
 	Log.AddL(eLogTypes::INFO, MakeTag(), ">> METER_GET: node {}", node.NodeId);
-	frame.MakeSendData(static_cast<uint8_t>(node.NodeId), 3,
+	frame.MakeSendData(node.NodeId, 3,
 					   { static_cast<uint8_t>(eCommandClass::METER),
 						 static_cast<uint8_t>(eMeterCommand::METER_GET) });
 }
@@ -299,7 +299,7 @@ void ZW_CC_MultiChannel::MakeFrame(ZW_APIFrame& frame, ZW_CmdId cmdid, const ZW_
 	{
 	case static_cast<uint8_t>(eMultiChannelCommand::MULTI_CHANNEL_END_POINT_GET):
 		Log.AddL(eLogTypes::INFO, MakeTag(), ">> MULTI_CHANNEL_END_POINT_GET: node {}", node.NodeId);
-		frame.MakeSendData(static_cast<uint8_t>(node.NodeId), 4,
+		frame.MakeSendData(node.NodeId, 4,
 						   { static_cast<uint8_t>(eCommandClass::MULTI_CHANNEL),
 							 static_cast<uint8_t>(eMultiChannelCommand::MULTI_CHANNEL_END_POINT_GET)
 						   });
@@ -307,14 +307,14 @@ void ZW_CC_MultiChannel::MakeFrame(ZW_APIFrame& frame, ZW_CmdId cmdid, const ZW_
 
 	case static_cast<uint8_t>(eMultiChannelCommand::MULTI_CHANNEL_CAPABILITY_GET):
 		Log.AddL(eLogTypes::INFO, MakeTag(), ">> MULTI_CHANNEL_CAPABILITY_GET: node {}", node.NodeId);
-		frame.MakeSendData(static_cast<uint8_t>(node.NodeId), 4,
+		frame.MakeSendData(node.NodeId, 4,
 						   { static_cast<uint8_t>(eCommandClass::MULTI_CHANNEL),
 							 static_cast<uint8_t>(eMultiChannelCommand::MULTI_CHANNEL_CAPABILITY_GET),
 							 params[0] });
 		break;
 	default:
 		Log.AddL(eLogTypes::ERR, MakeTag(),
-				 ">> MULTI_CHANNEL unknown CC: node={} cmdId={}",
+				 ">> MULTI_CHANNEL unknown CC: node={} CC={}",
 				 node.NodeId, cmdId);
 		break;
 	}
@@ -350,7 +350,7 @@ void ZW_CC_MultiChannel::HandleReport(ZW_CmdId cmdid, const ZW_ByteVector& param
 		node.multiChannel.hasEndpointReport = true;
 
 		// Prepare endpoint vector
-		node.multiChannel.endpoints.clear();
+		//node.multiChannel.endpoints.clear();
 		node.multiChannel.endpoints.resize(endpointCount);
 
 		for (uint8_t ep = 1; ep <= endpointCount; ep++)
@@ -426,7 +426,7 @@ void ZW_CC_Configuration::MakeFrame(ZW_APIFrame& frame, ZW_CmdId cmdid, const ZW
 					 node.NodeId, params[0]);
 
 			frame.MakeSendData(
-				static_cast<uint8_t>(node.NodeId),
+				node.NodeId,
 				3, // length of payload
 				{ cc,
 				  static_cast<uint8_t>(eConfigurationCommand::CONFIGURATION_GET),
@@ -472,7 +472,7 @@ void ZW_CC_Configuration::MakeFrame(ZW_APIFrame& frame, ZW_CmdId cmdid, const ZW
 				payload.push_back(params[2 + i]);
 
 			frame.MakeSendData(
-				static_cast<uint8_t>(node.NodeId),
+				node.NodeId,
 				static_cast<uint8_t>(payload.size()),
 				payload
 			);
@@ -516,14 +516,15 @@ void ZW_CC_Configuration::HandleReport(ZW_CmdId cmdid, const ZW_ByteVector& para
 	int shift = (4 - size) * 8;
 	value = (value << shift) >> shift;
 
-	if (paramNumber >= 1 && paramNumber <= node.configurationInfo.size())
+	if (paramNumber >= 0 && paramNumber < node.configurationInfo.size())
 	{
-		auto& cfg = node.configurationInfo[paramNumber - 1];
+		auto& cfg = node.configurationInfo[paramNumber];
 		cfg.paramNumber = paramNumber;
 		cfg.size = size;
 		cfg.value = value;
 		cfg.raw.assign(params.begin() + 2, params.begin() + 2 + size);
 		cfg.valid = true;
+		cfg.isDead = true;
 	}
 	else
 	{
@@ -545,7 +546,7 @@ void ZW_CC_Protection::MakeFrame(ZW_APIFrame& frame, ZW_CmdId cmdid, const ZW_By
 {
 	(void)cmdid;
 	Log.AddL(eLogTypes::INFO, MakeTag(), ">> PROTECTION_GET: node {}", node.NodeId);
-	frame.MakeSendData(static_cast<uint8_t>(node.NodeId), 3,
+	frame.MakeSendData(node.NodeId, 3,
 					   { static_cast<uint8_t>(eCommandClass::PROTECTION),
 						 static_cast<uint8_t>(eProtectionCommand::PROTECTION_GET) });
 }
@@ -666,16 +667,19 @@ void ZW_CC_Association::HandleReport(ZW_CmdId cmdid, const ZW_ByteVector& params
 				node.associationGroups.resize(groupId);
 
 			auto& g = node.associationGroups[groupId - 1];
+
+			// If this is the first report for this group, clear old data
+			if (!g.hasLastReport)
+				for (auto& m : g.nodeList) m.valid = false;
+
 			g.groupId = groupId;
-			g.nodeList.clear();
+			g.maxNodes = maxNodes;
 
 			// Parse node list
-			for (size_t i = 0; i < maxNodes; i++)
+			for (size_t i = 3; i < params.size(); i++)
 			{
-				size_t p = 3 + i;
-				if (p >= params.size())
-					break;
-				g.nodeList.push_back(params[p]);
+				g.nodeList[params[i]].valid = true;
+				g.nodeList[params[i]].nodeId = params[i];
 			}
 
 			g.hasLastReport = (reportsToFollow == 0);
@@ -692,6 +696,7 @@ void ZW_CC_Association::HandleReport(ZW_CmdId cmdid, const ZW_ByteVector& params
 				return;
 
 			uint8_t groupCount = params[0];
+			node.associationGroups.clear();
 			node.associationGroups.resize(groupCount);
 
 			for (uint8_t i = 0; i < groupCount; i++)
@@ -711,10 +716,7 @@ void ZW_CC_Association::HandleReport(ZW_CmdId cmdid, const ZW_ByteVector& params
 //
 // MULTI CHANNEL ASSOCIATION (0x8E)
 //
-void ZW_CC_MultiChannelAssociation::MakeFrame(
-	ZW_APIFrame& frame,
-	ZW_CmdId cmdid,
-	const ZW_ByteVector& params)
+void ZW_CC_MultiChannelAssociation::MakeFrame(ZW_APIFrame& frame, ZW_CmdId cmdid, const ZW_ByteVector& params)
 {
 	const uint8_t cmdId = cmdid.value;
 	uint8_t cb = 6; // node.GetNextCallbackId();
@@ -737,29 +739,49 @@ void ZW_CC_MultiChannelAssociation::MakeFrame(
 			if (params.size() < 1)
 			{
 				Log.AddL(eLogTypes::ERR, MakeTag(),
-						 "MULTI_CHANNEL_ASSOCIATION_GET missing endpointId: node {}", node.NodeId);
+						 "MULTI_CHANNEL_ASSOCIATION_GET missing group: node {}", node.NodeId);
 				return;
 			}
-			auto endPoint = params[0] & 0x7;
+			auto group = params[0];
 			Log.AddL(eLogTypes::INFO, MakeTag(),
-					 ">> MULTI_CHANNEL_ASSOCIATION_GET: node {} endpoint {}",
-					 node.NodeId, (int)endPoint);
+					 ">> MULTI_CHANNEL_ASSOCIATION_GET: node {} group {}",
+					 node.NodeId, group);
 
 			frame.MakeSendData(static_cast<uint8_t>(node.NodeId), cb,
-							   { static_cast<uint8_t>(eCommandClass::MULTI_CHANNEL_ASSOCIATION),cmdId, (uint8_t)endPoint });
+							   { static_cast<uint8_t>(eCommandClass::MULTI_CHANNEL_ASSOCIATION),cmdId, (uint8_t)group });
 			break;
 		}
-		/*
-			case (uint8_t)eMultiChannelAssociationCommand::MULTI_CHANNEL_ASSOCIATION_REMOVE:
-				{
-					Log.AddL(eLogTypes::INFO, MakeTag(),
-							 ">> MULTI_CHANNEL_ASSOCIATION_REMOVE: node {} group {} params={}",
-							 node.NodeId, params[0], ParamsToString(params));
 
-					frame.MakeSendData(static_cast<uint8_t>(node.NodeId), cb, payload);
-					break;
-				}
-		*/
+	case (uint8_t)eMultiChannelAssociationCommand::MULTI_CHANNEL_ASSOCIATION_REMOVE:
+		{
+			Log.AddL(eLogTypes::INFO, MakeTag(),
+					 ">> MULTI_CHANNEL_ASSOCIATION_REMOVE: node {} group {} params={}",
+					 node.NodeId, params[0], ParamsToString(params));
+
+			ZW_ByteVector payLoad;
+			payLoad.push_back(static_cast<uint8_t>(eCommandClass::MULTI_CHANNEL_ASSOCIATION));
+			payLoad.push_back(cmdId);
+			payLoad.insert(payLoad.end(), params.begin(), params.end());
+
+			frame.MakeSendData(static_cast<uint8_t>(node.NodeId), cb,payLoad);
+			break;
+		}
+
+	case (uint8_t)eMultiChannelAssociationCommand::MULTI_CHANNEL_ASSOCIATION_SET:
+		{
+			Log.AddL(eLogTypes::INFO, MakeTag(),
+					 ">> MULTI_CHANNEL_ASSOCIATION_SET: node {} group {} params={}",
+					 node.NodeId, params[0], ParamsToString(params));
+
+			ZW_ByteVector payLoad;
+			payLoad.push_back(static_cast<uint8_t>(eCommandClass::MULTI_CHANNEL_ASSOCIATION));
+			payLoad.push_back(cmdId);
+			payLoad.insert(payLoad.end(), params.begin(), params.end());
+
+			frame.MakeSendData(static_cast<uint8_t>(node.NodeId), cb, payLoad);
+			break;
+		}
+
 	default:
 		Log.AddL(eLogTypes::ERR, MakeTag(),
 				 "<< MULTI_CHANNEL_ASSOCIATION unknown CC: node={} cmdId={}",
@@ -801,7 +823,6 @@ void ZW_CC_MultiChannelAssociation::HandleReport(
 		for (uint8_t g = 0; g < supportedGroups; g++)
 		{
 			node.multiChannelAssociationGroups[g].groupId = g + 1;
-			node.multiChannelAssociationGroups[g].members.clear();
 			node.multiChannelAssociationGroups[g].hasLastReport = false;
 		}
 
@@ -811,70 +832,70 @@ void ZW_CC_MultiChannelAssociation::HandleReport(
 	//
 	// --- MULTI_CHANNEL_ASSOCIATION_REPORT (0x03) ---
 	//
-	if (cmdId != (uint8_t)eMultiChannelAssociationCommand::MULTI_CHANNEL_ASSOCIATION_REPORT)
+	if (cmdId == (uint8_t)eMultiChannelAssociationCommand::MULTI_CHANNEL_ASSOCIATION_REPORT)
 	{
-		Log.AddL(eLogTypes::ERR, MakeTag(),
-				 "<< MULTI_CHANNEL_ASSOCIATION_REPORT unknown CC: node={} cmdId={}",
-				 node.NodeId, cmdId);
-		return;
+		if (params.size() < 3)
+		{
+			Log.AddL(eLogTypes::ERR, MakeTag(),
+					 "<< MULTI_CHANNEL_ASSOCIATION_REPORT too short: node={}",
+					 node.NodeId);
+			return;
+		}
+
+		Log.AddL(eLogTypes::INFO, MakeTag(),
+				 "<< MULTI_CHANNEL_ASSOCIATION_REPORT: node={} {}",
+				 node.NodeId, ParamsToString(params));
+
+		const uint8_t groupId = params[0];
+		const uint8_t maxNodes = params[1];
+		const uint8_t reportsToFollow = params[2];
+
+		// Ensure vector size
+		if (node.multiChannelAssociationGroups.size() < groupId)
+			node.multiChannelAssociationGroups.resize(groupId);
+
+		auto& g = node.multiChannelAssociationGroups[groupId - 1];
+		g.groupId = groupId;
+		g.maxNodes = maxNodes; // Number of node ID entries
+
+		// If this is the first report for this group, clear old data
+		if (!g.hasLastReport)
+			for (auto& m : g.members) m.valid = false;
+
+		size_t i = 3;
+
+		//
+		// 1) Parse NodeID entries
+		//
+		for (uint8_t n = 0; n < maxNodes && i < params.size(); n++)
+		{
+			uint8_t nodeId = params[i++];
+			if (nodeId == (uint8_t)eMultiChannelAssociationCommand::MULTI_CHANNEL_ASSOCIATION_REPORT_MARKER)
+				break; // start of endpoint entries
+
+			g.members[nodeId].nodeId = nodeId;
+			g.members[nodeId].endpointId = 0;
+			g.members[nodeId].valid = true;
+		}
+
+		//
+		// 2) Parse Multi Channel destinations
+		//
+		while (i + 1 < params.size())
+		{
+			uint8_t nodeId = params[i++];
+			uint8_t endpointId = params[i++];
+
+			g.members[nodeId].nodeId = nodeId;
+			g.members[nodeId].endpointId = endpointId;
+			g.members[nodeId].valid = true;
+		}
+
+		//
+		// 3) Track last report
+		//
+		g.hasLastReport = (reportsToFollow == 0);
 	}
-
-	Log.AddL(eLogTypes::INFO, MakeTag(),
-			 "<< MULTI_CHANNEL_ASSOCIATION_REPORT: node={} {}",
-			 node.NodeId, this->ParamsToString(params));
-
-	if (params.size() < 3)
-		return;
-
-	const uint8_t groupId = params[0];
-	const uint8_t maxNodes = params[1];
-	const uint8_t reportsToFollow = params[2];
-
-	// Ensure vector size
-	if (node.multiChannelAssociationGroups.size() < groupId)
-		node.multiChannelAssociationGroups.resize(groupId);
-
-	auto& g = node.multiChannelAssociationGroups[groupId - 1];
-	g.groupId = groupId;
-
-	// If this is the first report for this group, clear old data
-	if (!g.hasLastReport)
-		g.members.clear();
-
-	size_t i = 3;
-
-	//
-	// 1) Parse NodeID entries
-	//
-	for (uint8_t n = 0; n < maxNodes && i < params.size(); n++)
-	{
-		uint8_t nodeId = params[i++];
-		if (nodeId == 0x00)
-			break; // start of endpoint entries
-
-		g.members.push_back({ nodeId, 0 });
-	}
-
-	//
-	// 2) Parse Multi Channel destinations
-	//
-	while (i + 2 < params.size())
-	{
-		if (params[i] != 0x00)
-			break;
-
-		uint8_t nodeId = params[i + 1];
-		uint8_t endpointId = params[i + 2];
-
-		g.members.push_back({ nodeId, endpointId });
-
-		i += 3;
-	}
-
-	//
-	// 3) Track last report
-	//
-	g.hasLastReport = (reportsToFollow == 0);
 }
 
 //

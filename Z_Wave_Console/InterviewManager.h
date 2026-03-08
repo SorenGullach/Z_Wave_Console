@@ -19,7 +19,7 @@ public:
 		activeNode(nullptr)
 	{};
 
-	void Start(uint16_t nodeid)
+	void Start(uint8_t nodeid)
 	{
 		ZW_Node* node = nodes.GetOrCreate(nodeid, enqueue);
 		if (!node) return;
@@ -38,14 +38,18 @@ public:
 
 		case ZW_Node::eInterviewState::CCMultiChannelDone:
 			node->SetInterviewState(ZW_Node::eInterviewState::InterviewDone);
-			node->EnqueueJob(ZW_Node::eJobs::ASSOCIATION_INTERVIEW);
-			node->EnqueueJob(ZW_Node::eJobs::MULTI_CHANNEL_ASSOCIATION_INTERVIEW);
-			node->EnqueueJob(ZW_Node::eJobs::CONFIGURATION_INTERVIEW);
+			ZW_Node::Job job;
+			job.job = ZW_Node::eJobs::ASSOCIATION_INTERVIEW;
+			node->EnqueueJob(job);
+			job.job = ZW_Node::eJobs::MULTI_CHANNEL_ASSOCIATION_INTERVIEW;
+			node->EnqueueJob(job);
+			job.job = ZW_Node::eJobs::CONFIGURATION_INTERVIEW;
+			node->EnqueueJob(job);
 			break;
 		}
 	}
 
-	bool Done(uint16_t nodeid) const
+	bool Done(uint8_t nodeid) const
 	{
 		const ZW_Node* node = nodes.Get(nodeid);
 		if (node)
@@ -133,9 +137,9 @@ private:
 	ZW_Nodes& nodes;
 	ZW_Node* activeNode = nullptr;
 
-	void RequestNodeProtocolInfo(uint16_t nodeId);
-	void DecodeNodeProtocolInfo(uint16_t nodeId, const std::vector<uint8_t>& payload);
-	void RequestNodeInformation(const uint16_t nodeId);
+	void RequestNodeProtocolInfo(uint8_t nodeid);
+	void DecodeNodeProtocolInfo(uint8_t nodeid, const std::vector<uint8_t>& payload);
+	void RequestNodeInformation(uint8_t nodeid);
 	void DecodeNodeInfo(const std::vector<uint8_t>& payload);
 };
 

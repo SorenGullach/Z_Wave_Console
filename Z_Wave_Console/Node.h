@@ -30,10 +30,10 @@ public:
 		NotInterviewed, ProtocolInfoPending, ProtocolInfoDone, NodeInfoPending, NodeInfoDone,
 		CCVersionPending, CCVersionDone, CCMnfcSpecPending, CCMnfcSpecDone, CCMultiChannelPending, CCMultiChannelDone, InterviewDone,
 	};
-	enum class eNodeState { Bad, Awake, Sleepy };
+	enum class eNodeState { New, Awake, Sleepy };
 
 	// ===================== Members =====================
-	const uint16_t NodeId;
+	const uint8_t NodeId;
 
 	// ---------- Protocol Info ----------
 	struct ProtocolInfo
@@ -114,14 +114,21 @@ public:
 		int32_t value = 0;                // Signed big-endian interpreted value
 		std::vector<uint8_t> raw;         // Raw value bytes (size bytes)
 		bool valid = false;               // True when a REPORT has been received
+		bool isDead = false;              // True when a REPORT has been received
 	};
 	std::array<ConfigurationInfo, 255> configurationInfo{};
 
 	// ---------- Association Info (CC 0x85) ----------
+	struct AssociationGroupNode
+	{
+		bool valid = false;                // True when a REPORT has been received
+		uint8_t nodeId = 0;
+	};
 	struct AssociationGroup
 	{
 		uint8_t groupId = 0;
-		std::vector<uint8_t> nodeList;     // normale node-id'er
+		uint8_t maxNodes = 0;
+		std::array<AssociationGroupNode, 255> nodeList;     // normale node-id'er
 		bool hasLastReport = false;
 	};
 	std::vector<AssociationGroup> associationGroups;
@@ -149,12 +156,14 @@ public:
 	{
 		uint8_t nodeId = 0;
 		uint8_t endpointId = 0; // 0 = root endpoint
+		bool valid = false;
 	};
 
 	struct MultiChannelAssociationGroup
 	{
 		uint8_t groupId = 0;
-		std::vector<MultiChannelAssociationMember> members;
+		uint8_t maxNodes = 0;
+		std::array<MultiChannelAssociationMember, 255> members;
 		bool hasLastReport = false;
 	};
 	std::vector<MultiChannelAssociationGroup> multiChannelAssociationGroups;
@@ -196,7 +205,7 @@ public:
 
 protected:
 	mutable DebugMutex stateMutex;
-	eNodeState nodeState = eNodeState::Bad;
+	eNodeState nodeState = eNodeState::New;
 	eInterviewState interviewState = eInterviewState::NotInterviewed;
 	ZW_Device device;
 
@@ -204,8 +213,8 @@ protected:
 
 public:
 	// ===================== Constructors =====================
-	ZW_NodeInfo(uint16_t nodeId)
-		: NodeId{ nodeId }, device(*this)
+	ZW_NodeInfo(uint8_t nodeid)
+		: NodeId{ nodeid }, device(*this)
 	{}
 	ZW_NodeInfo(const ZW_NodeInfo&) = delete;
 	ZW_NodeInfo& operator=(const ZW_NodeInfo&) = delete;
@@ -300,13 +309,13 @@ public:
 	}
 
 	// ---------- ToString ----------
-	std::string ToString() const;
+	std::string ToString(int width) const;
 };
 
 class ZW_Node : public ZW_NodeInfo
 {
 public:
-	ZW_Node(uint16_t nodeId, EnqueueFn enqueue) : ZW_NodeInfo(nodeId)
+	ZW_Node(uint8_t nodeid, EnqueueFn enqueue) : ZW_NodeInfo(nodeid)
 	{
 		this->enqueue = std::move(enqueue);
 		Start();
@@ -366,27 +375,36 @@ public:
 		CONFIGURATION_INTERVIEW,
 		BIND_COMMAND,
 		UNBIND_COMMAND,
+		MULTI_CHANNEL_UNBIND_COMMAND,
+		MULTI_CHANNEL_BIND_COMMAND,
 		CONFIGURATION_COMMAND
 	};
-	void EnqueueJob(eJobs job, std::vector<uint32_t> params = {})
+
+	enum class eConfigSize : uint8_t { OneByte = 1, TwoBytes = 2, FourBytes = 4 };
+	struct Job
 	{
-		if (!SupportsJob(job))
+		eJobs job;
+		uint8_t group;
+		uint8_t nodeId;
+		uint8_t endpoint;
+		
+		uint32_t value;
+		eConfigSize cfgSize = eConfigSize::OneByte;
+	};
+	void EnqueueJob(Job job)
+	{
+		if (!SupportsJob(job.job))
 		{
-			Log.AddL(eLogTypes::INFO, MakeTag(), "Node {} does not support job: {}", NodeId, (uint8_t)job);
+			Log.AddL(eLogTypes::INFO, MakeTag(), "Node {} does not support job: {}", NodeId, (uint8_t)job.job);
 			return;
 		}
 
-		// if job already in queue, dont enqueue
-		for (auto& j : jobQueue)
-		{
-			//			if (j.job == job)
-				//			return;
-		}
-		Log.AddL(eLogTypes::INFO, MakeTag(), "EnqueueJob: {}", (uint8_t)job);
 		DebugLockGuard lock(stateMutex);
-		jobQueue.push_back(Job{ job, std::move(params) });
+		jobQueue.push_back(job);
+		Log.AddL(eLogTypes::INFO, MakeTag(), "EnqueueJob: num={}", jobQueue.size());
 	}
-	enum class eConfigSize : uint8_t { OneByte = 1, TwoBytes = 2, FourBytes = 4 };
+
+	bool HandleNodeFailed(uint8_t status);
 
 private:
 	EnqueueFn enqueue;
@@ -394,12 +412,14 @@ private:
 	std::atomic<bool> running{ false };
 	std::condition_variable stateCondition;
 
-	struct Job
-	{
-		eJobs job;
-		std::vector<uint32_t> param{}; // Add param array for job parameters
-	};
 	std::vector<Job> jobQueue;
+
+	enum class eIsDeadStates { Idle, Checking  };
+	struct IsDeadState
+	{
+		eIsDeadStates isDeadState = eIsDeadStates::Idle;
+	};
+	static IsDeadState isDeadState;
 
 	bool SupportsJob(eJobs type)
 	{
@@ -407,18 +427,20 @@ private:
 		{
 		case eJobs::BATTERY_GET:
 			return HasCC(eCommandClass::BATTERY);
-		case eJobs::ASSOCIATION_INTERVIEW:
-			return HasCC(eCommandClass::ASSOCIATION);
-		case eJobs::MULTI_CHANNEL_ASSOCIATION_INTERVIEW:
-			return HasCC(eCommandClass::MULTI_CHANNEL_ASSOCIATION);
+
 		case eJobs::CONFIGURATION_INTERVIEW:
-			return HasCC(eCommandClass::CONFIGURATION);
-		case eJobs::BIND_COMMAND:
-			return HasCC(eCommandClass::ASSOCIATION);
-		case eJobs::UNBIND_COMMAND:
-			return HasCC(eCommandClass::ASSOCIATION);
 		case eJobs::CONFIGURATION_COMMAND:
 			return HasCC(eCommandClass::CONFIGURATION);
+
+		case eJobs::ASSOCIATION_INTERVIEW:
+		case eJobs::BIND_COMMAND:
+		case eJobs::UNBIND_COMMAND:
+			return HasCC(eCommandClass::ASSOCIATION);
+
+		case eJobs::MULTI_CHANNEL_ASSOCIATION_INTERVIEW:
+		case eJobs::MULTI_CHANNEL_UNBIND_COMMAND:
+		case eJobs::MULTI_CHANNEL_BIND_COMMAND:
+			return HasCC(eCommandClass::MULTI_CHANNEL_ASSOCIATION);
 		default:
 			Log.AddL(eLogTypes::INFO, MakeTag(), "Unknown job: {}", (uint8_t)type);
 			return true;
@@ -467,13 +489,24 @@ private:
 
 	void WorkerTask()
 	{
+		auto awakeIdleSince = std::chrono::steady_clock::time_point{};
+		auto deadIdleSince = std::chrono::steady_clock::now();
 		while (running.load())
 		{
 			// Wait for node to be awake or running to be false
 			while (true)
 			{
+				if (std::chrono::steady_clock::now() - deadIdleSince >= std::chrono::seconds(10))
+				{
+					ProcessIsDead();
+					deadIdleSince = std::chrono::steady_clock::now();
+				}
+
 				if (GetState() == eNodeState::Awake || !running.load())
+				{
+					deadIdleSince = std::chrono::steady_clock::now();
 					break;
+				}
 				std::this_thread::sleep_for(std::chrono::milliseconds(50));
 			}
 
@@ -482,9 +515,13 @@ private:
 
 			if (GetState() == eNodeState::Awake)
 			{
+				if (awakeIdleSince.time_since_epoch().count() == 0)
+					awakeIdleSince = std::chrono::steady_clock::now();
+
 				if (GetInterviewState() != eInterviewState::InterviewDone)
 				{
 					ProcessInterviewState();
+					awakeIdleSince = std::chrono::steady_clock::now();
 					continue;
 				}
 
@@ -492,11 +529,20 @@ private:
 				if (TryPeekJob(job))
 				{
 					ExecuteJob(job);
+					awakeIdleSince = std::chrono::steady_clock::now();
 					continue;
 				}
-				std::this_thread::sleep_for(std::chrono::milliseconds(50));
 
+				if (std::chrono::steady_clock::now() - awakeIdleSince >= std::chrono::seconds(5))
+				{
+					Sleeping();
+					awakeIdleSince = {};
+					continue;
+				}
+
+				std::this_thread::sleep_for(std::chrono::milliseconds(50));
 			}
+
 		}
 	}
 
@@ -518,31 +564,19 @@ private:
 			doneOrError = ExecuteConfigurationInterviewJob();
 			break;
 		case eJobs::BIND_COMMAND:
-			if (job.param.size() < 2)
-			{
-				Log.AddL(eLogTypes::INFO, MakeTag(), "BIND_COMMAND missing params");
-				doneOrError = true;
-			}
-			else
-				doneOrError = ExecuteBindCommandJob((uint8_t)job.param[0], (uint8_t)job.param[1]);
+			doneOrError = ExecuteBindCommandJob(job.group, job.nodeId);
 			break;
 		case eJobs::UNBIND_COMMAND:
-			if (job.param.size() < 2)
-			{
-				Log.AddL(eLogTypes::INFO, MakeTag(), "UNBIND_COMMAND missing params");
-				doneOrError = true;
-			}
-			else
-				doneOrError = ExecuteUnBindCommandJob((uint8_t)job.param[0], (uint8_t)job.param[1]);
+			doneOrError = ExecuteUnBindCommandJob(job.group, job.nodeId);
+			break;
+		case eJobs::MULTI_CHANNEL_UNBIND_COMMAND:
+			doneOrError = ExecuteMultiChannelUnBindCommandJob(job.group, job.nodeId, job.endpoint);
+			break;
+		case eJobs::MULTI_CHANNEL_BIND_COMMAND:
+			doneOrError = ExecuteMultiChannelBindCommandJob(job.group, job.nodeId, job.endpoint);
 			break;
 		case eJobs::CONFIGURATION_COMMAND:
-			if (job.param.size() < 3)
-			{
-				Log.AddL(eLogTypes::INFO, MakeTag(), "CONFIGURATION_COMMAND missing params");
-				doneOrError = true;
-			}
-			else
-				doneOrError = ExecuteConfigurationCommandJob((uint8_t)job.param[0], (ZW_Node::eConfigSize)job.param[1], job.param[2]);
+			doneOrError = ExecuteConfigurationCommandJob(job.group, job.cfgSize, job.value);
 			break;
 		default:
 			Log.AddL(eLogTypes::INFO, MakeTag(), "Unknown job: {}", (uint8_t)job.job);
@@ -559,6 +593,8 @@ private:
 		}
 	}
 
+	void ProcessIsDead();
+
 	void ProcessInterviewState();
 
 	bool ExecuteBatteryCommandJob();
@@ -567,5 +603,8 @@ private:
 	bool ExecuteConfigurationInterviewJob();
 	bool ExecuteBindCommandJob(uint8_t groupId, uint8_t nodeid);
 	bool ExecuteUnBindCommandJob(uint8_t groupId, uint8_t nodeid);
+	bool ExecuteMultiChannelUnBindCommandJob(uint8_t groupId, uint8_t nodeid, uint8_t endpoint);
+	bool ExecuteMultiChannelBindCommandJob(uint8_t groupId, uint8_t nodeid, uint8_t endpoint);
 	bool ExecuteConfigurationCommandJob(uint8_t paramNumber, eConfigSize size, uint32_t value);
+
 };
