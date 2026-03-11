@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="logo.svg" width="200" />
+</p>
+
 # Z_Wave_Console
 A modern Z-Wave controller console + reverse-engineering notes for legacy Merten CONNECT devices.
 
