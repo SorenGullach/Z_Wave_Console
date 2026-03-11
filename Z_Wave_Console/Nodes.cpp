@@ -1,5 +1,3 @@
-
-
 #include "Nodes.h"
 #include "Node.h"
 
@@ -87,6 +85,7 @@ void ZW_Nodes::HandleCCDeviceReport(uint8_t nodeid, eCommandClass cmdclass, ZW_C
 		Log.AddL(eLogTypes::INFO, MakeTag(), "HandleCCDeviceReport: node {} not found", nodeid);
 		return;
 	}
+
 	n->HandleCCDeviceReport(cmdclass, cmdid, cmdparams);
 }
 

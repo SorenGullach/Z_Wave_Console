@@ -282,9 +282,33 @@ public:
 	// ---------- CC Dispatch ----------
 	void HandleCCDeviceReport(eCommandClass cmdClass, ZW_CmdId cmdId, const ZW_ByteVector& cmdParams)
 	{
+		ZW_ByteVector innerParams = cmdParams;
+		uint8_t destiationEndpoint = 0;
+		if (cmdClass == eCommandClass::MULTI_CHANNEL &&
+			cmdId.value == static_cast<uint8_t>(ZW_CC_MultiChannel::eMultiChannelCommand::MULTI_CHANNEL_CMD_ENCAP))
+		{
+			// pull out the encapsulated command
+			// | 0x60 | 0x06 | DE | CC | CMD | PAYLOAD...
+			if (cmdParams.size() >= 3)
+			{
+				destiationEndpoint = cmdParams[0];
+				cmdClass = static_cast<eCommandClass>(cmdParams[1]);
+				cmdId = ZW_CmdId(cmdParams[2]);
+				innerParams.assign(cmdParams.begin() + 3, cmdParams.end());
+				Log.AddL(eLogTypes::INFO, MakeTag(),
+						"Encapsulated command class: 0x{:02X} {} (to endpoint {})",
+						(uint8_t)cmdClass, CommandClassToString(cmdClass), destiationEndpoint);
+			}
+			else
+			{
+				Log.AddL(eLogTypes::ERR, MakeTag(),"Malformed multi-channel encapsulated command");
+			}
+		}
 		auto handler = device.GetHandler(cmdClass);
 		if (handler)
-			handler->HandleReport(ZW_CmdId(cmdId), cmdParams);
+		{
+			handler->HandleReport(cmdId, destiationEndpoint, innerParams);
+		}
 		else
 			Log.AddL(eLogTypes::INFO, MakeTag(), "Unknown command class handler: 0x{:02X} {}", (uint8_t)cmdClass, CommandClassToString(cmdClass));
 	}
@@ -310,6 +334,9 @@ public:
 
 	// ---------- ToString ----------
 	std::string ToString(int width) const;
+
+public:
+	virtual void SendFrame(const ZW_APIFrame& frame) = 0;
 };
 
 class ZW_Node : public ZW_NodeInfo
@@ -329,6 +356,11 @@ public:
 	// access (e.g., invalid `device` handlers).
 	ZW_Node(ZW_Node&&) = delete;
 	ZW_Node& operator=(ZW_Node&&) = delete;
+
+	void SendFrame(const ZW_APIFrame& frame) override
+	{
+		enqueue(frame);
+	}
 
 	void Start()
 	{
@@ -498,7 +530,7 @@ private:
 			{
 				if (std::chrono::steady_clock::now() - deadIdleSince >= std::chrono::seconds(10))
 				{
-					ProcessIsDead();
+//					ProcessIsDead();
 					deadIdleSince = std::chrono::steady_clock::now();
 				}
 

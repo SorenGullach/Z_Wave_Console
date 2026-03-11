@@ -31,8 +31,9 @@ public:
 	ZW_CCHandler(ZW_NodeInfo& n) : node(n) {}
 	virtual ~ZW_CCHandler() = default;
 
-	virtual void HandleReport(ZW_CmdId cmdid, const ZW_ByteVector& params) = 0;
 	virtual void MakeFrame(ZW_APIFrame& frame, ZW_CmdId cmdid, const ZW_ByteVector& params) = 0;
+	virtual void HandleReport(const ZW_CmdId cmdid, const uint8_t destinationEP, const ZW_ByteVector& params) = 0;
+
 	virtual void SetValue(int value) {}
 	virtual std::string ToString() const { return ""; }
 
@@ -95,7 +96,7 @@ public:
 	using ZW_CCHandler::ZW_CCHandler;
 
 	void MakeFrame(ZW_APIFrame& frame, ZW_CmdId cmdid, const ZW_ByteVector& params) override;
-	void HandleReport(ZW_CmdId cmdid, const ZW_ByteVector& params) override;
+	void HandleReport(const ZW_CmdId cmdid, const uint8_t destinationEP, const ZW_ByteVector& params) override;
 };
 
 class ZW_CC_Battery : public ZW_CCHandler
@@ -112,7 +113,7 @@ public:
 	using ZW_CCHandler::ZW_CCHandler;
 
 	void MakeFrame(ZW_APIFrame& frame, ZW_CmdId cmdid, const ZW_ByteVector& params) override;
-	void HandleReport(ZW_CmdId cmdid, const ZW_ByteVector& params) override;
+	void HandleReport(const ZW_CmdId cmdid, const uint8_t destinationEP, const ZW_ByteVector& params) override;
 };
 
 class ZW_CC_ManufacturerSpecific : public ZW_CCHandler
@@ -131,7 +132,7 @@ public:
 	using ZW_CCHandler::ZW_CCHandler;
 
 	void MakeFrame(ZW_APIFrame& frame, ZW_CmdId cmdid, const ZW_ByteVector& params) override;
-	void HandleReport(ZW_CmdId cmdid, const ZW_ByteVector& params) override;
+	void HandleReport(const ZW_CmdId cmdid, const uint8_t destinationEP, const ZW_ByteVector& params) override;
 };
 
 class ZW_CC_SwitchBinary : public ZW_CCHandler
@@ -149,7 +150,7 @@ public:
 	using ZW_CCHandler::ZW_CCHandler;
 
 	void MakeFrame(ZW_APIFrame& frame, ZW_CmdId cmdid, const ZW_ByteVector& params) override;
-	void HandleReport(ZW_CmdId cmdid, const ZW_ByteVector& params) override;
+	void HandleReport(const ZW_CmdId cmdid, const uint8_t destinationEP, const ZW_ByteVector& params) override;
 
 	void SetValue(int value) override
 	{
@@ -172,7 +173,7 @@ public:
 	using ZW_CCHandler::ZW_CCHandler;
 
 	void MakeFrame(ZW_APIFrame& frame, ZW_CmdId cmdid, const ZW_ByteVector& params) override;
-	void HandleReport(ZW_CmdId cmdid, const ZW_ByteVector& params) override;
+	void HandleReport(const ZW_CmdId cmdid, const uint8_t destinationEP, const ZW_ByteVector& params) override;
 };
 
 class ZW_CC_SwitchMultilevel : public ZW_CCHandler
@@ -190,7 +191,7 @@ public:
 	using ZW_CCHandler::ZW_CCHandler;
 
 	void MakeFrame(ZW_APIFrame& frame, ZW_CmdId cmdid, const ZW_ByteVector& params) override;
-	void HandleReport(ZW_CmdId cmdid, const ZW_ByteVector& params) override;
+	void HandleReport(const ZW_CmdId cmdid, const uint8_t destinationEP, const ZW_ByteVector& params) override;
 
 	void SetValue(int value) override
 	{
@@ -212,7 +213,7 @@ public:
 	using ZW_CCHandler::ZW_CCHandler;
 
 	void MakeFrame(ZW_APIFrame& frame, ZW_CmdId cmdid, const ZW_ByteVector& params) override;
-	void HandleReport(ZW_CmdId cmdid, const ZW_ByteVector& params) override;
+	void HandleReport(const ZW_CmdId cmdid, const uint8_t destinationEP, const ZW_ByteVector& params) override;
 };
 
 class ZW_CC_Meter : public ZW_CCHandler
@@ -229,7 +230,7 @@ public:
 	using ZW_CCHandler::ZW_CCHandler;
 
 	void MakeFrame(ZW_APIFrame& frame, ZW_CmdId cmdid, const ZW_ByteVector& params) override;
-	void HandleReport(ZW_CmdId cmdid, const ZW_ByteVector& params) override;
+	void HandleReport(const ZW_CmdId cmdid, const uint8_t destinationEP, const ZW_ByteVector& params) override;
 };
 
 class ZW_CC_MultiChannel : public ZW_CCHandler
@@ -237,7 +238,58 @@ class ZW_CC_MultiChannel : public ZW_CCHandler
 public:
 	enum class eMultiChannelCommand : uint8_t
 	{
-		// End Point discovery
+/* ----------------------------------------------------------------------------
+ *  COMMAND_CLASS_MULTI_CHANNEL (0x60)
+ *  MULTI_CHANNEL_CMD_ENCAP (0x06)
+ *
+ *  This command encapsulates another Z?Wave command and adds endpoint
+ *  information. Devices with multiple endpoints (e.g., multi?button
+ *  transmitters) use this to indicate which endpoint generated the command.
+ *
+ *  Frame format:
+ *
+ *      +--------+--------+--------+--------+--------+--------+---------
+ *      | 0x60   | 0x06   |  SE    |  DE    |  CC    |  CMD   | PAYLOAD...
+ *      +--------+--------+--------+--------+--------+--------+---------
+ *
+ *      0x60  = COMMAND_CLASS_MULTI_CHANNEL
+ *      0x06  = MULTI_CHANNEL_CMD_ENCAP
+ *
+ *      SE    = Source Endpoint (1–127)
+ *              Identifies which endpoint/button sent the command.
+ *
+ *      DE    = Destination Endpoint (0-127)
+ *              0 = root device. Non-zero targets a specific endpoint.
+ *
+ *      CC    = Encapsulated Command Class
+ *      CMD   = Encapsulated Command
+ *      PAYLOAD = Zero or more bytes depending on CC/CMD
+ *
+ *  Example frames from Merten 506004:
+ *
+ *      60 06 01 20 02
+ *          SE=1, CC=0x20 (BASIC), CMD=0x02 (BASIC_GET)
+ *
+ *      60 06 01 20 01 FF
+ *          SE=1, CC=0x20 (BASIC), CMD=0x01 (BASIC_SET), value=0xFF
+ *
+ *  Controller handling:
+ *      - Detect CC=0x60 and CMD=0x06
+ *      - Extract SE (source endpoint)
+ *      - Extract DE (destination endpoint)
+ *      - Forward the inner CC/CMD/PAYLOAD to the normal CC handler
+ *      - Use SE to determine which button/endpoint triggered the event
+ *
+ *  Notes:
+ *      - This command is still used by all Z-Wave devices, even though
+ *        it is no longer documented in the public 2024B3 Application Spec.
+ *      - The format above is correct and verified from live device traffic.
+ * ----------------------------------------------------------------------------
+ */
+
+ // End Point discovery
+		MULTI_CHANNEL_CMD_ENCAP = 0x06,
+
 		MULTI_CHANNEL_END_POINT_GET = 0x07,
 		MULTI_CHANNEL_END_POINT_REPORT = 0x08,
 
@@ -249,8 +301,8 @@ public:
 		MULTI_CHANNEL_END_POINT_FIND = 0x0B,
 		MULTI_CHANNEL_END_POINT_FIND_REPORT = 0x0C,
 
-		// Encapsulation
-		MULTI_CHANNEL_CMD_ENCAP = 0x0D,
+		// Encapsulation (v2)
+		MULTI_CHANNEL_CMD_ENCAP_V2 = 0x0D,
 
 		// Aggregated endpoints
 		MULTI_CHANNEL_AGGREGATED_MEMBERS_GET = 0x0E,
@@ -262,7 +314,7 @@ public:
 	using ZW_CCHandler::ZW_CCHandler;
 
 	void MakeFrame(ZW_APIFrame& frame, ZW_CmdId cmdid, const ZW_ByteVector& params) override;
-	void HandleReport(ZW_CmdId cmdid, const ZW_ByteVector& params) override;
+	void HandleReport(const ZW_CmdId cmdid, const uint8_t destinationEP, const ZW_ByteVector& params) override;
 };
 
 class ZW_CC_Configuration : public ZW_CCHandler
@@ -280,7 +332,7 @@ public:
 	using ZW_CCHandler::ZW_CCHandler;
 
 	void MakeFrame(ZW_APIFrame& frame, ZW_CmdId cmdid, const ZW_ByteVector& params) override;
-	void HandleReport(ZW_CmdId cmdid, const ZW_ByteVector& params) override;
+	void HandleReport(const ZW_CmdId cmdid, const uint8_t destinationEP, const ZW_ByteVector& params) override;
 };
 
 class ZW_CC_Protection : public ZW_CCHandler
@@ -297,7 +349,7 @@ public:
 	using ZW_CCHandler::ZW_CCHandler;
 
 	void MakeFrame(ZW_APIFrame& frame, ZW_CmdId cmdid, const ZW_ByteVector& params) override;
-	void HandleReport(ZW_CmdId cmdid, const ZW_ByteVector& params) override;
+	void HandleReport(const ZW_CmdId cmdid, const uint8_t destinationEP, const ZW_ByteVector& params) override;
 };
 
 class ZW_CC_Association : public ZW_CCHandler
@@ -318,7 +370,7 @@ public:
 	using ZW_CCHandler::ZW_CCHandler;
 
 	void MakeFrame(ZW_APIFrame& frame, ZW_CmdId cmdid, const ZW_ByteVector& params) override;
-	void HandleReport(ZW_CmdId cmdid, const ZW_ByteVector& params) override;
+	void HandleReport(const ZW_CmdId cmdid, const uint8_t destinationEP, const ZW_ByteVector& params) override;
 };
 
 class ZW_CC_MultiChannelAssociation : public ZW_CCHandler
@@ -345,7 +397,7 @@ public:
 	using ZW_CCHandler::ZW_CCHandler;
 
 	void MakeFrame(ZW_APIFrame& frame, ZW_CmdId cmdid, const ZW_ByteVector& params) override;
-	void HandleReport(ZW_CmdId cmdid, const ZW_ByteVector& params) override;
+	void HandleReport(const ZW_CmdId cmdid, const uint8_t destinationEP, const ZW_ByteVector& params) override;
 };
 
 class ZW_CC_WakeUp : public ZW_CCHandler
@@ -367,6 +419,6 @@ public:
 		WAKE_UP_INTERVAL_CAPABILITIES_REPORT = 0x0A
 	};
 
-	void MakeFrame(ZW_APIFrame& frame, ZW_CmdId cmdid, const std::vector<uint8_t>& params) override;
-	void HandleReport(ZW_CmdId cmdid, const std::vector<uint8_t>& params) override;
+	void MakeFrame(ZW_APIFrame& frame, ZW_CmdId cmdid, const ZW_ByteVector& params) override;
+	void HandleReport(const ZW_CmdId cmdid, const uint8_t destinationEP, const ZW_ByteVector& params) override;
 };

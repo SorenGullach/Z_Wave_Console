@@ -237,8 +237,10 @@ static std::string ReadCommand()
 }
 int main()
 {
-	//Log.SetLogType(eLogTypes::INFO);
-	Log.SetLogType(eLogTypes::DBG);
+	Log.SetLogTypeOn(eLogTypes::ERR);
+	//Log.SetLogTypeOn(eLogTypes::INFO_LOW);
+	Log.SetLogTypeOn(eLogTypes::INFO);
+//	Log.SetLogTypeOn(eLogTypes::DBG);
 
 	DrawUiFrame();
 

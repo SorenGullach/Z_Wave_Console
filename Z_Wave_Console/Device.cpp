@@ -7,7 +7,7 @@
 //
 // VERSION
 //
-void ZW_CC_Version::MakeFrame(ZW_APIFrame& frame, ZW_CmdId cmdid, const ZW_ByteVector& params)
+void ZW_CC_Version::MakeFrame(ZW_APIFrame& frame, const ZW_CmdId cmdid, const ZW_ByteVector& params)
 {
 	(void)cmdid;
 	frame.MakeSendData(node.NodeId, 1,
@@ -16,7 +16,7 @@ void ZW_CC_Version::MakeFrame(ZW_APIFrame& frame, ZW_CmdId cmdid, const ZW_ByteV
 						 params[0] });
 }
 
-void ZW_CC_Version::HandleReport(ZW_CmdId cmdid, const ZW_ByteVector& params)
+void ZW_CC_Version::HandleReport(const ZW_CmdId cmdid, const uint8_t destinationEP, const ZW_ByteVector& params)
 {
 	const uint8_t cmdId = cmdid.value;
 	if (cmdId != static_cast<uint8_t>(eVersionCommand::VERSION_COMMAND_CLASS_REPORT))
@@ -59,7 +59,7 @@ void ZW_CC_ManufacturerSpecific::MakeFrame(ZW_APIFrame& frame, ZW_CmdId cmdid, c
 						   params[0], params[1] }); // DEVICE_SPECIFIC_GET (type 0)
 }
 
-void ZW_CC_ManufacturerSpecific::HandleReport(ZW_CmdId cmdid, const ZW_ByteVector& params)
+void ZW_CC_ManufacturerSpecific::HandleReport(const ZW_CmdId cmdid, const uint8_t destinationEP, const ZW_ByteVector& params)
 {
 	const uint8_t cmdId = cmdid.value;
 	if (cmdId != static_cast<uint8_t>(eManufacturerSpecificCommand::DEVICE_SPECIFIC_REPORT))
@@ -94,16 +94,16 @@ void ZW_CC_ManufacturerSpecific::HandleReport(ZW_CmdId cmdid, const ZW_ByteVecto
 //
 // BATTERY
 //
-void ZW_CC_Battery::MakeFrame(ZW_APIFrame& frame, ZW_CmdId cmdid, const ZW_ByteVector&)
+void ZW_CC_Battery::MakeFrame(ZW_APIFrame& frame, ZW_CmdId cmdid, const ZW_ByteVector& params)
 {
 	(void)cmdid;
-	Log.AddL(eLogTypes::INFO, MakeTag(), ">> BATTERY_GET: node {}", node.NodeId);
+	Log.AddL(eLogTypes::INFO, MakeTag(), "MF BATTERY_GET: node {}", node.NodeId);
 	frame.MakeSendData(node.NodeId, 3,
 					   { static_cast<uint8_t>(eCommandClass::BATTERY),
 						 static_cast<uint8_t>(eBatteryCommand::BATTERY_GET) });
 }
 
-void ZW_CC_Battery::HandleReport(ZW_CmdId cmdid, const ZW_ByteVector& params)
+void ZW_CC_Battery::HandleReport(const ZW_CmdId cmdid, const uint8_t destinationEP, const ZW_ByteVector& params)
 {
 	const uint8_t cmdId = cmdid.value;
 	if (cmdId != static_cast<uint8_t>(eBatteryCommand::BATTERY_REPORT))
@@ -122,16 +122,16 @@ void ZW_CC_Battery::HandleReport(ZW_CmdId cmdid, const ZW_ByteVector& params)
 //
 // SWITCH BINARY
 //
-void ZW_CC_SwitchBinary::MakeFrame(ZW_APIFrame& frame, ZW_CmdId cmdid, const ZW_ByteVector&)
+void ZW_CC_SwitchBinary::MakeFrame(ZW_APIFrame& frame, ZW_CmdId cmdid, const ZW_ByteVector& params)
 {
 	(void)cmdid;
-	Log.AddL(eLogTypes::INFO, MakeTag(), ">> SWITCH_BINARY_GET: node {}", node.NodeId);
+	Log.AddL(eLogTypes::INFO, MakeTag(), "MF SWITCH_BINARY_GET: node {}", node.NodeId);
 	frame.MakeSendData(node.NodeId, 3,
 					   { static_cast<uint8_t>(eCommandClass::SWITCH_BINARY),
 						 static_cast<uint8_t>(eSwitchBinaryCommand::SWITCH_BINARY_GET) });
 }
 
-void ZW_CC_SwitchBinary::HandleReport(ZW_CmdId cmdid, const ZW_ByteVector& params)
+void ZW_CC_SwitchBinary::HandleReport(const ZW_CmdId cmdid, const uint8_t destinationEP, const ZW_ByteVector& params)
 {
 	const uint8_t cmdId = cmdid.value;
 	if (cmdId != static_cast<uint8_t>(eSwitchBinaryCommand::SWITCH_BINARY_REPORT))
@@ -151,44 +151,107 @@ void ZW_CC_SwitchBinary::HandleReport(ZW_CmdId cmdid, const ZW_ByteVector& param
 //
 // BASIC (0x20)
 //
-void ZW_CC_Basic::MakeFrame(ZW_APIFrame& frame, ZW_CmdId cmdid, const ZW_ByteVector&)
+void ZW_CC_Basic::MakeFrame(ZW_APIFrame& frame, ZW_CmdId cmdid, const ZW_ByteVector& params)
 {
-	(void)cmdid;
-	Log.AddL(eLogTypes::INFO, MakeTag(), ">> BASIC_GET: node {}", node.NodeId);
+	switch (cmdid.value)
+	{
+	case static_cast<uint8_t>(eBasicCommand::BASIC_SET):
+		Log.AddL(eLogTypes::INFO, MakeTag(), "MF BASIC_SET: node {}", node.NodeId);
+		frame.MakeSendData(node.NodeId, 3,
+						   { static_cast<uint8_t>(eCommandClass::BASIC),
+							 static_cast<uint8_t>(eBasicCommand::BASIC_SET), params[0] });
+		break;
 
-	frame.MakeSendData(node.NodeId, 3,
-					   { static_cast<uint8_t>(eCommandClass::BASIC),
-						 static_cast<uint8_t>(eBasicCommand::BASIC_GET) });
+	case static_cast<uint8_t>(eBasicCommand::BASIC_GET):
+		Log.AddL(eLogTypes::INFO, MakeTag(), "MF BASIC_GET: node {}", node.NodeId);
+		frame.MakeSendData(node.NodeId, 3,
+						   { static_cast<uint8_t>(eCommandClass::BASIC),
+							 static_cast<uint8_t>(eBasicCommand::BASIC_GET) });
+		break;
+
+	case static_cast<uint8_t>(eBasicCommand::BASIC_REPORT):
+		if (params.empty())
+		{
+			Log.AddL(eLogTypes::INFO, MakeTag(), "MF BASIC_REPORT: node {} no value", node.NodeId);
+			return;
+		}
+		Log.AddL(eLogTypes::INFO, MakeTag(), "MF BASIC_REPORT: node {} value=0x{:02X}", node.NodeId, params[0]);
+		frame.MakeSendData(node.NodeId, 3,
+						   { static_cast<uint8_t>(eCommandClass::BASIC),
+							 static_cast<uint8_t>(eBasicCommand::BASIC_REPORT), params[0] });
+		break;
+
+	default:
+		Log.AddL(eLogTypes::ERR, MakeTag(), "<< BASIC unknowen CC: node={} cmdId={}", node.NodeId, cmdid.value);
+		return;
+	}
 }
 
-void ZW_CC_Basic::HandleReport(ZW_CmdId cmdid, const ZW_ByteVector& params)
+void ZW_CC_Basic::HandleReport(const ZW_CmdId cmdid, const uint8_t destinationEP, const ZW_ByteVector& params)
 {
 	const uint8_t cmdId = cmdid.value;
-	if (params.empty())
-		return;
-
-	const uint8_t value = params[0];
 
 	switch (cmdId)
 	{
 	case static_cast<uint8_t>(eBasicCommand::BASIC_SET):
+	{
+		if (params.empty())
+		{
+			Log.AddL(eLogTypes::ERR, MakeTag(), "<< BASIC_SET: node={} no value", node.NodeId);
+			return;
+		}
+
+		const uint8_t value = params[0];
 		// unsolicited state change from device
 		node.basicValue = value;
 		Log.AddL(eLogTypes::INFO, MakeTag(),
-				 "<< BASIC_SET: node={} value=0x{:02X}", node.NodeId, value);
+				 "<< BASIC_SET: node={} value=0x{:02X} destinationEP={}", node.NodeId, value, destinationEP);
+	}
+	break;
+
+	case static_cast<uint8_t>(eBasicCommand::BASIC_GET):
+		// Device send a request answer
+		Log.AddL(eLogTypes::INFO, MakeTag(), "<< BASIC_GET from node={} destinationEP={}", node.NodeId, destinationEP);
+
+		// Send report to device
+		{
+			uint8_t value = static_cast<uint8_t>(node.basicValue.has_value() ? node.basicValue.value() : 0);
+
+			ZW_APIFrame apiFrame;
+			if (destinationEP == 0)
+			{	// standalone
+				MakeFrame(apiFrame, eBasicCommand::BASIC_REPORT, { value });
+				node.SendFrame(apiFrame); // send report
+			}
+			else
+			{ // make a encapsulated report
+				MakeFrame(apiFrame, eBasicCommand::BASIC_REPORT, { value });
+				ZW_CC_MultiChannel mc(node);
+				mc.MakeFrame(apiFrame, ZW_CC_MultiChannel::eMultiChannelCommand::MULTI_CHANNEL_CMD_ENCAP,
+							 { destinationEP,
+							 static_cast<uint8_t>(eCommandClass::BASIC),
+							 static_cast<uint8_t>(eBasicCommand::BASIC_REPORT),
+							 value
+							 });
+				node.SendFrame(apiFrame);
+
+			}
+		}
+
 		break;
 
 	case static_cast<uint8_t>(eBasicCommand::BASIC_REPORT):
-		// response to BASIC_GET
-		node.basicValue = value;
+	{
+		if (params.empty())
+		{
+			Log.AddL(eLogTypes::ERR, MakeTag(), "<< BASIC_REPORT: node={} no value", node.NodeId);
+			return;
+		}
+		node.basicValue = params[0];
 		Log.AddL(eLogTypes::INFO, MakeTag(),
-				 "<< BASIC_REPORT: node={} value=0x{:02X}", node.NodeId, value);
-		break;
-
-	case static_cast<uint8_t>(eBasicCommand::BASIC_GET):
-		// Device SHOULD not send this to controller – just ignore
-		Log.AddL(eLogTypes::INFO, MakeTag(), "<< BASIC_GET from node={} (ignored)", node.NodeId);
-		break;
+				 "<< BASIC_REPORT: node={} value=0x{:02X} destinationEP={}", node.NodeId, node.basicValue.value(), destinationEP);
+	}
+	break;
 
 	default:
 		Log.AddL(eLogTypes::ERR, MakeTag(), "<< BASIC unknown cmd: node={} cmdId=0x{:02X}", node.NodeId, (int)cmdId);
@@ -199,16 +262,16 @@ void ZW_CC_Basic::HandleReport(ZW_CmdId cmdid, const ZW_ByteVector& params)
 //
 // SWITCH MULTILEVEL (0x26)
 //
-void ZW_CC_SwitchMultilevel::MakeFrame(ZW_APIFrame& frame, ZW_CmdId cmdid, const ZW_ByteVector&)
+void ZW_CC_SwitchMultilevel::MakeFrame(ZW_APIFrame& frame, ZW_CmdId cmdid, const ZW_ByteVector& params)
 {
 	(void)cmdid;
-	Log.AddL(eLogTypes::INFO, MakeTag(), ">> SWITCH_MULTILEVEL_GET: node {}", node.NodeId);
+	Log.AddL(eLogTypes::INFO, MakeTag(), "MF SWITCH_MULTILEVEL_GET: node {}", node.NodeId);
 	frame.MakeSendData(node.NodeId, 3,
 					   { static_cast<uint8_t>(eCommandClass::SWITCH_MULTILEVEL),
 						 static_cast<uint8_t>(eSwitchMultilevelCommand::SWITCH_MULTILEVEL_GET) });
 }
 
-void ZW_CC_SwitchMultilevel::HandleReport(ZW_CmdId cmdid, const ZW_ByteVector& params)
+void ZW_CC_SwitchMultilevel::HandleReport(const ZW_CmdId cmdid, const uint8_t destinationEP, const ZW_ByteVector& params)
 {
 	const uint8_t cmdId = cmdid.value;
 	if (cmdId != static_cast<uint8_t>(eSwitchMultilevelCommand::SWITCH_MULTILEVEL_REPORT))
@@ -229,16 +292,16 @@ void ZW_CC_SwitchMultilevel::HandleReport(ZW_CmdId cmdid, const ZW_ByteVector& p
 //
 // SENSOR BINARY (0x30)
 //
-void ZW_CC_SensorBinary::MakeFrame(ZW_APIFrame& frame, ZW_CmdId cmdid, const ZW_ByteVector&)
+void ZW_CC_SensorBinary::MakeFrame(ZW_APIFrame& frame, ZW_CmdId cmdid, const ZW_ByteVector& params)
 {
 	(void)cmdid;
-	Log.AddL(eLogTypes::INFO, MakeTag(), ">> SENSOR_BINARY_GET: node {}", node.NodeId);
+	Log.AddL(eLogTypes::INFO, MakeTag(), "MF SENSOR_BINARY_GET: node {}", node.NodeId);
 	frame.MakeSendData(node.NodeId, 3,
 					   { static_cast<uint8_t>(eCommandClass::SENSOR_BINARY),
 						 static_cast<uint8_t>(eSensorBinaryCommand::SENSOR_BINARY_GET) });
 }
 
-void ZW_CC_SensorBinary::HandleReport(ZW_CmdId cmdid, const ZW_ByteVector& params)
+void ZW_CC_SensorBinary::HandleReport(const ZW_CmdId cmdid, const uint8_t destinationEP, const ZW_ByteVector& params)
 {
 	const uint8_t cmdId = cmdid.value;
 	if (cmdId != static_cast<uint8_t>(eSensorBinaryCommand::SENSOR_BINARY_REPORT))
@@ -258,16 +321,16 @@ void ZW_CC_SensorBinary::HandleReport(ZW_CmdId cmdid, const ZW_ByteVector& param
 //
 // METER (0x32 / 0x50)
 //
-void ZW_CC_Meter::MakeFrame(ZW_APIFrame& frame, ZW_CmdId cmdid, const ZW_ByteVector&)
+void ZW_CC_Meter::MakeFrame(ZW_APIFrame& frame, ZW_CmdId cmdid, const ZW_ByteVector& params)
 {
 	(void)cmdid;
-	Log.AddL(eLogTypes::INFO, MakeTag(), ">> METER_GET: node {}", node.NodeId);
+	Log.AddL(eLogTypes::INFO, MakeTag(), "MF METER_GET: node {}", node.NodeId);
 	frame.MakeSendData(node.NodeId, 3,
 					   { static_cast<uint8_t>(eCommandClass::METER),
 						 static_cast<uint8_t>(eMeterCommand::METER_GET) });
 }
 
-void ZW_CC_Meter::HandleReport(ZW_CmdId cmdid, const ZW_ByteVector& params)
+void ZW_CC_Meter::HandleReport(const ZW_CmdId cmdid, const uint8_t destinationEP, const ZW_ByteVector& params)
 {
 	const uint8_t cmdId = cmdid.value;
 	if (cmdId != static_cast<uint8_t>(eMeterCommand::METER_REPORT))
@@ -297,8 +360,22 @@ void ZW_CC_MultiChannel::MakeFrame(ZW_APIFrame& frame, ZW_CmdId cmdid, const ZW_
 	const uint8_t cmdId = cmdid.value;
 	switch (cmdId)
 	{
+	case static_cast<uint8_t>(eMultiChannelCommand::MULTI_CHANNEL_CMD_ENCAP):
+	{
+		std::string oss;
+		for (auto& param : params) oss += std::format("{:02X} ", (param));
+		Log.AddL(eLogTypes::INFO, MakeTag(), "MF MULTI_CHANNEL_CMD_ENCAP: node {} params {}", node.NodeId, oss.c_str());
+
+		ZW_ByteVector payload;
+		payload.push_back(static_cast<uint8_t>(eCommandClass::MULTI_CHANNEL));
+		payload.push_back(static_cast<uint8_t>(eMultiChannelCommand::MULTI_CHANNEL_CMD_ENCAP));
+		payload.insert(payload.end(), params.begin(), params.end()); // DE | CC | CMD | PAYLOAD...
+		frame.MakeSendData(node.NodeId, 4, payload);
+	}
+	break;
+
 	case static_cast<uint8_t>(eMultiChannelCommand::MULTI_CHANNEL_END_POINT_GET):
-		Log.AddL(eLogTypes::INFO, MakeTag(), ">> MULTI_CHANNEL_END_POINT_GET: node {}", node.NodeId);
+		Log.AddL(eLogTypes::INFO, MakeTag(), "MF MULTI_CHANNEL_END_POINT_GET: node {}", node.NodeId);
 		frame.MakeSendData(node.NodeId, 4,
 						   { static_cast<uint8_t>(eCommandClass::MULTI_CHANNEL),
 							 static_cast<uint8_t>(eMultiChannelCommand::MULTI_CHANNEL_END_POINT_GET)
@@ -306,7 +383,7 @@ void ZW_CC_MultiChannel::MakeFrame(ZW_APIFrame& frame, ZW_CmdId cmdid, const ZW_
 		break;
 
 	case static_cast<uint8_t>(eMultiChannelCommand::MULTI_CHANNEL_CAPABILITY_GET):
-		Log.AddL(eLogTypes::INFO, MakeTag(), ">> MULTI_CHANNEL_CAPABILITY_GET: node {}", node.NodeId);
+		Log.AddL(eLogTypes::INFO, MakeTag(), "MF MULTI_CHANNEL_CAPABILITY_GET: node {}", node.NodeId);
 		frame.MakeSendData(node.NodeId, 4,
 						   { static_cast<uint8_t>(eCommandClass::MULTI_CHANNEL),
 							 static_cast<uint8_t>(eMultiChannelCommand::MULTI_CHANNEL_CAPABILITY_GET),
@@ -320,15 +397,30 @@ void ZW_CC_MultiChannel::MakeFrame(ZW_APIFrame& frame, ZW_CmdId cmdid, const ZW_
 	}
 }
 
-void ZW_CC_MultiChannel::HandleReport(ZW_CmdId cmdid, const ZW_ByteVector& params)
+void ZW_CC_MultiChannel::HandleReport(const ZW_CmdId cmdid, const uint8_t destinationEP, const ZW_ByteVector& params)
 {
 	const uint8_t cmdId = cmdid.value;
 
 	switch (cmdId)
 	{
-		//
-		// MULTI_CHANNEL_END_POINT_REPORT (0x08)
-		//
+	case static_cast<uint8_t>(eMultiChannelCommand::MULTI_CHANNEL_CMD_ENCAP):
+	{
+		Log.AddL(eLogTypes::INFO, MakeTag(),
+				 "<< MULTI_CHANNEL_CMD_ENCAP: node={} params={}",
+				 node.NodeId, ParamsToString(params));
+
+		// | 0x60 | 0x06 | DE | CC | CMD | PAYLOAD...
+		uint8_t destinationEndpoint = params[0];
+		eCommandClass commandClass = static_cast<eCommandClass>(params[1]);
+		uint8_t command = params[2];
+		ZW_ByteVector payload(params.begin() + 3, params.end());
+
+		node.HandleCCDeviceReport(commandClass, command, payload);
+	}
+	break;
+	//
+	// MULTI_CHANNEL_END_POINT_REPORT (0x08)
+	//
 	case static_cast<uint8_t>(eMultiChannelCommand::MULTI_CHANNEL_END_POINT_REPORT):
 	{
 		Log.AddL(eLogTypes::INFO, MakeTag(),
@@ -457,7 +549,7 @@ void ZW_CC_Configuration::MakeFrame(ZW_APIFrame& frame, ZW_CmdId cmdid, const ZW
 			}
 
 			Log.AddL(eLogTypes::INFO, MakeTag(),
-					 ">> CONFIGURATION_SET: node {} param={} size={}",
+					 "MF CONFIGURATION_SET: node {} param={} size={}",
 					 node.NodeId, paramNumber, size);
 
 			ZW_ByteVector payload;
@@ -489,7 +581,7 @@ void ZW_CC_Configuration::MakeFrame(ZW_APIFrame& frame, ZW_CmdId cmdid, const ZW
 	}
 }
 
-void ZW_CC_Configuration::HandleReport(ZW_CmdId cmdid, const ZW_ByteVector& params)
+void ZW_CC_Configuration::HandleReport(const ZW_CmdId cmdid, const uint8_t destinationEP, const ZW_ByteVector& params)
 {
 	if (cmdid.value != 0x06) // CONFIGURATION_REPORT
 	{
@@ -542,16 +634,16 @@ void ZW_CC_Configuration::HandleReport(ZW_CmdId cmdid, const ZW_ByteVector& para
 //
 // PROTECTION (0x75)
 //
-void ZW_CC_Protection::MakeFrame(ZW_APIFrame& frame, ZW_CmdId cmdid, const ZW_ByteVector&)
+void ZW_CC_Protection::MakeFrame(ZW_APIFrame& frame, ZW_CmdId cmdid, const ZW_ByteVector& params)
 {
 	(void)cmdid;
-	Log.AddL(eLogTypes::INFO, MakeTag(), ">> PROTECTION_GET: node {}", node.NodeId);
+	Log.AddL(eLogTypes::INFO, MakeTag(), "MF PROTECTION_GET: node {}", node.NodeId);
 	frame.MakeSendData(node.NodeId, 3,
 					   { static_cast<uint8_t>(eCommandClass::PROTECTION),
 						 static_cast<uint8_t>(eProtectionCommand::PROTECTION_GET) });
 }
 
-void ZW_CC_Protection::HandleReport(ZW_CmdId cmdid, const ZW_ByteVector& params)
+void ZW_CC_Protection::HandleReport(const ZW_CmdId cmdid, const uint8_t destinationEP, const ZW_ByteVector& params)
 {
 	const uint8_t cmdId = cmdid.value;
 	if (cmdId != static_cast<uint8_t>(eProtectionCommand::PROTECTION_REPORT))
@@ -592,7 +684,7 @@ void ZW_CC_Association::MakeFrame(ZW_APIFrame& frame, ZW_CmdId cmdid, const ZW_B
 				oss += std::to_string(params[i]) + " ";
 
 			Log.AddL(eLogTypes::INFO, MakeTag(),
-					 ">> ASSOCIATION_SET: node {} group {} = {}",
+					 "MF ASSOCIATION_SET: node {} group {} = {}",
 					 node.NodeId, params[0], oss);
 
 			frame.MakeSendData(static_cast<uint8_t>(node.NodeId), cb, payload);
@@ -606,7 +698,7 @@ void ZW_CC_Association::MakeFrame(ZW_APIFrame& frame, ZW_CmdId cmdid, const ZW_B
 				oss += std::to_string(params[i]) + " ";
 
 			Log.AddL(eLogTypes::INFO, MakeTag(),
-					 ">> ASSOCIATION_REMOVE: node {} group {} - {}",
+					 "MF ASSOCIATION_REMOVE: node {} group {} - {}",
 					 node.NodeId, params[0], oss);
 
 			frame.MakeSendData(static_cast<uint8_t>(node.NodeId), cb, payload);
@@ -616,7 +708,7 @@ void ZW_CC_Association::MakeFrame(ZW_APIFrame& frame, ZW_CmdId cmdid, const ZW_B
 	case (uint8_t)eAssociationCommand::ASSOCIATION_GET:
 		{
 			Log.AddL(eLogTypes::INFO, MakeTag(),
-					 ">> ASSOCIATION_GET: node {} group {}",
+					 "MF ASSOCIATION_GET: node {} group {}",
 					 node.NodeId, params[0]);
 
 			frame.MakeSendData(static_cast<uint8_t>(node.NodeId), cb, payload);
@@ -626,7 +718,7 @@ void ZW_CC_Association::MakeFrame(ZW_APIFrame& frame, ZW_CmdId cmdid, const ZW_B
 	case (uint8_t)eAssociationCommand::ASSOCIATION_GROUPINGS_GET:
 		{
 			Log.AddL(eLogTypes::INFO, MakeTag(),
-					 ">> ASSOCIATION_GROUPINGS_GET: node {}",
+					 "MF ASSOCIATION_GROUPINGS_GET: node {}",
 					 node.NodeId);
 
 			frame.MakeSendData(static_cast<uint8_t>(node.NodeId), cb, payload);
@@ -641,7 +733,7 @@ void ZW_CC_Association::MakeFrame(ZW_APIFrame& frame, ZW_CmdId cmdid, const ZW_B
 	}
 }
 
-void ZW_CC_Association::HandleReport(ZW_CmdId cmdid, const ZW_ByteVector& params)
+void ZW_CC_Association::HandleReport(const ZW_CmdId cmdid, const uint8_t destinationEP, const ZW_ByteVector& params)
 {
 	const uint8_t cmdId = cmdid.value;
 	switch (cmdId)
@@ -726,7 +818,7 @@ void ZW_CC_MultiChannelAssociation::MakeFrame(ZW_APIFrame& frame, ZW_CmdId cmdid
 	case (uint8_t)eMultiChannelAssociationCommand::MULTI_CHANNEL_ASSOCIATION_GROUPINGS_GET:
 		{
 			Log.AddL(eLogTypes::INFO, MakeTag(),
-					 ">> MULTI_CHANNEL_ASSOCIATION_GROUPINGS_GET: node {}",
+					 "MF MULTI_CHANNEL_ASSOCIATION_GROUPINGS_GET: node {}",
 					 node.NodeId);
 
 			frame.MakeSendData(static_cast<uint8_t>(node.NodeId), cb,
@@ -744,7 +836,7 @@ void ZW_CC_MultiChannelAssociation::MakeFrame(ZW_APIFrame& frame, ZW_CmdId cmdid
 			}
 			auto group = params[0];
 			Log.AddL(eLogTypes::INFO, MakeTag(),
-					 ">> MULTI_CHANNEL_ASSOCIATION_GET: node {} group {}",
+					 "MF MULTI_CHANNEL_ASSOCIATION_GET: node {} group {}",
 					 node.NodeId, group);
 
 			frame.MakeSendData(static_cast<uint8_t>(node.NodeId), cb,
@@ -755,7 +847,7 @@ void ZW_CC_MultiChannelAssociation::MakeFrame(ZW_APIFrame& frame, ZW_CmdId cmdid
 	case (uint8_t)eMultiChannelAssociationCommand::MULTI_CHANNEL_ASSOCIATION_REMOVE:
 		{
 			Log.AddL(eLogTypes::INFO, MakeTag(),
-					 ">> MULTI_CHANNEL_ASSOCIATION_REMOVE: node {} group {} params={}",
+					 "MF MULTI_CHANNEL_ASSOCIATION_REMOVE: node {} group {} params={}",
 					 node.NodeId, params[0], ParamsToString(params));
 
 			ZW_ByteVector payLoad;
@@ -763,14 +855,14 @@ void ZW_CC_MultiChannelAssociation::MakeFrame(ZW_APIFrame& frame, ZW_CmdId cmdid
 			payLoad.push_back(cmdId);
 			payLoad.insert(payLoad.end(), params.begin(), params.end());
 
-			frame.MakeSendData(static_cast<uint8_t>(node.NodeId), cb,payLoad);
+			frame.MakeSendData(static_cast<uint8_t>(node.NodeId), cb, payLoad);
 			break;
 		}
 
 	case (uint8_t)eMultiChannelAssociationCommand::MULTI_CHANNEL_ASSOCIATION_SET:
 		{
 			Log.AddL(eLogTypes::INFO, MakeTag(),
-					 ">> MULTI_CHANNEL_ASSOCIATION_SET: node {} group {} params={}",
+					 "MF MULTI_CHANNEL_ASSOCIATION_SET: node {} group {} params={}",
 					 node.NodeId, params[0], ParamsToString(params));
 
 			ZW_ByteVector payLoad;
@@ -790,9 +882,7 @@ void ZW_CC_MultiChannelAssociation::MakeFrame(ZW_APIFrame& frame, ZW_CmdId cmdid
 	}
 }
 
-void ZW_CC_MultiChannelAssociation::HandleReport(
-	ZW_CmdId cmdid,
-	const ZW_ByteVector& params)
+void ZW_CC_MultiChannelAssociation::HandleReport(const ZW_CmdId cmdid, const uint8_t destinationEP, const ZW_ByteVector& params)
 {
 	const uint8_t cmdId = cmdid.value;
 
@@ -927,7 +1017,7 @@ void ZW_CC_WakeUp::MakeFrame(ZW_APIFrame& frame, ZW_CmdId cmdid, const ZW_ByteVe
 		}
 
 		Log.AddL(eLogTypes::INFO, MakeTag(),
-				 ">> WAKE_UP_INTERVAL_SET (v{}): node {} interval={}s",
+				 "MF WAKE_UP_INTERVAL_SET (v{}): node {} interval={}s",
 				 version, node.NodeId,
 				 (params[0] << 16) | (params[1] << 8) | params[2]);
 
@@ -939,7 +1029,7 @@ void ZW_CC_WakeUp::MakeFrame(ZW_APIFrame& frame, ZW_CmdId cmdid, const ZW_ByteVe
 
 	case static_cast<uint8_t>(eWakeUpCommand::WAKE_UP_NO_MORE_INFORMATION):
 		Log.AddL(eLogTypes::INFO, MakeTag(),
-				 ">> WAKE_UP_NO_MORE_INFORMATION (v{}): node {}", version, node.NodeId);
+				 "MF WAKE_UP_NO_MORE_INFORMATION (v{}): node {}", version, node.NodeId);
 
 		frame.MakeSendData(static_cast<uint8_t>(node.NodeId), 2,
 						   { uint8_t(eCommandClass::WAKE_UP),
@@ -950,7 +1040,7 @@ void ZW_CC_WakeUp::MakeFrame(ZW_APIFrame& frame, ZW_CmdId cmdid, const ZW_ByteVe
 		if (version >= 3)
 		{
 			Log.AddL(eLogTypes::INFO, MakeTag(),
-					 ">> WAKE_UP_INTERVAL_CAPABILITIES_GET (v{}): node {}", version, node.NodeId);
+					 "MF WAKE_UP_INTERVAL_CAPABILITIES_GET (v{}): node {}", version, node.NodeId);
 
 			frame.MakeSendData(static_cast<uint8_t>(node.NodeId), 2,
 							   { uint8_t(eCommandClass::WAKE_UP),
@@ -968,7 +1058,7 @@ void ZW_CC_WakeUp::MakeFrame(ZW_APIFrame& frame, ZW_CmdId cmdid, const ZW_ByteVe
 //
 // HANDLE REPORT
 //
-void ZW_CC_WakeUp::HandleReport(ZW_CmdId cmdid, const ZW_ByteVector& params)
+void ZW_CC_WakeUp::HandleReport(const ZW_CmdId cmdid, const uint8_t destinationEP, const ZW_ByteVector& params)
 {
 	const uint8_t cmdId = cmdid.value;
 	auto* cc = node.GetCC(eCommandClass::WAKE_UP);

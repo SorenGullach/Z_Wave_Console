@@ -202,7 +202,7 @@ std::string ZW_NodeInfo::ToString(int width) const
 				s << "0x" << std::hex << unsigned(b) << " ";
 			s << std::dec << "]) ";
 
-			if (c.paramNumber >= 5) break;
+			if (c.paramNumber >= 9) break;
 		}
 		WrapAndPrint(out, s.str());
 	}

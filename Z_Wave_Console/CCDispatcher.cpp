@@ -15,13 +15,11 @@ void ZW_CCDispatcher::HandleCCFrame(const std::vector<uint8_t>& payload)
 		return;
 	}
 
-	// Serial API payload layout is controller/SDK dependent, but typically starts with
-	// rxStatus + source nodeId and ends with an RSSI byte.
+	// Serial API payload layout is controller/SDK dependent. In this project we treat:
+	// payload[0]=rxStatus, payload[1]=source nodeId, payload[2]=cmdLen, payload[3..]=cmd bytes.
+	// Any trailing bytes after the cmd bytes (if present) are treated as metadata (e.g., RSSI).
 	const uint8_t rxStatus = payload[0];
 	const uint8_t nodeId = payload.size() > 1 ? payload[1] : 0;
-	const uint8_t rssi = payload.back();
-	Log.AddL(eLogTypes::DBG, MakeTag(), "<< ZW_API_APPLICATION_COMMAND_HANDLER: fromNode={} rxStatus=0x{:02X} payloadLen={} rssi=0x{:02X}",
-			 nodeId, rxStatus, payload.size(), rssi);
 
 	if (payload.size() < 5)
 	{
@@ -37,13 +35,24 @@ void ZW_CCDispatcher::HandleCCFrame(const std::vector<uint8_t>& payload)
 
 	// In this stack we treat payload[2] as the length of the CC command bytes.
 	const uint8_t cmdLen = payload[2];
-	if (payload.size() < static_cast<size_t>(3 + cmdLen))
+	const size_t cmdStart = 3;
+	const size_t cmdEnd = cmdStart + static_cast<size_t>(cmdLen);
+	const bool hasTrailingMeta = payload.size() > cmdEnd;
+	const uint8_t rssi = hasTrailingMeta ? payload.back() : 0;
+	if (hasTrailingMeta)
+		Log.AddL(eLogTypes::DBG, MakeTag(), "<< ZW_API_APPLICATION_COMMAND_HANDLER: fromNode={} rxStatus=0x{:02X} payloadLen={} cmdLen={} rssi=0x{:02X}",
+				 nodeId, rxStatus, payload.size(), cmdLen, rssi);
+	else
+		Log.AddL(eLogTypes::DBG, MakeTag(), "<< ZW_API_APPLICATION_COMMAND_HANDLER: fromNode={} rxStatus=0x{:02X} payloadLen={} cmdLen={}",
+				 nodeId, rxStatus, payload.size(), cmdLen);
+
+	if (payload.size() < cmdEnd)
 	{
 		Log.AddL(eLogTypes::ERR, MakeTag(), "<< ZW_API_APPLICATION_COMMAND_HANDLER: truncated cmdBytes (fromNode={} cmdLen={} payloadLen={})", nodeId, cmdLen, payload.size());
 		return;
 	}
 
-	const ZW_ByteVector cmd(payload.begin() + 3, payload.begin() + 3 + cmdLen);
+	const ZW_ByteVector cmd(payload.begin() + cmdStart, payload.begin() + cmdEnd);
 	if (cmd.size() < 2)
 		return;
 
@@ -71,6 +80,7 @@ void ZW_CCDispatcher::HandleCCFrame(const std::vector<uint8_t>& payload)
 			case (static_cast<uint16_t>(eCommandClass::SENSOR_BINARY) << 8) | static_cast<uint8_t>(ZW_CC_SensorBinary::eSensorBinaryCommand::SENSOR_BINARY_REPORT) :
 			case (static_cast<uint16_t>(eCommandClass::METER) << 8) | static_cast<uint8_t>(ZW_CC_Meter::eMeterCommand::METER_REPORT) :
 			case (static_cast<uint16_t>(eCommandClass::MULTI_CHANNEL) << 8) | static_cast<uint8_t>(ZW_CC_MultiChannel::eMultiChannelCommand::MULTI_CHANNEL_CAPABILITY_REPORT) :
+			case (static_cast<uint16_t>(eCommandClass::MULTI_CHANNEL) << 8) | static_cast<uint8_t>(ZW_CC_MultiChannel::eMultiChannelCommand::MULTI_CHANNEL_CMD_ENCAP) :
 			case (static_cast<uint16_t>(eCommandClass::CONFIGURATION) << 8) | static_cast<uint8_t>(ZW_CC_Configuration::eConfigurationCommand::CONFIGURATION_REPORT) :
 			case (static_cast<uint16_t>(eCommandClass::PROTECTION) << 8) | static_cast<uint8_t>(ZW_CC_Protection::eProtectionCommand::PROTECTION_REPORT) :
 			case (static_cast<uint16_t>(eCommandClass::ASSOCIATION) << 8) | static_cast<uint8_t>(ZW_CC_Association::eAssociationCommand::ASSOCIATION_REPORT) :

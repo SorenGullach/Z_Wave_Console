@@ -119,7 +119,10 @@ public:
 
 	void IsDead(uint8_t nodeid)
 	{
-//		EnqueueJob(eJobs::IS_DEAD, nodeid);
+		ZW_APIFrame frame;
+		frame.Make(eCommandIds::ZW_API_IS_NODE_FAILED, { nodeid, 0x0A });
+		Enqueue(frame);
+		//		EnqueueJob(eJobs::IS_DEAD, nodeid);
 	}
 
 	void Remove(uint8_t nodeid)
@@ -292,6 +295,7 @@ private:
 	{
 		eJobs job;
 		uint8_t nodeid;
+		uint16_t attempts = 0;
 	};
 
 	std::mutex jobQueueMutex;
@@ -390,13 +394,13 @@ private:
 			if (TryPeekJob(job))
 			{
 				// Track timing/attempts per-front-job.
-				if (jobAttempts == 0)
+				if (jobAttempts++ == 0)
 					jobStartTime = std::chrono::steady_clock::now();
 
 				const auto now = std::chrono::steady_clock::now();
 				if (now - jobStartTime > kJobTimeout)
 				{
-					jobAttempts++;
+//					jobAttempts++;
 					Log.AddL(eLogTypes::INFO, MakeTag(), "Job timeout: {} attempt {}", static_cast<int>(job.job), jobAttempts);
 					jobStartTime = now;
 					if (jobAttempts >= kMaxJobAttempts)
@@ -416,6 +420,7 @@ private:
 					jobAttempts = 0;
 					break;
 				case eJobResult::Pending:
+					jobAttempts++;
 					std::this_thread::sleep_for(std::chrono::milliseconds(50));
 					break;
 				case eJobResult::Error:

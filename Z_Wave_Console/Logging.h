@@ -24,13 +24,23 @@
 // `MakeTag()` uses `std::source_location` to generate a compact tag.
 // ===============================================================
 
-enum class eLogTypes
+enum class eLogTypes : uint8_t
 {
-	ERR = 1,
-	INFO_LOW = 2,
-	INFO = 3,
-	DBG = 4,
+	ERR = 1 << 0,
+	INFO_LOW = 1 << 1,
+	INFO = 1 << 2,
+	DBG = 1 << 3,
 };
+
+inline constexpr eLogTypes operator|(eLogTypes a, eLogTypes b)
+{
+	return static_cast<eLogTypes>(static_cast<uint8_t>(a) | static_cast<uint8_t>(b));
+}
+
+inline constexpr bool operator&(eLogTypes a, eLogTypes b)
+{
+	return (static_cast<uint8_t>(a) & static_cast<uint8_t>(b)) != 0;
+}
 
 inline std::string ZW_BaseName(const char* file)
 {
@@ -59,7 +69,8 @@ public:
 
 	auto Lock() const { return std::scoped_lock(LockMutex); }
 
-	void SetLogType(eLogTypes lt) { CurrentLogType = lt; }
+	void SetLogTypeOn(eLogTypes lt) { CurrentLogTypes |= (uint8_t)lt; }
+	void SetLogTypeOff(eLogTypes lt) { CurrentLogTypes &= ~static_cast<uint8_t>(lt); }
 
 	std::vector<std::string> GetLog(size_t last = maxEntries)
 	{
@@ -93,7 +104,7 @@ private:
 	{
 		switch (lt)
 		{
-		case eLogTypes::INFO_LOW: return "INF-";
+		case eLogTypes::INFO_LOW: return "INFO_LOW";
 		case eLogTypes::INFO: return "INFO";
 		case eLogTypes::ERR: return "ERR ";
 		case eLogTypes::DBG: return "DBG ";
@@ -102,7 +113,10 @@ private:
 	}
 
 
-	eLogTypes CurrentLogType = eLogTypes::INFO;
+	uint8_t CurrentLogTypes =
+    static_cast<uint8_t>(eLogTypes::ERR) |
+    static_cast<uint8_t>(eLogTypes::INFO_LOW) |
+    static_cast<uint8_t>(eLogTypes::INFO);
 	std::vector<std::string> GetLogLast(size_t last)
 	{
 		auto _lock = Lock();
@@ -116,10 +130,9 @@ private:
 
 	void AddInternal(eLogTypes lt, const std::string& tag, const std::string& msg)
 	{
-		// Filtering: lower numeric values are more important (ERR=1).
-		// A configured CurrentLogType includes everything up to that verbosity.
-		// Example: INFO shows ERR/INFO_LOW/INFO; DBG shows everything.
-		if ((int)lt > (int)CurrentLogType)
+		// Filtering: CurrentLogType is a bitmask of enabled log categories.
+		// Example: (ERR|INFO) logs only ERR and INFO.
+		if (!(CurrentLogTypes & (uint8_t)lt))
 			return;
 
 		std::string line = std::format("{:3} [{:20}] {}", ToString(lt), tag, msg);

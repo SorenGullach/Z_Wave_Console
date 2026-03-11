@@ -240,7 +240,7 @@ struct ZW_APIFrame
 	}
 	*/
 	// Make a request for a specific node (base type 8-bit)
-	void MakeSendData(const uint8_t nodeId, uint8_t callbackId, const std::vector<uint8_t>& params = {})
+	void MakeSendData(const uint8_t nodeId, const uint8_t callbackId, const std::vector<uint8_t>& params = {})
 	{
 		APICmd = APICommands[static_cast<uint8_t>(eCommandIds::ZW_API_CONTROLLER_SEND_DATA)];
 		assert(APICmd.CmdId == eCommandIds::ZW_API_CONTROLLER_SEND_DATA);

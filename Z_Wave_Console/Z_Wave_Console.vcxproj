@@ -157,6 +157,9 @@
     <ClInclude Include="SerialPort.h" />
     <ClInclude Include="Z_Wave.h" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="..\Merten 506004.docx" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
