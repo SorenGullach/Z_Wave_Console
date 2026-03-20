@@ -1,6 +1,7 @@
 #pragma once
 
 #include "APICommands.h"
+#include "NodeId.h"
 
 #include <string>
 #include <vector>
@@ -9,7 +10,39 @@
 class ZW_Module
 {
 public:
+	// rapport functions
 	std::string ToString();
+	std::string InitializationStateString() const;
+	std::vector<std::string> ProtocolVersionStrings() const;
+	std::vector<std::string> ChipStrings() const;
+	std::vector<std::string> ManufacturerStrings() const;
+	std::vector<std::string> ControllerFlagStrings() const;
+	std::string GetLibraryTypeName() const;
+	std::string DescribeControllerCapabilities() const;
+
+	enum class eChipTypes : uint8_t
+	{
+		Unknown = 0x00,
+
+		// Classic Z-Wave (pre-500 series)
+		ZW010x = 0x01,   // ZW0102, ZW0103
+		ZW020x = 0x02,   // ZW0201, ZW0202
+		ZW030x = 0x03,   // ZW0301
+
+		// 400 series
+		ZW040x = 0x04,   // ZW0401, ZW0402
+
+		// 500 series (Z-Wave Plus Gen1)
+		ZW050x = 0x05,   // ZW0500, ZW0501
+
+		// 700 series (Z-Wave Plus Gen2)
+		ZW070x = 0x07,   // ZGM130, ZGM230
+
+		// 800 series (Z-Wave Plus Gen3)
+		ZW080x = 0x08    // ZGM230S, ZGM230P
+	};
+	std::string ChipNames() const;
+	std::string DescribeApiCapabilities() const;
 
 	// 4.3.11 Get Library Version (0x15)
 	std::string LibraryVersion;
@@ -23,8 +56,9 @@ public:
 	uint8_t ApiCapabilities = 0;
 	bool IsEndNode = false, HasTimerFunctions = false, IsPrimarayController = false, HasSISFunctions = false;
 	uint8_t NodeListLength = 0;
-	std::vector<uint8_t> NodeIds;
-	uint8_t ChipType = 0;
+	std::vector<node_t> NodeIds;
+
+	eChipTypes ChipType = eChipTypes::Unknown;
 	uint8_t ChipVersion = 0;
 
 	// 4.3.4 Get Controller Capabilities (0x05)

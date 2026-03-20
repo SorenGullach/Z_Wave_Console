@@ -1,86 +1,93 @@
+
 #include "Logging.h"
 #include "Interface.h"
 
-ZW_Interface::ZW_Interface() {}
+Interface::Interface() {}
 
-bool ZW_Interface::OpenPort(const std::string& portname)
+bool Interface::OpenPort(const std::string& portname)
 {
     std::scoped_lock lock(serialMutex);
     if (!serial.Open(portname))
     {
-        Log.AddL(eLogTypes::INFO, MakeTag(), "OpenPort failed: port='{}'", portname);
+        Log.AddL(eLogTypes::ERR, MakeTag(), "OpenPort failed: port='{}'", portname);
         return false;
     }
 
-    Log.AddL(eLogTypes::INFO, MakeTag(), "OpenPort ok: port='{}'", portname);
+    Log.AddL(eLogTypes::ITF, MakeTag(), "OpenPort ok: port='{}'", portname);
     Start();
     return true;
 }
 
-void ZW_Interface::ClosePort()
+void Interface::ClosePort()
 {
     Stop();
     std::scoped_lock lock(serialMutex);
     serial.Close();
-    Log.AddL(eLogTypes::INFO, MakeTag(), "ClosePort: port closed");
+    Log.AddL(eLogTypes::ITF, MakeTag(), "ClosePort: port closed");
 }
 
-void ZW_Interface::Enqueue(const ZW_APIFrame& frame)
+bool Interface::IsSerialOpen() const
+{
+    std::scoped_lock lock(serialMutex);
+    return serial.IsOpen();
+}
+
+void Interface::Enqueue(const APIFrame& frame)
 {
     std::scoped_lock lock(queueMutex);
-    Command cmd;
+    CommandFrame cmd;
     cmd.cmd = frame;
     cmd.attempts = 0;
     cmd.FrameBytes.clear();
     cmdQueue.push(cmd);
 }
 
-bool ZW_Interface::OnFrameReceived(const ZW_APIFrame& frame)
+bool Interface::OnFrameReceived(const APIFrame& frame)
 {
     return false; // not handled
 }
-bool ZW_Interface::OnFrameReceivedTimeout(const ZW_APIFrame& frame)
+bool Interface::OnFrameReceivedTimeout(const APIFrame& frame)
 {
-	return false; // not handled
+    return false; // not handled
 }
 
 
-void ZW_Interface::Start()
+void Interface::Start()
 {
     bool expected = false;
     if (!running.compare_exchange_strong(expected, true))
         return;
 
     worker = std::thread([this]()
-    {
-        try
-        {
-            while (running.load())
-            {
-                if (!IsSerialOpen())
-                    break;
-                Run();
-            }
-        }
-        catch (const std::exception& ex)
-        {
-            Log.AddL(eLogTypes::ERR, MakeTag(), "Unhandled exception in worker thread: {}", ex.what());
-        }
-        catch (...)
-        {
-            Log.AddL(eLogTypes::ERR, MakeTag(), "Unknown exception in worker thread.");
-        }
-    });
+                         {
+                             try
+                             {
+                                 while (running.load())
+                                 {
+                                     if (!IsSerialOpen())
+                                         break;
+                                     ProcessSerialCommunication();
+                                 }
+                             }
+                             catch (const std::exception& ex)
+                             {
+                                 Log.AddL(eLogTypes::ERR, MakeTag(), "Unhandled exception in worker thread: {}", ex.what());
+                             }
+                             catch (...)
+                             {
+                                 Log.AddL(eLogTypes::ERR, MakeTag(), "Unknown exception in worker thread.");
+                             }
+                         });
 }
 
-void ZW_Interface::Stop()
+void Interface::Stop()
 {
     running.store(false);
     if (worker.joinable())
         worker.join();
 }
 
-bool ZW_Interface::TryDequeueNext(Command& out)
+bool Interface::TryDequeueNext(CommandFrame& out)
 {
     std::scoped_lock lock(queueMutex);
     if (cmdQueue.empty())
@@ -90,29 +97,26 @@ bool ZW_Interface::TryDequeueNext(Command& out)
     return true;
 }
 
-std::chrono::milliseconds ZW_Interface::BackoffDelay(int attempt) const
+std::chrono::milliseconds Interface::BackoffDelay(int attempt) const
 {
     int n = attempt; // 0-based
     return std::chrono::milliseconds(100 + n * 1000);
 }
 
-void ZW_Interface::SendCommand(Command& cmd)
+void Interface::SendCommand(CommandFrame& cmd)
 {
     cmd.FrameBytes = cmd.cmd.Encode_Frame();
     LastCmd = cmd;
     LastCmd.attempts++;
 
-    Log.AddL(eLogTypes::DBG, MakeTag(), ">> Send: cmdId=0x{:02X} name={} flow={} attempt={}",
-        static_cast<uint8_t>(LastCmd.cmd.APICmd.CmdId),
-        ::ToString(LastCmd.cmd.APICmd.CmdId),
-        static_cast<uint8_t>(LastCmd.cmd.APICmd.Flow),
-        LastCmd.attempts);
+    Log.AddL(eLogTypes::DBG, MakeTag(), ">> Send: attempt={} frame={}", LastCmd.attempts, LastCmd.cmd.Info());
     Log.AddL(eLogTypes::DBG, MakeTag(), ">> FrameBytes: len={} bytes=[{}]",
-             LastCmd.FrameBytes.size(),
-             ToString(LastCmd.FrameBytes));
+            LastCmd.FrameBytes.size(),
+            ToString(LastCmd.FrameBytes));
+
     SerialWrite(LastCmd.FrameBytes);
 
-    if (LastCmd.cmd.APICmd.Flow == eFlowType::Unacknowledged)
+    if (LastCmd.Flow() == eFlowType::Unacknowledged)
     {
         state = SendState::Idle;
         nextSendTime = std::chrono::steady_clock::now() + coolDown;
@@ -124,31 +128,25 @@ void ZW_Interface::SendCommand(Command& cmd)
     }
 }
 
-bool ZW_Interface::IsSerialOpen() const
-{
-    std::scoped_lock lock(serialMutex);
-    return serial.IsOpen();
-}
-
-int ZW_Interface::SerialRead(uint8_t* buffer, int size)
+int Interface::SerialRead(uint8_t* buffer, int size)
 {
     std::scoped_lock lock(serialMutex);
     return serial.Read(buffer, size);
 }
 
-int ZW_Interface::SerialWrite(const uint8_t* buffer, int size)
+int Interface::SerialWrite(const uint8_t* buffer, int size)
 {
     std::scoped_lock lock(serialMutex);
     return serial.Write(buffer, size);
 }
 
-int ZW_Interface::SerialWrite(const std::vector<uint8_t>& buffer)
+int Interface::SerialWrite(const std::vector<uint8_t>& buffer)
 {
     std::scoped_lock lock(serialMutex);
     return serial.Write(buffer);
 }
 
-const std::string ZW_Interface::ToString(const std::vector<uint8_t>& buffer) const
+const std::string Interface::ToString(const std::vector<uint8_t>& buffer) const
 {
     std::string result;
     for (size_t i = 0; i < buffer.size(); i++)
@@ -160,7 +158,7 @@ const std::string ZW_Interface::ToString(const std::vector<uint8_t>& buffer) con
     return result;
 }
 
-void ZW_Interface::HandleTimeouts()
+void Interface::HandleTimeouts()
 {
     auto now = std::chrono::steady_clock::now();
     if (state == SendState::Idle)
@@ -172,7 +170,7 @@ void ZW_Interface::HandleTimeouts()
     switch (state)
     {
     case SendState::WaitingForAck:
-        if (LastCmd.cmd.APICmd.Flow == eFlowType::Unacknowledged)
+        if (LastCmd.Flow() == eFlowType::Unacknowledged)
         {
             state = SendState::Idle;
             break;
@@ -180,20 +178,14 @@ void ZW_Interface::HandleTimeouts()
 
         if (LastCmd.attempts < maxRetries)
         {
-			Log.AddL(eLogTypes::INFO_LOW, MakeTag(), "ACK timeout: cmdId=0x{:02X} name={} attempt={}/{} -> retransmit",
-                static_cast<uint8_t>(LastCmd.cmd.APICmd.CmdId),
-                ::ToString(LastCmd.cmd.APICmd.CmdId),
-                LastCmd.attempts,
-                maxRetries);
+            Log.AddL(eLogTypes::ERR, MakeTag(), "ACK timeout: -> retransmit attempt={}/{} frame={}",
+                    LastCmd.attempts, maxRetries, LastCmd.cmd.Info());
             SendCommand(LastCmd);
         }
         else
         {
-			Log.AddL(eLogTypes::INFO_LOW, MakeTag(), "ACK timeout: cmdId=0x{:02X} name={} attempt={}/{} -> give up",
-                static_cast<uint8_t>(LastCmd.cmd.APICmd.CmdId),
-                ::ToString(LastCmd.cmd.APICmd.CmdId),
-                LastCmd.attempts,
-                maxRetries);
+            Log.AddL(eLogTypes::ERR, MakeTag(), "ACK timeout: -> give up attempt={}/{} frame={}",
+                    LastCmd.attempts, maxRetries, LastCmd.cmd.Info());
             state = SendState::Idle;
             nextSendTime = now + coolDown;
         }
@@ -202,12 +194,9 @@ void ZW_Interface::HandleTimeouts()
     case SendState::WaitingForResponse:
     case SendState::WaitingForCallback:
         //logger.AddLogLock(MakeTag(), "Response/Callback timeout");
-        if(!OnFrameReceivedTimeout(LastCmd.cmd))
-			Log.AddL(eLogTypes::INFO_LOW, MakeTag(), "Frame timeout: cmdId=0x{:02X} name={} state={} info={}",
-                static_cast<uint8_t>(LastCmd.cmd.APICmd.CmdId),
-                ::ToString(LastCmd.cmd.APICmd.CmdId),
-                static_cast<int>(state),
-                LastCmd.cmd.Info());
+        if (!OnFrameReceivedTimeout(LastCmd.cmd))
+            Log.AddL(eLogTypes::ERR, MakeTag(), "Frame timeout: state={} INF0={}",
+                    static_cast<int>(state), LastCmd.cmd.Info());
         state = SendState::Idle;
         nextSendTime = now + coolDown;
         break;
@@ -217,12 +206,12 @@ void ZW_Interface::HandleTimeouts()
     }
 }
 
-void ZW_Interface::HandleAck()
+void Interface::HandleAck()
 {
-//    logger.AddLogLock(MakeTag(), "<< ACK");
+    //    logger.AddLogLock(MakeTag(), "<< ACK");
     LastCmd.attempts = 0;
 
-    switch (LastCmd.cmd.APICmd.Flow)
+    switch (LastCmd.Flow())
     {
     case eFlowType::AckOnly:
         state = SendState::Idle;
@@ -246,26 +235,23 @@ void ZW_Interface::HandleAck()
     }
 }
 
-void ZW_Interface::HandleNakOrCan(bool isNak)
+void Interface::HandleNakOrCan(bool isNak)
 {
-    Log.AddL(eLogTypes::INFO, MakeTag(), "<< {}: cmdId=0x{:02X} name={} flow={} attempt={}/{}",
-        isNak ? "NAK" : "CAN",
-        static_cast<uint8_t>(LastCmd.cmd.APICmd.CmdId),
-        ::ToString(LastCmd.cmd.APICmd.CmdId),
-        static_cast<uint8_t>(LastCmd.cmd.APICmd.Flow),
-        LastCmd.attempts,
-        maxRetries);
+    Log.AddL(eLogTypes::ERR, MakeTag(), "<< {}: flow={} attempt={}/{} frame={}",
+            isNak ? "NAK" : "CAN",
+            static_cast<uint8_t>(LastCmd.Flow()),
+            LastCmd.attempts, maxRetries, LastCmd.cmd.Info());
 
-    if (LastCmd.cmd.APICmd.Flow == eFlowType::Unacknowledged)
+    if (LastCmd.Flow() == eFlowType::Unacknowledged)
     {
         if (LastCmd.attempts < maxRetries)
         {
-            Log.AddL(eLogTypes::INFO, MakeTag(), "Unacknowledged frame NAK/CAN -> retransmit with backoff");
+            Log.AddL(eLogTypes::ERR, MakeTag(), "Unacknowledged frame NAK/CAN -> retransmit with backoff");
             SendCommand(LastCmd);
         }
         else
         {
-            Log.AddL(eLogTypes::INFO, MakeTag(), "Unacknowledged frame NAK/CAN -> max retries reached");
+            Log.AddL(eLogTypes::ERR, MakeTag(), "Unacknowledged frame NAK/CAN -> max retries reached");
             state = SendState::Idle;
             nextSendTime = std::chrono::steady_clock::now() + coolDown;
         }
@@ -274,22 +260,20 @@ void ZW_Interface::HandleNakOrCan(bool isNak)
 
     if (LastCmd.attempts < maxRetries)
     {
-        Log.AddL(eLogTypes::INFO, MakeTag(), "NAK/CAN: cmdId=0x{:02X} name={} -> retransmit",
-            static_cast<uint8_t>(LastCmd.cmd.APICmd.CmdId),
-            ::ToString(LastCmd.cmd.APICmd.CmdId));
+        Log.AddL(eLogTypes::ERR, MakeTag(), "NAK/CAN: -> retransmit attempt={}/{} frame={}",
+                LastCmd.attempts, maxRetries, LastCmd.cmd.Info());
         SendCommand(LastCmd);
     }
     else
     {
-        Log.AddL(eLogTypes::INFO, MakeTag(), "NAK/CAN: cmdId=0x{:02X} name={} -> max retries reached, give up",
-            static_cast<uint8_t>(LastCmd.cmd.APICmd.CmdId),
-            ::ToString(LastCmd.cmd.APICmd.CmdId));
+        Log.AddL(eLogTypes::ERR, MakeTag(), "NAK/CAN: -> max retries reached, give up frame={}",
+                LastCmd.cmd.Info());
         state = SendState::Idle;
         nextSendTime = std::chrono::steady_clock::now() + coolDown;
     }
 }
 
-bool ZW_Interface::ReadFrameWithTimeout(std::vector<uint8_t>& buffer)
+bool Interface::ReadFrameWithTimeout(std::vector<uint8_t>& buffer)
 {
     auto start = std::chrono::steady_clock::now();
 
@@ -309,7 +293,7 @@ bool ZW_Interface::ReadFrameWithTimeout(std::vector<uint8_t>& buffer)
         auto now = std::chrono::steady_clock::now();
         if (now - start > std::chrono::milliseconds(1500))
         {
-            Log.AddL(eLogTypes::INFO, MakeTag(), "ReadFrameWithTimeout: timeout waiting for payload (>1500ms after SOF)");
+            Log.AddL(eLogTypes::ERR, MakeTag(), "ReadFrameWithTimeout: timeout waiting for payload (>1500ms after SOF)");
             return false;
         }
 
@@ -324,38 +308,37 @@ bool ZW_Interface::ReadFrameWithTimeout(std::vector<uint8_t>& buffer)
     return true;
 }
 
-void ZW_Interface::ProcessValidFrame(const std::vector<uint8_t>& buffer)
+void Interface::ProcessValidFrame(const std::vector<uint8_t>& buffer)
 {
-    ZW_APIFrame frame;
-    frame.Decode_Frame(buffer);
+    APIFrame frame;
+    if (frame.Decode_Frame(buffer) != 1)
+    {
+        Log.AddL(eLogTypes::ERR, MakeTag(), "<< Decode Invalid frame: {}", ToString(buffer));
+        return;
+    }
+
     Log.AddL(eLogTypes::DBG, MakeTag(), "<< Recv: bytesLen={} bytes=[{}]",
-             buffer.size(),
-             ToString(buffer));
-    Log.AddL(eLogTypes::DBG, MakeTag(), "       : cmdId=0x{:02X} name={} payloadLen={}",
-        static_cast<uint8_t>(frame.APICmd.CmdId),
-        ::ToString(frame.APICmd.CmdId),
-        frame.payload.size());
+            buffer.size(), ToString(buffer));
+
+    Log.AddL(eLogTypes::DBG, MakeTag(), "<< Recv frame {}", frame.Info());
 
     uint8_t ack = static_cast<uint8_t>(AckTypes::ACK);
-//    logger.AddLogLock(MakeTag(), ">> ACK");
+    //    logger.AddLogLock(MakeTag(), ">> ACK");
     SerialWrite(&ack, 1);
 
     consecutiveChecksumErrors = 0;
 
-    if(!OnFrameReceived(frame))
-        Log.AddL(eLogTypes::INFO, MakeTag(), "Unhandled frame: cmdId=0x{:02X} name={} payloadLen={}",
-            static_cast<uint8_t>(frame.APICmd.CmdId),
-            ::ToString(frame.APICmd.CmdId),
-            frame.payload.size());
+    if (!OnFrameReceived(frame))
+        Log.AddL(eLogTypes::ITF, MakeTag(), "Unhandled frame {}", frame.Info());
 
     if (state == SendState::WaitingForResponse)
     {
-        if (LastCmd.cmd.APICmd.Flow == eFlowType::AckWithResponse)
+        if (LastCmd.Flow() == eFlowType::AckWithResponse)
         {
             state = SendState::Idle;
             nextSendTime = std::chrono::steady_clock::now() + coolDown;
         }
-        else if (LastCmd.cmd.APICmd.Flow == eFlowType::AckWithResponseCallback)
+        else if (LastCmd.Flow() == eFlowType::AckWithResponseCallback)
         {
             state = SendState::WaitingForCallback;
             stateDeadline = std::chrono::steady_clock::now() + std::chrono::milliseconds(1600);
@@ -368,7 +351,7 @@ void ZW_Interface::ProcessValidFrame(const std::vector<uint8_t>& buffer)
     }
 }
 
-void ZW_Interface::Run()
+void Interface::ProcessSerialCommunication()
 {
     HandleTimeouts();
 
@@ -377,11 +360,11 @@ void ZW_Interface::Run()
         auto now = std::chrono::steady_clock::now();
         if (now >= nextSendTime)
         {
-            Command next;
+            CommandFrame next;
             if (TryDequeueNext(next))
             {
                 SendCommand(next);
-                if (LastCmd.cmd.APICmd.Flow != eFlowType::Unacknowledged)
+                if (LastCmd.Flow() != eFlowType::Unacknowledged)
                     return;
             }
         }
@@ -389,7 +372,8 @@ void ZW_Interface::Run()
 
     uint8_t b = 0;
     int n = SerialRead(&b, 1);
-    if (n <= 0) {
+    if (n <= 0)
+    {
         std::this_thread::yield();
         return;
     }
@@ -398,10 +382,8 @@ void ZW_Interface::Run()
     {
         if (state != SendState::WaitingForAck)
         {
-            Log.AddL(eLogTypes::INFO, MakeTag(), "<< Unexpected ACK: state={} lastCmdId=0x{:02X} name={}",
-                static_cast<int>(state),
-                static_cast<uint8_t>(LastCmd.cmd.APICmd.CmdId),
-                ::ToString(LastCmd.cmd.APICmd.CmdId));
+            Log.AddL(eLogTypes::ERR, MakeTag(), "<< Unexpected ACK: state={} frame={}",
+                    static_cast<int>(state), LastCmd.cmd.Info());
             return;
         }
         HandleAck();
@@ -410,12 +392,10 @@ void ZW_Interface::Run()
 
     if (b == static_cast<uint8_t>(AckTypes::NAK))
     {
-        if (state != SendState::WaitingForAck && LastCmd.cmd.APICmd.Flow != eFlowType::Unacknowledged)
+        if (state != SendState::WaitingForAck && LastCmd.Flow() != eFlowType::Unacknowledged)
         {
-            Log.AddL(eLogTypes::INFO, MakeTag(), "<< Unexpected NAK: state={} lastCmdId=0x{:02X} name={}",
-                static_cast<int>(state),
-                static_cast<uint8_t>(LastCmd.cmd.APICmd.CmdId),
-                ::ToString(LastCmd.cmd.APICmd.CmdId));
+            Log.AddL(eLogTypes::ERR, MakeTag(), "<< Unexpected NAK: state={} frame={}",
+                    static_cast<int>(state), LastCmd.cmd.Info());
             return;
         }
         HandleNakOrCan(true);
@@ -424,12 +404,10 @@ void ZW_Interface::Run()
 
     if (b == static_cast<uint8_t>(AckTypes::CAN))
     {
-        if (state != SendState::WaitingForAck && LastCmd.cmd.APICmd.Flow != eFlowType::Unacknowledged)
+        if (state != SendState::WaitingForAck && LastCmd.Flow() != eFlowType::Unacknowledged)
         {
-            Log.AddL(eLogTypes::INFO, MakeTag(), "<< Unexpected CAN: state={} lastCmdId=0x{:02X} name={}",
-                static_cast<int>(state),
-                static_cast<uint8_t>(LastCmd.cmd.APICmd.CmdId),
-                ::ToString(LastCmd.cmd.APICmd.CmdId));
+            Log.AddL(eLogTypes::ERR, MakeTag(), "<< Unexpected CAN: state={} frame={}",
+                    static_cast<int>(state), LastCmd.cmd.Info());
             return;
         }
         HandleNakOrCan(false);
@@ -438,7 +416,7 @@ void ZW_Interface::Run()
 
     if (b != static_cast<uint8_t>(AckTypes::SOF))
     {
-        Log.AddL(eLogTypes::INFO, MakeTag(), "<< Unexpected byte: 0x{:02X} (state={})", static_cast<int>(b), static_cast<int>(state));
+        Log.AddL(eLogTypes::ERR, MakeTag(), "<< Unexpected byte: 0x{:02X} (state={})", static_cast<int>(b), static_cast<int>(state));
         return;
     }
 
@@ -446,7 +424,7 @@ void ZW_Interface::Run()
     if (!ReadFrameWithTimeout(buffer))
         return;
 
-//    logger.AddLogLock(MakeTag(), ">> SOF frame");
+    //    logger.AddLogLock(MakeTag(), ">> SOF frame");
 
     uint8_t checksum = 0xFF;
     for (size_t i = 1; i < buffer.size(); ++i)
@@ -454,13 +432,14 @@ void ZW_Interface::Run()
 
     if (checksum != 0x00)
     {
-        Log.AddL(eLogTypes::INFO, MakeTag(), "Bad checksum: recvFrameLen={} -> send NAK (consecutiveErrors={})", buffer.size(), consecutiveChecksumErrors + 1);
+        Log.AddL(eLogTypes::ERR, MakeTag(), "Bad checksum: recvFrameLen={} -> send NAK (consecutiveErrors={})",
+                buffer.size(), consecutiveChecksumErrors + 1);
         uint8_t nak = static_cast<uint8_t>(AckTypes::NAK);
         SerialWrite(&nak, 1);
 
         consecutiveChecksumErrors++;
         if (consecutiveChecksumErrors >= 3)
-            Log.AddL(eLogTypes::INFO, MakeTag(), "Checksum errors: {} consecutive -> reset recommended", consecutiveChecksumErrors);
+            Log.AddL(eLogTypes::ERR, MakeTag(), "Checksum errors: {} consecutive -> reset recommended", consecutiveChecksumErrors);
 
         stateDeadline = std::chrono::steady_clock::now() + std::chrono::milliseconds(500);
         return;

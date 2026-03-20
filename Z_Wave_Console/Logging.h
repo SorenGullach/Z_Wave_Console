@@ -2,6 +2,7 @@
 
 #include <string>
 #include <deque>
+#include <vector>
 #include <format>
 #include <fstream>
 #include <mutex>
@@ -10,9 +11,16 @@
 #include <iomanip>
 #include <source_location>
 #include <algorithm>
+#include <cstdint>
+
+#include "Notify.h"
 
 #ifdef min
 #undef min
+#endif
+
+#ifdef WARN
+#undef WARN
 #endif
 
 // ===============================================================
@@ -24,12 +32,15 @@
 // `MakeTag()` uses `std::source_location` to generate a compact tag.
 // ===============================================================
 
-enum class eLogTypes : uint8_t
+enum class eLogTypes
 {
-	ERR = 1 << 0,
-	INFO_LOW = 1 << 1,
-	INFO = 1 << 2,
-	DBG = 1 << 3,
+	ERR = 1 << 0, // hard error
+	ITF = 1 << 1, // interface
+	RTU = 1 << 2, // Routing
+	DVC = 1 << 3, // Device
+	ITW = 1 << 4, // Interview
+	DBG = 1 << 5, // debug
+	WRN = 1 << 6, // warning
 };
 
 inline constexpr eLogTypes operator|(eLogTypes a, eLogTypes b)
@@ -45,9 +56,13 @@ inline constexpr bool operator&(eLogTypes a, eLogTypes b)
 inline std::string ZW_BaseName(const char* file)
 {
 	std::string s(file);
-	auto pos = s.rfind('\\');
+	auto pos = s.find_last_of("\\/");
+	if (pos == std::string::npos)
+		pos = 0;
+	else
+		++pos;
 	auto pos1 = s.length(); // .rfind('.');
-	return s.substr(pos + 1, pos1 - pos - 1);
+	return s.substr(pos, pos1 - pos);
 }
 
 inline std::string MakeTag(std::source_location loc = std::source_location::current())
@@ -69,21 +84,75 @@ public:
 
 	auto Lock() const { return std::scoped_lock(LockMutex); }
 
-	void SetLogTypeOn(eLogTypes lt) { CurrentLogTypes |= (uint8_t)lt; }
-	void SetLogTypeOff(eLogTypes lt) { CurrentLogTypes &= ~static_cast<uint8_t>(lt); }
+	void SetLogTypeOn(eLogTypes lt) { CurrentLogTypes |= static_cast<uint16_t>(lt); }
+	void SetLogTypeOff(eLogTypes lt) { CurrentLogTypes &= ~static_cast<uint16_t>(lt); }
 
-	std::vector<std::string> GetLog(size_t last = maxEntries)
+	struct LogEntry
+	{
+		std::time_t time;
+		eLogTypes lt;
+		std::string tag;
+		std::string msg;
+	};
+	// returns a vector of LogEntry
+	std::vector<LogEntry> GetLogEntrys(size_t last = maxEntries)
+	{
+		std::vector<LogEntry> result;
+		{
+			auto _lock = Lock();
+			result.reserve(log.size());
+			for (const auto& entry : log)
+			{
+				if ((CurrentLogTypes & static_cast<uint16_t>(entry.lt)) != 0)
+					result.push_back(entry);
+			}
+		}
+		return result;
+	}
+
+	std::vector<std::string> GetLogLines(size_t last = maxEntries)
 	{
 		std::vector<std::string> result;
 		{
 			auto _lock = Lock();
-
 			const size_t count = std::min(last, log.size());
-			result.resize(count);
-			const auto startIt = log.end() - static_cast<std::ptrdiff_t>(count);
-			std::copy(startIt, log.end(), result.begin());
+			result.reserve(count);
+			auto startIt = log.end() - static_cast<std::ptrdiff_t>(count);
+			for (; startIt != log.end(); ++startIt)
+			{
+				if ((CurrentLogTypes & static_cast<uint16_t>(startIt->lt)) != 0)
+					result.push_back(std::format("{:3} [{:20}] {}", ToString(startIt->lt), startIt->tag, startIt->msg));
+			}
 		}
 		return result;
+	}
+
+	static std::vector<std::string> GetLevels()
+	{
+		return
+		{
+				ToString(eLogTypes::ERR),
+				ToString(eLogTypes::WRN),
+				ToString(eLogTypes::DVC),
+				ToString(eLogTypes::ITW),
+				ToString(eLogTypes::DBG),
+				ToString(eLogTypes::ITF),
+				ToString(eLogTypes::RTU),
+		};
+	}
+	static std::string ToString(eLogTypes lt)
+	{
+		switch (lt)
+		{
+		case eLogTypes::ITW: return "ITW";
+		case eLogTypes::DVC: return "DVC";
+		case eLogTypes::ERR: return "ERR ";
+		case eLogTypes::DBG: return "DBG ";
+		case eLogTypes::ITF: return "ITF";
+		case eLogTypes::RTU: return "RTU";
+		case eLogTypes::WRN: return "WRN ";
+		default: return "???";
+		}
 	}
 
 	template <typename... Args>
@@ -97,65 +166,45 @@ private:
 	mutable std::mutex LockMutex;
 
 	static constexpr size_t maxEntries = 100;
-	std::deque<std::string> log;
+	std::deque<LogEntry> log;
 	std::ofstream logFile;
 
-	std::string ToString(eLogTypes lt) const
-	{
-		switch (lt)
-		{
-		case eLogTypes::INFO_LOW: return "INFO_LOW";
-		case eLogTypes::INFO: return "INFO";
-		case eLogTypes::ERR: return "ERR ";
-		case eLogTypes::DBG: return "DBG ";
-		default: return "???";
-		}
-	}
-
-
-	uint8_t CurrentLogTypes =
-    static_cast<uint8_t>(eLogTypes::ERR) |
-    static_cast<uint8_t>(eLogTypes::INFO_LOW) |
-    static_cast<uint8_t>(eLogTypes::INFO);
-	std::vector<std::string> GetLogLast(size_t last)
-	{
-		auto _lock = Lock();
-
-		const size_t count = std::min(last, log.size());
-		std::vector<std::string> result(count);
-		const auto startIt = log.end() - static_cast<std::ptrdiff_t>(count);
-		std::copy(startIt, log.end(), result.begin());
-		return result;
-	}
+	uint16_t CurrentLogTypes =
+		static_cast<uint16_t>(eLogTypes::ERR) |
+		static_cast<uint16_t>(eLogTypes::ITW) |
+		static_cast<uint16_t>(eLogTypes::DVC);
 
 	void AddInternal(eLogTypes lt, const std::string& tag, const std::string& msg)
 	{
-		// Filtering: CurrentLogType is a bitmask of enabled log categories.
-		// Example: (ERR|INFO) logs only ERR and INFO.
-		if (!(CurrentLogTypes & (uint8_t)lt))
-			return;
+		// log all entries
 
-		std::string line = std::format("{:3} [{:20}] {}", ToString(lt), tag, msg);
 		{
 			auto _lock = Lock();
 
-			log.push_back({ line });
+			auto now = std::chrono::system_clock::now();
+			auto nowTime = std::chrono::system_clock::to_time_t(now);
+
+			log.push_back({ nowTime, lt, tag, msg });
 			while (log.size() > maxEntries)
 				log.pop_front();
+			NotifyUI(UINotify::LogChanged);
 		}
 
 		if (logFile.is_open())
 		{
 			{
+				auto _lock = Lock();
+				std::string line = std::format("{:3} [{:20}] {}", ToString(lt), tag, msg);
+
 				auto now = std::chrono::system_clock::now();
 				auto t = std::chrono::system_clock::to_time_t(now);
 				std::tm tmBuf{};
 				localtime_s(&tmBuf, &t);
 
-				logFile << std::put_time(&tmBuf, "%H:%M:%S") << '.' 
-				        << std::setw(3) << std::setfill('0') 
-				        << std::chrono::duration_cast<std::chrono::milliseconds>(now.time_since_epoch()).count() % 1000
-				        << " " << line << std::endl;
+				logFile << std::put_time(&tmBuf, "%H:%M:%S") << '.'
+					<< std::setw(3) << std::setfill('0')
+					<< std::chrono::duration_cast<std::chrono::milliseconds>(now.time_since_epoch()).count() % 1000
+					<< " " << line << std::endl;
 				logFile.flush();
 			}
 		}

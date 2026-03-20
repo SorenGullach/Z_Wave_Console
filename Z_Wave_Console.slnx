@@ -1,7 +1,9 @@
 <Solution>
   <Configurations>
+    <Platform Name="Any CPU" />
     <Platform Name="x64" />
     <Platform Name="x86" />
   </Configurations>
   <Project Path="Z_Wave_Console/Z_Wave_Console.vcxproj" Id="3c45af10-52e5-4097-bf6b-1819e5c2be1c" />
+  <Project Path="Z_Wave_UI/Z_Wave_UI.csproj" Id="c831d370-96ee-4b48-a87b-d701aea7c4b1" />
 </Solution>

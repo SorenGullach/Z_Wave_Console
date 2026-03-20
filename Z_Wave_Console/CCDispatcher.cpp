@@ -7,11 +7,11 @@
 
 // Parses frames delivered via Z-Wave Serial API `ZW_API_APPLICATION_COMMAND_HANDLER` and
 // dispatches to command-class specific decoders/interview handlers.
-void ZW_CCDispatcher::HandleCCFrame(const std::vector<uint8_t>& payload)
+void ZW_CCDispatcher::HandleCCFrame(const APIFrame::PayLoad& payload)
 {
 	if (payload.empty())
 	{
-		Log.AddL(eLogTypes::INFO_LOW, MakeTag(), "<< ZW_API_APPLICATION_COMMAND_HANDLER: empty payload (drop)");
+		Log.AddL(eLogTypes::RTU, MakeTag(), "<< ZW_API_APPLICATION_COMMAND_HANDLER: empty payload (drop)");
 		return;
 	}
 
@@ -19,7 +19,7 @@ void ZW_CCDispatcher::HandleCCFrame(const std::vector<uint8_t>& payload)
 	// payload[0]=rxStatus, payload[1]=source nodeId, payload[2]=cmdLen, payload[3..]=cmd bytes.
 	// Any trailing bytes after the cmd bytes (if present) are treated as metadata (e.g., RSSI).
 	const uint8_t rxStatus = payload[0];
-	const uint8_t nodeId = payload.size() > 1 ? payload[1] : 0;
+	const node_t nodeId = (node_t)(payload.size() > 1 ? payload[1] : 0);
 
 	if (payload.size() < 5)
 	{
@@ -29,7 +29,7 @@ void ZW_CCDispatcher::HandleCCFrame(const std::vector<uint8_t>& payload)
 
 	if (!nodes.Exists(nodeId))
 	{
-		Log.AddL(eLogTypes::INFO_LOW, MakeTag(), "<< ZW_API_APPLICATION_COMMAND_HANDLER: unknown node (fromNode={} payloadLen={})", nodeId, payload.size());
+		Log.AddL(eLogTypes::RTU, MakeTag(), "<< ZW_API_APPLICATION_COMMAND_HANDLER: unknown node (fromNode={} payloadLen={})", nodeId, payload.size());
 		return;
 	}
 
@@ -104,7 +104,7 @@ void ZW_CCDispatcher::HandleCCFrame(const std::vector<uint8_t>& payload)
 }
 
 // Called by the interface layer when a waited-for callback/response did not arrive.
-void ZW_CCDispatcher::HandleCCFrameTimeout(const std::vector<uint8_t>& payload)
+void ZW_CCDispatcher::HandleCCFrameTimeout(const APIFrame::PayLoad& payload)
 {
-	Log.AddL(eLogTypes::INFO_LOW, MakeTag(), "CCDispatcher.HandleCCFrameTimeout: payloadLen={}", payload.size());
+	Log.AddL(eLogTypes::RTU, MakeTag(), "CCDispatcher.HandleCCFrameTimeout: payloadLen={}", payload.size());
 }

@@ -87,8 +87,8 @@ public:
 		VERSION_CAPABILITIES_GET = 0x15, // Ask for Version CC capabilities (Z-Wave Plus)
 		VERSION_CAPABILITIES_REPORT = 0x16, // Response with capabilities
 
-		VERSION_ZWAVE_SOFTWARE_GET = 0x17, // Ask for Z-Wave software info (SDK, app, protocol)
-		VERSION_ZWAVE_SOFTWARE_REPORT = 0x18  // Response with software info
+		VERSION_ZWAVE_SOFTWARE_GET = 0x17, // Ask for Z-Wave software DVC (SDK, app, protocol)
+		VERSION_ZWAVE_SOFTWARE_REPORT = 0x18  // Response with software DVC
 	};
 
 	static constexpr eCommandClass CC = eCommandClass::VERSION;

@@ -130,7 +130,7 @@ static WORD ColorForLogLine(const std::string& line)
 	if (line.find(" DBG ") != std::string::npos)
 		return gray;
 
-	return green; // INFO
+	return green; // DVC
 }
 
 static void DrawUiFrame()
@@ -238,8 +238,8 @@ static std::string ReadCommand()
 int main()
 {
 	Log.SetLogTypeOn(eLogTypes::ERR);
-	//Log.SetLogTypeOn(eLogTypes::INFO_LOW);
-	Log.SetLogTypeOn(eLogTypes::INFO);
+	//Log.SetLogTypeOn(eLogTypes::ITW);
+	Log.SetLogTypeOn(eLogTypes::DVC);
 //	Log.SetLogTypeOn(eLogTypes::DBG);
 
 	DrawUiFrame();
@@ -296,7 +296,7 @@ int main()
         {
             try
             {
-				const uint8_t nodeid = static_cast<uint8_t>(std::stoi(cmd.substr(5)));
+				const node_t nodeid = static_cast<node_t>(std::stoi(cmd.substr(5)));
 				ZW.RequestBattery(nodeid);
             }
             catch (...)
@@ -309,7 +309,7 @@ int main()
         {
             try
             {
-				const uint8_t nodeid = static_cast<uint8_t>(std::stoi(cmd.substr(5)));
+				const node_t nodeid = static_cast<node_t>(std::stoi(cmd.substr(5)));
 				ZW.AssociationInterview(nodeid);
             }
             catch (...)
@@ -322,7 +322,7 @@ int main()
 		{
 			try
 			{
-				const uint8_t nodeid = static_cast<uint8_t>(std::stoi(cmd.substr(7)));
+				const node_t nodeid = static_cast<node_t>(std::stoi(cmd.substr(7)));
 				ZW.IsDead(nodeid);
 			}
 			catch (...)
@@ -335,7 +335,7 @@ int main()
 		{
 			try
 			{
-				const uint8_t nodeid = static_cast<uint8_t>(std::stoi(cmd.substr(7)));
+				const node_t nodeid = static_cast<node_t>(std::stoi(cmd.substr(7)));
 				ZW.Remove(nodeid);
 			}
 			catch (...)
@@ -348,7 +348,7 @@ int main()
 		{
 			try
 			{
-				const uint8_t nodeid = static_cast<uint8_t>(std::stoi(cmd.substr(7)));
+				const node_t nodeid = static_cast<node_t>(std::stoi(cmd.substr(7)));
 				ZW.ConfigurationInterview(nodeid);
 			}
 			catch (...)
@@ -367,9 +367,9 @@ int main()
 				int groupId = 0;
 				int targetNodeId = 0;
 				iss >> keyword >> nodeId >> groupId >> targetNodeId;
-				const uint8_t nodeid = static_cast<uint8_t>(nodeId);
+				const node_t nodeid = static_cast<node_t>(nodeId);
 				const uint8_t groupid = static_cast<uint8_t>(groupId);
-				const uint8_t targetnodeid = static_cast<uint8_t>(targetNodeId);
+				const node_t targetnodeid = static_cast<node_t>(targetNodeId);
 				ZW.Bind(nodeid, groupid, targetnodeid);
 			}
 			catch (...)
@@ -389,9 +389,9 @@ int main()
 				int targetNodeId = 0;
 				int targetEndpoint = 0;
 				iss >> keyword >> nodeId >> groupId >> targetNodeId >> targetEndpoint;
-				const uint8_t nodeid = static_cast<uint8_t>(nodeId);
+				const node_t nodeid = static_cast<node_t>(nodeId);
 				const uint8_t groupid = static_cast<uint8_t>(groupId);
-				const uint8_t targetnodeid = static_cast<uint8_t>(targetNodeId);
+				const node_t targetnodeid = static_cast<node_t>(targetNodeId);
 				const uint8_t targetendpoint = static_cast<uint8_t>(targetEndpoint);
 				ZW.MCBind(nodeid, groupid, targetnodeid, targetendpoint);
 			}
@@ -411,9 +411,9 @@ int main()
 				int groupId = 0;
 				int targetNodeId = 0;
 				iss >> keyword >> nodeId >> groupId >> targetNodeId;
-				const uint8_t nodeid = static_cast<uint8_t>(nodeId);
+				const node_t nodeid = static_cast<node_t>(nodeId);
 				const uint8_t groupid = static_cast<uint8_t>(groupId);
-				const uint8_t targetnodeid = static_cast<uint8_t>(targetNodeId);
+				const node_t targetnodeid = static_cast<node_t>(targetNodeId);
 				ZW.Unbind(nodeid, groupid, targetnodeid);
 			}
 			catch (...)
@@ -433,9 +433,9 @@ int main()
 				int targetNodeId = 0;
 				int targetEndpoint = 0;
 				iss >> keyword >> nodeId >> groupId >> targetNodeId >> targetEndpoint;
-				const uint8_t nodeid = static_cast<uint8_t>(nodeId);
+				const node_t nodeid = static_cast<node_t>(nodeId);
 				const uint8_t groupid = static_cast<uint8_t>(groupId);
-				const uint8_t targetnodeid = static_cast<uint8_t>(targetNodeId);
+				const node_t targetnodeid = static_cast<node_t>(targetNodeId);
 				const uint8_t targetendpoint = static_cast<uint8_t>(targetEndpoint);
 				ZW.MCUnbind(nodeid, groupid, targetnodeid, targetendpoint);
 			}
@@ -455,7 +455,7 @@ int main()
 				int param = 0;
 				int value = 0;
 				iss >> keyword >> nodeId >> param >> value;
-				const uint8_t nodeid = static_cast<uint8_t>(nodeId);
+				const node_t nodeid = static_cast<node_t>(nodeId);
 				const uint8_t paramid = static_cast<uint8_t>(param);
 				const uint32_t cfgvalue = static_cast<uint32_t>(value);
 				ZW.Configure(nodeid, paramid, cfgvalue);

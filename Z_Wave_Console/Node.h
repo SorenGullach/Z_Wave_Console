@@ -19,6 +19,7 @@
 #include "Device.h"
 #include "APIFrame.h"
 #include "CommandClass.h"
+#include "NodeId.h"
 
 
 class ZW_NodeInfo
@@ -33,9 +34,9 @@ public:
 	enum class eNodeState { New, Awake, Sleepy };
 
 	// ===================== Members =====================
-	const uint8_t NodeId;
+	const node_t NodeId;
 
-	// ---------- Protocol Info ----------
+	// ---------- Protocol DVC ----------
 	struct ProtocolInfo
 	{
 		uint8_t basic = 0;
@@ -54,10 +55,10 @@ public:
 		bool controllerNode = false;
 		bool security = false;
 	} protocolInfo;
-	void SetProtocolInfo(const ProtocolInfo& info)
+	void SetProtocolInfo(const ProtocolInfo& DVC)
 	{
 		DebugLockGuard lock(stateMutex);
-		protocolInfo = info;
+		protocolInfo = DVC;
 	}
 	bool IsListening() const
 	{
@@ -65,7 +66,7 @@ public:
 		return protocolInfo.isListening;
 	}
 
-	// ---------- WakeUp Info ----------
+	// ---------- WakeUp DVC ----------
 	struct WakeUpInfo
 	{
 		std::chrono::system_clock::time_point lastWakeUp;
@@ -86,7 +87,7 @@ public:
 		return wakeUpInfo;
 	}
 
-	// ---------- Manufacturer Info ----------
+	// ---------- Manufacturer DVC ----------
 	struct ManufacturerInfo
 	{
 		uint16_t mfgId = 0;
@@ -98,7 +99,7 @@ public:
 		bool hasManufacturerData = false;
 	} manufacturerInfo;
 
-	// ---------- Meter Info ----------
+	// ---------- Meter DVC ----------
 	struct MeterInfo
 	{
 		bool hasValue = false;
@@ -106,7 +107,7 @@ public:
 		uint8_t value = 0;
 	} meterInfo;
 
-	// ---------- Configuration Info (CC 0x70) ----------
+	// ---------- Configuration DVC (CC 0x70) ----------
 	struct ConfigurationInfo
 	{
 		uint8_t paramNumber = 0;          // Parameter number (1..255)
@@ -118,11 +119,11 @@ public:
 	};
 	std::array<ConfigurationInfo, 255> configurationInfo{};
 
-	// ---------- Association Info (CC 0x85) ----------
+	// ---------- Association DVC (CC 0x85) ----------
 	struct AssociationGroupNode
 	{
 		bool valid = false;                // True when a REPORT has been received
-		uint8_t nodeId = 0;
+		node_t nodeId{};
 	};
 	struct AssociationGroup
 	{
@@ -154,7 +155,7 @@ public:
 	// ---------- Multi Channel Association (CC 0x8E) ----------
 	struct MultiChannelAssociationMember
 	{
-		uint8_t nodeId = 0;
+		node_t nodeId{};
 		uint8_t endpointId = 0; // 0 = root endpoint
 		bool valid = false;
 	};
@@ -213,7 +214,7 @@ protected:
 
 public:
 	// ===================== Constructors =====================
-	ZW_NodeInfo(uint8_t nodeid)
+	ZW_NodeInfo(node_t nodeid)
 		: NodeId{ nodeid }, device(*this)
 	{}
 	ZW_NodeInfo(const ZW_NodeInfo&) = delete;
@@ -295,7 +296,7 @@ public:
 				cmdClass = static_cast<eCommandClass>(cmdParams[1]);
 				cmdId = ZW_CmdId(cmdParams[2]);
 				innerParams.assign(cmdParams.begin() + 3, cmdParams.end());
-				Log.AddL(eLogTypes::INFO, MakeTag(),
+				Log.AddL(eLogTypes::DVC, MakeTag(),
 						"Encapsulated command class: 0x{:02X} {} (to endpoint {})",
 						(uint8_t)cmdClass, CommandClassToString(cmdClass), destiationEndpoint);
 			}
@@ -310,14 +311,14 @@ public:
 			handler->HandleReport(cmdId, destiationEndpoint, innerParams);
 		}
 		else
-			Log.AddL(eLogTypes::INFO, MakeTag(), "Unknown command class handler: 0x{:02X} {}", (uint8_t)cmdClass, CommandClassToString(cmdClass));
+			Log.AddL(eLogTypes::DVC, MakeTag(), "Unknown command class handler: 0x{:02X} {}", (uint8_t)cmdClass, CommandClassToString(cmdClass));
 	}
 	bool GetFrame(ZW_APIFrame& frame, eCommandClass cmdClass, ZW_CmdId cmdId,
 				  const ZW_ByteVector& params = {})
 	{
 		if (!HasCC(cmdClass))
 		{
-			Log.AddL(eLogTypes::INFO, MakeTag(), "Node does not support command class: 0x{:02X} {}",
+			Log.AddL(eLogTypes::DVC, MakeTag(), "Node does not support command class: 0x{:02X} {}",
 					 (uint8_t)cmdClass, CommandClassToString(cmdClass));
 			return false;
 		}
@@ -327,7 +328,7 @@ public:
 			handler->MakeFrame(frame, ZW_CmdId(cmdId), params);
 			return true;
 		}
-		Log.AddL(eLogTypes::INFO, MakeTag(), "Unknown command class handler: 0x{:02X} {}",
+		Log.AddL(eLogTypes::DVC, MakeTag(), "Unknown command class handler: 0x{:02X} {}",
 				 (uint8_t)cmdClass, CommandClassToString(cmdClass));
 		return false;
 	}
@@ -342,7 +343,7 @@ public:
 class ZW_Node : public ZW_NodeInfo
 {
 public:
-	ZW_Node(uint8_t nodeid, EnqueueFn enqueue) : ZW_NodeInfo(nodeid)
+	ZW_Node(node_t nodeid, EnqueueFn enqueue) : ZW_NodeInfo(nodeid)
 	{
 		this->enqueue = std::move(enqueue);
 		Start();
@@ -417,7 +418,7 @@ public:
 	{
 		eJobs job;
 		uint8_t group;
-		uint8_t nodeId;
+		node_t nodeId;
 		uint8_t endpoint;
 		
 		uint32_t value;
@@ -427,13 +428,13 @@ public:
 	{
 		if (!SupportsJob(job.job))
 		{
-			Log.AddL(eLogTypes::INFO, MakeTag(), "Node {} does not support job: {}", NodeId, (uint8_t)job.job);
+			Log.AddL(eLogTypes::DVC, MakeTag(), "Node {} does not support job: {}", NodeId, (uint8_t)job.job);
 			return;
 		}
 
 		DebugLockGuard lock(stateMutex);
 		jobQueue.push_back(job);
-		Log.AddL(eLogTypes::INFO, MakeTag(), "EnqueueJob: num={}", jobQueue.size());
+		Log.AddL(eLogTypes::DVC, MakeTag(), "EnqueueJob: num={}", jobQueue.size());
 	}
 
 	bool HandleNodeFailed(uint8_t status);
@@ -474,7 +475,7 @@ private:
 		case eJobs::MULTI_CHANNEL_BIND_COMMAND:
 			return HasCC(eCommandClass::MULTI_CHANNEL_ASSOCIATION);
 		default:
-			Log.AddL(eLogTypes::INFO, MakeTag(), "Unknown job: {}", (uint8_t)type);
+			Log.AddL(eLogTypes::DVC, MakeTag(), "Unknown job: {}", (uint8_t)type);
 			return true;
 		}
 	}
@@ -490,11 +491,11 @@ private:
 		DebugLockGuard lock(stateMutex);
 		if (jobQueue.empty())
 		{
-			//			Log.AddL(eLogTypes::INFO, MakeTag(), "Job queue empty");
+			//			Log.AddL(eLogTypes::DVC, MakeTag(), "Job queue empty");
 			return false;
 		}
 		job = jobQueue.front();
-		Log.AddL(eLogTypes::INFO, MakeTag(), "Job peeked: {}", (uint8_t)job.job);
+		Log.AddL(eLogTypes::DVC, MakeTag(), "Job peeked: {}", (uint8_t)job.job);
 		return true;
 	}
 
@@ -503,7 +504,7 @@ private:
 		DebugLockGuard lock(stateMutex);
 		if (!jobQueue.empty())
 			jobQueue.erase(jobQueue.begin());
-		Log.AddL(eLogTypes::INFO, MakeTag(), "Job erased queue size: {}", jobQueue.size());
+		Log.AddL(eLogTypes::DVC, MakeTag(), "Job erased queue size: {}", jobQueue.size());
 	}
 
 	template <typename Pred>
@@ -611,7 +612,7 @@ private:
 			doneOrError = ExecuteConfigurationCommandJob(job.group, job.cfgSize, job.value);
 			break;
 		default:
-			Log.AddL(eLogTypes::INFO, MakeTag(), "Unknown job: {}", (uint8_t)job.job);
+			Log.AddL(eLogTypes::DVC, MakeTag(), "Unknown job: {}", (uint8_t)job.job);
 			break;
 		}
 
@@ -633,10 +634,10 @@ private:
 	bool ExecuteAssociationInterviewJob();
 	bool ExecuteMultiChannelAssociationInterviewJob();
 	bool ExecuteConfigurationInterviewJob();
-	bool ExecuteBindCommandJob(uint8_t groupId, uint8_t nodeid);
-	bool ExecuteUnBindCommandJob(uint8_t groupId, uint8_t nodeid);
-	bool ExecuteMultiChannelUnBindCommandJob(uint8_t groupId, uint8_t nodeid, uint8_t endpoint);
-	bool ExecuteMultiChannelBindCommandJob(uint8_t groupId, uint8_t nodeid, uint8_t endpoint);
+	bool ExecuteBindCommandJob(uint8_t groupId, node_t nodeid);
+	bool ExecuteUnBindCommandJob(uint8_t groupId, node_t nodeid);
+	bool ExecuteMultiChannelUnBindCommandJob(uint8_t groupId, node_t nodeid, uint8_t endpoint);
+	bool ExecuteMultiChannelBindCommandJob(uint8_t groupId, node_t nodeid, uint8_t endpoint);
 	bool ExecuteConfigurationCommandJob(uint8_t paramNumber, eConfigSize size, uint32_t value);
 
 };

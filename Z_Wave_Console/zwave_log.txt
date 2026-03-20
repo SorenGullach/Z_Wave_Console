@@ -1,622 +1,126 @@
-18:26:10.359 INFO [Interface.cpp:15    ] OpenPort ok: port='COM3'
-18:26:10.367 INFO [InitializeManager.cpp:16] >> GetInitData: cmdId=0x02
-18:26:10.490 INFO [Z_Wave.h:201        ] << [RES] cmdId=0x02 FUNC_ID_GET_INIT_DATA | payload=05 08 1D 01 00 F0 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 03 01
-18:26:10.490 INFO [InitializeManager.cpp:64] << GetInitData ApiVersion=5 Caps=8 NodeListLen=29 ChipType=3 ChipVer=1 
-18:26:10.490 INFO [InitializeManager.cpp:70] << GetInitData: parsed nodeIds=5 (first=1, last=24)
-18:26:10.491 INFO [InitializeManager.cpp:169] >> GetCapabilities: cmdId=0x07
-18:26:10.570 INFO [Z_Wave.h:201        ] << [RES] cmdId=0x07 FUNC_ID_GET_CAPABILITIES | payload=03 07 00 86 00 02 00 01 FE 80 FE 88 0F 00 00 00 FB 97 7F 82 07 00 00 80 00 80 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-18:26:10.570 INFO [InitializeManager.cpp:209] << GetCapabilities: appVer=3.7 mfg=0x0086 prodType=0x0002 prodId=0x0001 cmdCount=47 cmdList=[2 3 4 5 6 7 8 16 18 19 20 21 22 23 24 28 32 33 34 35 36 65 66 68 69 70 71 72 73 74 75 77 80 81 82 83 84 85 86 87 90 96 97 98 99 128 144 ] (payloadLen=40)
-18:26:10.570 INFO [InitializeManager.cpp:80] >> GetControllerCapabilities: cmdId=0x05
-18:26:10.644 INFO [Z_Wave.h:201        ] << [RES] cmdId=0x05 FUNC_ID_GET_CONTROLLER_CAPABILITIES | payload=1C
-18:26:10.644 INFO [InitializeManager.cpp:99] << GetControllerCapabilities: caps=0x1C secondary=false otherNet=false sisPresent=true sucEnabled=true noNodesIncluded=false (payloadLen=1)
-18:26:10.644 INFO [InitializeManager.cpp:227] >> GetNetworkIdsFromMemory: cmdId=0x20
-18:26:10.707 INFO [Z_Wave.h:201        ] << [RES] cmdId=0x20 ZW_API_GET_NETWORK_IDS_FROM_MEMORY | payload=01 4C E4 51 01
-18:26:10.707 INFO [InitializeManager.cpp:249] << GetNetworkIdsFromMemory: homeId=0x014CE451 nodeId=1 (payloadLen=5)
-18:26:10.707 INFO [InitializeManager.cpp:259] >> GetLibraryVersion: cmdId=0x15
-18:26:10.771 INFO [Z_Wave.h:201        ] << [RES] cmdId=0x15 FUNC_ID_GET_LIBRARY_VERSION | payload=5A 2D 57 61 76 65 20 32 2E 37 38 00 01
-18:26:10.771 INFO [InitializeManager.cpp:298] << GetLibraryVersion: verStr='Z-Wave 2.78' libType=0x01 protoParsed=2.78 (payloadLen=13)
-18:26:10.799 INFO [Z_Wave.h:352        ] ----------------------------------- Initialization done.
-18:26:10.802 INFO [Z_Wave.h:370        ] ----------------------------------- Interview started. Node: 21
-18:26:10.803 INFO [InterviewManager.cpp:20] >> ZW_API_GET_NODE_INFO_PROTOCOL_DATA: node=21
-18:26:10.834 INFO [Z_Wave.h:201        ] << [RES] cmdId=0x41 ZW_API_GET_NODE_INFO_PROTOCOL_DATA | payload=0A 06 00 01 20 01
-18:26:10.834 INFO [InterviewManager.cpp:69] << ZW_API_GET_NODE_INFO_PROTOCOL_DATA: node=21 listening=false routing=false speed=1 proto=2 basic=0x01 generic=0x20 specific=0x01 opt=0x06 speedExt=0x00 (payloadLen=6)
-18:26:10.862 INFO [Z_Wave.h:364        ] ----------------------------------- Interview pending. Node: 21 Not listening
-18:26:10.863 INFO [Z_Wave.h:370        ] ----------------------------------- Interview started. Node: 22
-18:26:10.863 INFO [InterviewManager.cpp:20] >> ZW_API_GET_NODE_INFO_PROTOCOL_DATA: node=22
-18:26:10.896 INFO [Z_Wave.h:201        ] << [RES] cmdId=0x41 ZW_API_GET_NODE_INFO_PROTOCOL_DATA | payload=0A 06 00 01 20 01
-18:26:10.896 INFO [InterviewManager.cpp:69] << ZW_API_GET_NODE_INFO_PROTOCOL_DATA: node=22 listening=false routing=false speed=1 proto=2 basic=0x01 generic=0x20 specific=0x01 opt=0x06 speedExt=0x00 (payloadLen=6)
-18:26:10.925 INFO [Z_Wave.h:364        ] ----------------------------------- Interview pending. Node: 22 Not listening
-18:26:10.925 INFO [Z_Wave.h:370        ] ----------------------------------- Interview started. Node: 23
-18:26:10.925 INFO [InterviewManager.cpp:20] >> ZW_API_GET_NODE_INFO_PROTOCOL_DATA: node=23
-18:26:10.959 INFO [Z_Wave.h:201        ] << [RES] cmdId=0x41 ZW_API_GET_NODE_INFO_PROTOCOL_DATA | payload=0A 06 00 01 20 01
-18:26:10.959 INFO [InterviewManager.cpp:69] << ZW_API_GET_NODE_INFO_PROTOCOL_DATA: node=23 listening=false routing=false speed=1 proto=2 basic=0x01 generic=0x20 specific=0x01 opt=0x06 speedExt=0x00 (payloadLen=6)
-18:26:10.987 INFO [Z_Wave.h:364        ] ----------------------------------- Interview pending. Node: 23 Not listening
-18:26:10.987 INFO [Z_Wave.h:370        ] ----------------------------------- Interview started. Node: 24
-18:26:10.988 INFO [InterviewManager.cpp:20] >> ZW_API_GET_NODE_INFO_PROTOCOL_DATA: node=24
-18:26:11.037 INFO [Z_Wave.h:201        ] << [RES] cmdId=0x41 ZW_API_GET_NODE_INFO_PROTOCOL_DATA | payload=0A 06 00 01 20 01
-18:26:11.038 INFO [InterviewManager.cpp:69] << ZW_API_GET_NODE_INFO_PROTOCOL_DATA: node=24 listening=false routing=false speed=1 proto=2 basic=0x01 generic=0x20 specific=0x01 opt=0x06 speedExt=0x00 (payloadLen=6)
-18:26:11.055 INFO [Z_Wave.h:364        ] ----------------------------------- Interview pending. Node: 24 Not listening
-18:32:23.268 INFO [Z_Wave.h:201        ] << [REQ] cmdId=0x04 ZW_API_APPLICATION_COMMAND_HANDLER | payload=00 17 06 60 06 01 20 01 FF
-18:32:23.268 INFO [Node.h:298          ] Encapsulated command class: 0x20 BASIC (to endpoint 1)
-18:32:23.268 INFO [Node.h:313          ] Unknown command class handler: 0x20 BASIC
-18:32:29.618 INFO [Z_Wave.h:201        ] << [REQ] cmdId=0x49 ZW_API_APPLICATION_UPDATE | payload=84 17 0E 01 20 01 72 86 70 60 85 8E 30 EF 20 26 50 | event=UPDATE_STATE_NODE_INFO_RECEIVED (84 17 0E 01 20 01 72 86 70 60 85 8E 30 EF 20 26 50)
-18:32:29.619 INFO [InterviewManager.cpp:165] << Decoded NodeInfo: node=23 basic=0x01 generic=0x20 specific=0x01 ccCount=11
-18:32:29.630 INFO [Node.cpp:321        ] >> NODE VERSION_COMMAND_CLASS_GET CC [0x20] to node 23
-18:32:29.697 INFO [Z_Wave.h:201        ] << [RES] cmdId=0x13 ZW_API_CONTROLLER_SEND_DATA | payload=01 | rsp status 0x01
-18:32:29.739 INFO [Z_Wave.h:201        ] << [REQ] cmdId=0x13 ZW_API_CONTROLLER_SEND_DATA | payload=05 00 | sessionid=0x05 tx status 0x00
-18:32:29.763 INFO [Z_Wave.h:201        ] << [REQ] cmdId=0x04 ZW_API_APPLICATION_COMMAND_HANDLER | payload=00 17 04 86 14 20 01
-18:32:29.763 INFO [Device.cpp:30       ] << VERSION_COMMAND_CLASS_REPORT: node=23 cc=0x20 version=1
-18:32:29.770 INFO [Node.cpp:321        ] >> NODE VERSION_COMMAND_CLASS_GET CC [0x26] to node 23
-18:32:29.836 INFO [Z_Wave.h:201        ] << [RES] cmdId=0x13 ZW_API_CONTROLLER_SEND_DATA | payload=01 | rsp status 0x01
-18:32:29.914 INFO [Z_Wave.h:201        ] << [REQ] cmdId=0x13 ZW_API_CONTROLLER_SEND_DATA | payload=05 00 | sessionid=0x05 tx status 0x00
-18:32:29.938 INFO [Z_Wave.h:201        ] << [REQ] cmdId=0x04 ZW_API_APPLICATION_COMMAND_HANDLER | payload=00 17 04 86 14 26 01
-18:32:29.938 INFO [Device.cpp:30       ] << VERSION_COMMAND_CLASS_REPORT: node=23 cc=0x26 version=1
-18:32:29.942 INFO [Node.cpp:321        ] >> NODE VERSION_COMMAND_CLASS_GET CC [0x30] to node 23
-18:32:30.008 INFO [Z_Wave.h:201        ] << [RES] cmdId=0x13 ZW_API_CONTROLLER_SEND_DATA | payload=01 | rsp status 0x01
-18:32:30.050 INFO [Z_Wave.h:201        ] << [REQ] cmdId=0x13 ZW_API_CONTROLLER_SEND_DATA | payload=05 00 | sessionid=0x05 tx status 0x00
-18:32:30.074 INFO [Z_Wave.h:201        ] << [REQ] cmdId=0x04 ZW_API_APPLICATION_COMMAND_HANDLER | payload=00 17 04 86 14 30 01
-18:32:30.075 INFO [Device.cpp:30       ] << VERSION_COMMAND_CLASS_REPORT: node=23 cc=0x30 version=1
-18:32:30.082 INFO [Node.cpp:321        ] >> NODE VERSION_COMMAND_CLASS_GET CC [0x50] to node 23
-18:32:30.148 INFO [Z_Wave.h:201        ] << [RES] cmdId=0x13 ZW_API_CONTROLLER_SEND_DATA | payload=01 | rsp status 0x01
-18:32:30.191 INFO [Z_Wave.h:201        ] << [REQ] cmdId=0x13 ZW_API_CONTROLLER_SEND_DATA | payload=05 00 | sessionid=0x05 tx status 0x00
-18:32:30.215 INFO [Z_Wave.h:201        ] << [REQ] cmdId=0x04 ZW_API_APPLICATION_COMMAND_HANDLER | payload=00 17 04 86 14 50 02
-18:32:30.215 INFO [Device.cpp:30       ] << VERSION_COMMAND_CLASS_REPORT: node=23 cc=0x50 version=2
-18:32:30.223 INFO [Node.cpp:321        ] >> NODE VERSION_COMMAND_CLASS_GET CC [0x70] to node 23
-18:32:30.290 INFO [Z_Wave.h:201        ] << [RES] cmdId=0x13 ZW_API_CONTROLLER_SEND_DATA | payload=01 | rsp status 0x01
-18:32:30.332 INFO [Z_Wave.h:201        ] << [REQ] cmdId=0x13 ZW_API_CONTROLLER_SEND_DATA | payload=05 00 | sessionid=0x05 tx status 0x00
-18:32:30.357 INFO [Z_Wave.h:201        ] << [REQ] cmdId=0x04 ZW_API_APPLICATION_COMMAND_HANDLER | payload=00 17 04 86 14 70 01
-18:32:30.357 INFO [Device.cpp:30       ] << VERSION_COMMAND_CLASS_REPORT: node=23 cc=0x70 version=1
-18:32:30.363 INFO [Node.cpp:321        ] >> NODE VERSION_COMMAND_CLASS_GET CC [0x72] to node 23
-18:32:30.430 INFO [Z_Wave.h:201        ] << [RES] cmdId=0x13 ZW_API_CONTROLLER_SEND_DATA | payload=01 | rsp status 0x01
-18:32:30.472 INFO [Z_Wave.h:201        ] << [REQ] cmdId=0x13 ZW_API_CONTROLLER_SEND_DATA | payload=05 00 | sessionid=0x05 tx status 0x00
-18:32:30.496 INFO [Z_Wave.h:201        ] << [REQ] cmdId=0x04 ZW_API_APPLICATION_COMMAND_HANDLER | payload=00 17 04 86 14 72 01
-18:32:30.497 INFO [Device.cpp:30       ] << VERSION_COMMAND_CLASS_REPORT: node=23 cc=0x72 version=1
-18:32:30.504 INFO [Node.cpp:321        ] >> NODE VERSION_COMMAND_CLASS_GET CC [0x85] to node 23
-18:32:30.570 INFO [Z_Wave.h:201        ] << [RES] cmdId=0x13 ZW_API_CONTROLLER_SEND_DATA | payload=01 | rsp status 0x01
-18:32:30.612 INFO [Z_Wave.h:201        ] << [REQ] cmdId=0x13 ZW_API_CONTROLLER_SEND_DATA | payload=05 00 | sessionid=0x05 tx status 0x00
-18:32:30.637 INFO [Z_Wave.h:201        ] << [REQ] cmdId=0x04 ZW_API_APPLICATION_COMMAND_HANDLER | payload=00 17 04 86 14 85 01
-18:32:30.637 INFO [Device.cpp:30       ] << VERSION_COMMAND_CLASS_REPORT: node=23 cc=0x85 version=1
-18:32:30.643 INFO [Node.cpp:321        ] >> NODE VERSION_COMMAND_CLASS_GET CC [0x86] to node 23
-18:32:30.709 INFO [Z_Wave.h:201        ] << [RES] cmdId=0x13 ZW_API_CONTROLLER_SEND_DATA | payload=01 | rsp status 0x01
-18:32:30.752 INFO [Z_Wave.h:201        ] << [REQ] cmdId=0x13 ZW_API_CONTROLLER_SEND_DATA | payload=05 00 | sessionid=0x05 tx status 0x00
-18:32:30.775 INFO [Z_Wave.h:201        ] << [REQ] cmdId=0x04 ZW_API_APPLICATION_COMMAND_HANDLER | payload=00 17 04 86 14 86 01
-18:32:30.776 INFO [Device.cpp:30       ] << VERSION_COMMAND_CLASS_REPORT: node=23 cc=0x86 version=1
-18:32:30.783 INFO [Node.cpp:321        ] >> NODE VERSION_COMMAND_CLASS_GET CC [0x8E] to node 23
-18:32:30.850 INFO [Z_Wave.h:201        ] << [RES] cmdId=0x13 ZW_API_CONTROLLER_SEND_DATA | payload=01 | rsp status 0x01
-18:32:30.893 INFO [Z_Wave.h:201        ] << [REQ] cmdId=0x13 ZW_API_CONTROLLER_SEND_DATA | payload=05 00 | sessionid=0x05 tx status 0x00
-18:32:30.917 INFO [Z_Wave.h:201        ] << [REQ] cmdId=0x04 ZW_API_APPLICATION_COMMAND_HANDLER | payload=00 17 04 86 14 8E 01
-18:32:30.917 INFO [Device.cpp:30       ] << VERSION_COMMAND_CLASS_REPORT: node=23 cc=0x8E version=1
-18:32:30.924 INFO [Node.cpp:321        ] >> NODE VERSION_COMMAND_CLASS_GET CC [0xEF] to node 23
-18:32:30.989 INFO [Z_Wave.h:201        ] << [RES] cmdId=0x13 ZW_API_CONTROLLER_SEND_DATA | payload=01 | rsp status 0x01
-18:32:31.032 INFO [Z_Wave.h:201        ] << [REQ] cmdId=0x13 ZW_API_CONTROLLER_SEND_DATA | payload=05 00 | sessionid=0x05 tx status 0x00
-18:32:31.056 INFO [Z_Wave.h:201        ] << [REQ] cmdId=0x04 ZW_API_APPLICATION_COMMAND_HANDLER | payload=00 17 04 86 14 EF 01
-18:32:31.056 INFO [Device.cpp:30       ] << VERSION_COMMAND_CLASS_REPORT: node=23 cc=0xEF version=1
-18:32:31.063 INFO [Node.cpp:347        ] >> NODE MANUFACTURER_SPECIFIC_COMMAND_CLASS_GET to node 23
-18:32:31.130 INFO [Z_Wave.h:201        ] << [RES] cmdId=0x13 ZW_API_CONTROLLER_SEND_DATA | payload=01 | rsp status 0x01
-18:32:31.173 INFO [Z_Wave.h:201        ] << [REQ] cmdId=0x13 ZW_API_CONTROLLER_SEND_DATA | payload=05 00 | sessionid=0x05 tx status 0x00
-18:32:31.201 INFO [Z_Wave.h:201        ] << [REQ] cmdId=0x04 ZW_API_APPLICATION_COMMAND_HANDLER | payload=00 17 08 72 05 00 7A 00 03 00 04
-18:32:31.201 INFO [Device.cpp:78       ] << MANUFACTURER_SPECIFIC_REPORT: node=23 mfgId=0x007A prodType=0x0003 prodId=0x0004
-18:32:31.205 INFO_LOW [Node.cpp:419        ] No CC MULTI_CHANNEL_END_POINT_GET for node 23
-18:32:31.252 INFO [Node.h:436          ] EnqueueJob: num=1
-18:32:31.252 INFO [Node.h:436          ] EnqueueJob: num=2
-18:32:31.252 INFO [Node.h:436          ] EnqueueJob: num=3
-18:32:31.252 INFO [Node.h:497          ] Job peeked: 1
-18:32:31.253 INFO [Device.cpp:720      ] MF ASSOCIATION_GROUPINGS_GET: node 23
-18:32:31.253 INFO [Node.cpp:648        ] >> ASSOCIATION_GROUPINGS_GET: node 23
-18:32:31.272 INFO [Z_Wave.h:201        ] << [RES] cmdId=0x13 ZW_API_CONTROLLER_SEND_DATA | payload=01 | rsp status 0x01
-18:32:31.314 INFO [Z_Wave.h:201        ] << [REQ] cmdId=0x13 ZW_API_CONTROLLER_SEND_DATA | payload=05 00 | sessionid=0x05 tx status 0x00
-18:32:31.337 INFO [Z_Wave.h:201        ] << [REQ] cmdId=0x04 ZW_API_APPLICATION_COMMAND_HANDLER | payload=00 17 03 85 06 04
-18:32:31.337 INFO [Device.cpp:783      ] << ASSOCIATION_GROUPINGS_REPORT: node=23 Params = 0x04
-18:32:31.345 INFO [Device.cpp:710      ] MF ASSOCIATION_GET: node 23 group 1
-18:32:31.345 INFO [Node.cpp:663        ] >> ASSOCIATION_GET: node 23 group 1
-18:32:31.412 INFO [Z_Wave.h:201        ] << [RES] cmdId=0x13 ZW_API_CONTROLLER_SEND_DATA | payload=01 | rsp status 0x01
-18:32:31.455 INFO [Z_Wave.h:201        ] << [REQ] cmdId=0x13 ZW_API_CONTROLLER_SEND_DATA | payload=05 00 | sessionid=0x05 tx status 0x00
-18:32:31.480 INFO [Z_Wave.h:201        ] << [REQ] cmdId=0x04 ZW_API_APPLICATION_COMMAND_HANDLER | payload=00 17 05 85 03 01 0C 00
-18:32:31.480 INFO [Device.cpp:743      ] << ASSOCIATION_REPORT: node=23 Params = 0x01, 0x12, 0x00
-18:32:31.486 INFO [Device.cpp:710      ] MF ASSOCIATION_GET: node 23 group 2
-18:32:31.486 INFO [Node.cpp:663        ] >> ASSOCIATION_GET: node 23 group 2
-18:32:31.553 INFO [Z_Wave.h:201        ] << [RES] cmdId=0x13 ZW_API_CONTROLLER_SEND_DATA | payload=01 | rsp status 0x01
-18:32:31.595 INFO [Z_Wave.h:201        ] << [REQ] cmdId=0x13 ZW_API_CONTROLLER_SEND_DATA | payload=05 00 | sessionid=0x05 tx status 0x00
-18:32:31.621 INFO [Z_Wave.h:201        ] << [REQ] cmdId=0x04 ZW_API_APPLICATION_COMMAND_HANDLER | payload=00 17 06 85 03 02 0C 00 01
-18:32:31.621 INFO [Device.cpp:743      ] << ASSOCIATION_REPORT: node=23 Params = 0x02, 0x12, 0x00, 0x01
-18:32:31.625 INFO [Device.cpp:710      ] MF ASSOCIATION_GET: node 23 group 3
-18:32:31.625 INFO [Node.cpp:663        ] >> ASSOCIATION_GET: node 23 group 3
-18:32:31.692 INFO [Z_Wave.h:201        ] << [RES] cmdId=0x13 ZW_API_CONTROLLER_SEND_DATA | payload=01 | rsp status 0x01
-18:32:31.735 INFO [Z_Wave.h:201        ] << [REQ] cmdId=0x13 ZW_API_CONTROLLER_SEND_DATA | payload=05 00 | sessionid=0x05 tx status 0x00
-18:32:31.760 INFO [Z_Wave.h:201        ] << [REQ] cmdId=0x04 ZW_API_APPLICATION_COMMAND_HANDLER | payload=00 17 05 85 03 03 0C 00
-18:32:31.760 INFO [Device.cpp:743      ] << ASSOCIATION_REPORT: node=23 Params = 0x03, 0x12, 0x00
-18:32:31.766 INFO [Device.cpp:710      ] MF ASSOCIATION_GET: node 23 group 4
-18:32:31.766 INFO [Node.cpp:663        ] >> ASSOCIATION_GET: node 23 group 4
-18:32:31.834 INFO [Z_Wave.h:201        ] << [RES] cmdId=0x13 ZW_API_CONTROLLER_SEND_DATA | payload=01 | rsp status 0x01
-18:32:31.877 INFO [Z_Wave.h:201        ] << [REQ] cmdId=0x13 ZW_API_CONTROLLER_SEND_DATA | payload=05 00 | sessionid=0x05 tx status 0x00
-18:32:31.902 INFO [Z_Wave.h:201        ] << [REQ] cmdId=0x04 ZW_API_APPLICATION_COMMAND_HANDLER | payload=00 17 05 85 03 04 0C 00
-18:32:31.902 INFO [Device.cpp:743      ] << ASSOCIATION_REPORT: node=23 Params = 0x04, 0x12, 0x00
-18:32:31.908 INFO [Node.h:506          ] Job erased queue size: 2
-18:32:31.908 INFO [Node.h:497          ] Job peeked: 2
-18:32:31.908 INFO [Device.cpp:820      ] MF MULTI_CHANNEL_ASSOCIATION_GROUPINGS_GET: node 23
-18:32:31.908 INFO [Node.cpp:716        ] >> MULTI_CHANNEL_ASSOCIATION_GROUPINGS_GET: node 23
-18:32:31.975 INFO [Z_Wave.h:201        ] << [RES] cmdId=0x13 ZW_API_CONTROLLER_SEND_DATA | payload=01 | rsp status 0x01
-18:32:31.996 INFO [Z_Wave.h:201        ] << [REQ] cmdId=0x13 ZW_API_CONTROLLER_SEND_DATA | payload=05 00 | sessionid=0x05 tx status 0x00
-18:32:32.021 INFO [Z_Wave.h:201        ] << [REQ] cmdId=0x04 ZW_API_APPLICATION_COMMAND_HANDLER | payload=00 17 03 8E 06 04
-18:32:32.021 INFO [Device.cpp:904      ] << MULTI_CHANNEL_ASSOCIATION_GROUPINGS_REPORT: node=23 supportedGroups=4
-18:32:32.031 INFO [Device.cpp:838      ] MF MULTI_CHANNEL_ASSOCIATION_GET: node 23 group 1
-18:32:32.032 INFO [Node.cpp:731        ] >> MULTI_CHANNEL_ASSOCIATION_GET: node 23 group 1
-18:32:32.099 INFO [Z_Wave.h:201        ] << [RES] cmdId=0x13 ZW_API_CONTROLLER_SEND_DATA | payload=01 | rsp status 0x01
-18:32:32.121 INFO [Z_Wave.h:201        ] << [REQ] cmdId=0x13 ZW_API_CONTROLLER_SEND_DATA | payload=05 00 | sessionid=0x05 tx status 0x00
-18:32:32.156 INFO [Z_Wave.h:201        ] << [REQ] cmdId=0x04 ZW_API_APPLICATION_COMMAND_HANDLER | payload=00 17 0A 8E 03 01 0C 00 00 01 01 15 01
-18:32:32.156 INFO [Device.cpp:935      ] << MULTI_CHANNEL_ASSOCIATION_REPORT: node=23 Params = 0x01, 0x12, 0x00, 0x00, 0x01, 0x01, 0x21, 0x01
-18:32:32.157 INFO [Device.cpp:838      ] MF MULTI_CHANNEL_ASSOCIATION_GET: node 23 group 2
-18:32:32.157 INFO [Node.cpp:731        ] >> MULTI_CHANNEL_ASSOCIATION_GET: node 23 group 2
-18:32:32.224 INFO [Z_Wave.h:201        ] << [RES] cmdId=0x13 ZW_API_CONTROLLER_SEND_DATA | payload=01 | rsp status 0x01
-18:32:32.246 INFO [Z_Wave.h:201        ] << [REQ] cmdId=0x13 ZW_API_CONTROLLER_SEND_DATA | payload=05 00 | sessionid=0x05 tx status 0x00
-18:32:32.277 INFO [Z_Wave.h:201        ] << [REQ] cmdId=0x04 ZW_API_APPLICATION_COMMAND_HANDLER | payload=00 17 06 8E 03 02 0C 00 01
-18:32:32.277 INFO [Device.cpp:935      ] << MULTI_CHANNEL_ASSOCIATION_REPORT: node=23 Params = 0x02, 0x12, 0x00, 0x01
-18:32:32.280 INFO [Device.cpp:838      ] MF MULTI_CHANNEL_ASSOCIATION_GET: node 23 group 3
-18:32:32.281 INFO [Node.cpp:731        ] >> MULTI_CHANNEL_ASSOCIATION_GET: node 23 group 3
-18:32:32.348 INFO [Z_Wave.h:201        ] << [RES] cmdId=0x13 ZW_API_CONTROLLER_SEND_DATA | payload=01 | rsp status 0x01
-18:32:32.370 INFO [Z_Wave.h:201        ] << [REQ] cmdId=0x13 ZW_API_CONTROLLER_SEND_DATA | payload=05 00 | sessionid=0x05 tx status 0x00
-18:32:32.399 INFO [Z_Wave.h:201        ] << [REQ] cmdId=0x04 ZW_API_APPLICATION_COMMAND_HANDLER | payload=00 17 05 8E 03 03 0C 00
-18:32:32.400 INFO [Device.cpp:935      ] << MULTI_CHANNEL_ASSOCIATION_REPORT: node=23 Params = 0x03, 0x12, 0x00
-18:32:32.406 INFO [Device.cpp:838      ] MF MULTI_CHANNEL_ASSOCIATION_GET: node 23 group 4
-18:32:32.407 INFO [Node.cpp:731        ] >> MULTI_CHANNEL_ASSOCIATION_GET: node 23 group 4
-18:32:32.473 INFO [Z_Wave.h:201        ] << [RES] cmdId=0x13 ZW_API_CONTROLLER_SEND_DATA | payload=01 | rsp status 0x01
-18:32:32.495 INFO [Z_Wave.h:201        ] << [REQ] cmdId=0x13 ZW_API_CONTROLLER_SEND_DATA | payload=05 00 | sessionid=0x05 tx status 0x00
-18:32:32.524 INFO [Z_Wave.h:201        ] << [REQ] cmdId=0x04 ZW_API_APPLICATION_COMMAND_HANDLER | payload=00 17 05 8E 03 04 0C 00
-18:32:32.525 INFO [Device.cpp:935      ] << MULTI_CHANNEL_ASSOCIATION_REPORT: node=23 Params = 0x04, 0x12, 0x00
-18:32:32.530 INFO [Node.h:506          ] Job erased queue size: 1
-18:32:32.531 INFO [Node.h:497          ] Job peeked: 3
-18:32:32.531 INFO [Device.cpp:516      ] >> CONFIGURATION_GET: node 23 param=0
-18:32:32.531 INFO [Node.cpp:770        ] >> CONFIGURATION_GET: node 23 param 0
-18:32:32.596 INFO [Z_Wave.h:201        ] << [RES] cmdId=0x13 ZW_API_CONTROLLER_SEND_DATA | payload=01 | rsp status 0x01
-18:32:32.639 INFO [Z_Wave.h:201        ] << [REQ] cmdId=0x13 ZW_API_CONTROLLER_SEND_DATA | payload=05 00 | sessionid=0x05 tx status 0x00
-18:32:32.664 INFO [Z_Wave.h:201        ] << [REQ] cmdId=0x04 ZW_API_APPLICATION_COMMAND_HANDLER | payload=00 17 05 70 06 00 01 16
-18:32:32.664 INFO [Device.cpp:629      ] << CONFIGURATION_REPORT: node=23 param=0 size=1 value=22
-18:32:32.671 INFO [Node.cpp:783        ] << CONFIGURATION_REPORT: node 23 param 0 size 1 value 22
-18:32:32.671 INFO [Device.cpp:516      ] >> CONFIGURATION_GET: node 23 param=1
-18:32:32.671 INFO [Node.cpp:770        ] >> CONFIGURATION_GET: node 23 param 1
-18:32:32.738 INFO [Z_Wave.h:201        ] << [RES] cmdId=0x13 ZW_API_CONTROLLER_SEND_DATA | payload=01 | rsp status 0x01
-18:32:32.781 INFO [Z_Wave.h:201        ] << [REQ] cmdId=0x13 ZW_API_CONTROLLER_SEND_DATA | payload=05 00 | sessionid=0x05 tx status 0x00
-18:32:32.806 INFO [Z_Wave.h:201        ] << [REQ] cmdId=0x04 ZW_API_APPLICATION_COMMAND_HANDLER | payload=00 17 05 70 06 01 01 16
-18:32:32.806 INFO [Device.cpp:629      ] << CONFIGURATION_REPORT: node=23 param=1 size=1 value=22
-18:32:32.812 INFO [Node.cpp:783        ] << CONFIGURATION_REPORT: node 23 param 1 size 1 value 22
-18:32:32.813 INFO [Device.cpp:516      ] >> CONFIGURATION_GET: node 23 param=2
-18:32:32.813 INFO [Node.cpp:770        ] >> CONFIGURATION_GET: node 23 param 2
-18:32:32.878 INFO [Z_Wave.h:201        ] << [RES] cmdId=0x13 ZW_API_CONTROLLER_SEND_DATA | payload=01 | rsp status 0x01
-18:32:32.921 INFO [Z_Wave.h:201        ] << [REQ] cmdId=0x13 ZW_API_CONTROLLER_SEND_DATA | payload=05 00 | sessionid=0x05 tx status 0x00
-18:32:32.947 INFO [Z_Wave.h:201        ] << [REQ] cmdId=0x04 ZW_API_APPLICATION_COMMAND_HANDLER | payload=00 17 05 70 06 02 01 16
-18:32:32.947 INFO [Device.cpp:629      ] << CONFIGURATION_REPORT: node=23 param=2 size=1 value=22
-18:32:32.953 INFO [Node.cpp:783        ] << CONFIGURATION_REPORT: node 23 param 2 size 1 value 22
-18:32:32.953 INFO [Device.cpp:516      ] >> CONFIGURATION_GET: node 23 param=3
-18:32:32.953 INFO [Node.cpp:770        ] >> CONFIGURATION_GET: node 23 param 3
-18:32:33.019 INFO [Z_Wave.h:201        ] << [RES] cmdId=0x13 ZW_API_CONTROLLER_SEND_DATA | payload=01 | rsp status 0x01
-18:32:33.061 INFO [Z_Wave.h:201        ] << [REQ] cmdId=0x13 ZW_API_CONTROLLER_SEND_DATA | payload=05 00 | sessionid=0x05 tx status 0x00
-18:32:33.086 INFO [Z_Wave.h:201        ] << [REQ] cmdId=0x04 ZW_API_APPLICATION_COMMAND_HANDLER | payload=00 17 05 70 06 03 01 16
-18:32:33.086 INFO [Device.cpp:629      ] << CONFIGURATION_REPORT: node=23 param=3 size=1 value=22
-18:32:33.093 INFO [Node.cpp:783        ] << CONFIGURATION_REPORT: node 23 param 3 size 1 value 22
-18:32:33.093 INFO [Device.cpp:516      ] >> CONFIGURATION_GET: node 23 param=4
-18:32:33.094 INFO [Node.cpp:770        ] >> CONFIGURATION_GET: node 23 param 4
-18:32:33.159 INFO [Z_Wave.h:201        ] << [RES] cmdId=0x13 ZW_API_CONTROLLER_SEND_DATA | payload=01 | rsp status 0x01
-18:32:33.201 INFO [Z_Wave.h:201        ] << [REQ] cmdId=0x13 ZW_API_CONTROLLER_SEND_DATA | payload=05 00 | sessionid=0x05 tx status 0x00
-18:32:33.227 INFO [Z_Wave.h:201        ] << [REQ] cmdId=0x04 ZW_API_APPLICATION_COMMAND_HANDLER | payload=00 17 05 70 06 04 01 04
-18:32:33.227 INFO [Device.cpp:629      ] << CONFIGURATION_REPORT: node=23 param=4 size=1 value=4
-18:32:33.234 INFO [Node.cpp:783        ] << CONFIGURATION_REPORT: node 23 param 4 size 1 value 4
-18:32:33.234 INFO [Device.cpp:516      ] >> CONFIGURATION_GET: node 23 param=5
-18:32:33.234 INFO [Node.cpp:770        ] >> CONFIGURATION_GET: node 23 param 5
-18:32:33.299 INFO [Z_Wave.h:201        ] << [RES] cmdId=0x13 ZW_API_CONTROLLER_SEND_DATA | payload=01 | rsp status 0x01
-18:32:33.342 INFO [Z_Wave.h:201        ] << [REQ] cmdId=0x13 ZW_API_CONTROLLER_SEND_DATA | payload=05 00 | sessionid=0x05 tx status 0x00
-18:32:33.367 INFO [Z_Wave.h:201        ] << [REQ] cmdId=0x04 ZW_API_APPLICATION_COMMAND_HANDLER | payload=00 17 05 70 06 05 01 04
-18:32:33.368 INFO [Device.cpp:629      ] << CONFIGURATION_REPORT: node=23 param=5 size=1 value=4
-18:32:33.374 INFO [Node.cpp:783        ] << CONFIGURATION_REPORT: node 23 param 5 size 1 value 4
-18:32:33.374 INFO [Device.cpp:516      ] >> CONFIGURATION_GET: node 23 param=6
-18:32:33.375 INFO [Node.cpp:770        ] >> CONFIGURATION_GET: node 23 param 6
-18:32:33.440 INFO [Z_Wave.h:201        ] << [RES] cmdId=0x13 ZW_API_CONTROLLER_SEND_DATA | payload=01 | rsp status 0x01
-18:32:33.483 INFO [Z_Wave.h:201        ] << [REQ] cmdId=0x13 ZW_API_CONTROLLER_SEND_DATA | payload=05 00 | sessionid=0x05 tx status 0x00
-18:32:33.508 INFO [Z_Wave.h:201        ] << [REQ] cmdId=0x04 ZW_API_APPLICATION_COMMAND_HANDLER | payload=00 17 05 70 06 06 01 04
-18:32:33.508 INFO [Device.cpp:629      ] << CONFIGURATION_REPORT: node=23 param=6 size=1 value=4
-18:32:33.514 INFO [Node.cpp:783        ] << CONFIGURATION_REPORT: node 23 param 6 size 1 value 4
-18:32:33.514 INFO [Device.cpp:516      ] >> CONFIGURATION_GET: node 23 param=7
-18:32:33.515 INFO [Node.cpp:770        ] >> CONFIGURATION_GET: node 23 param 7
-18:32:33.580 INFO [Z_Wave.h:201        ] << [RES] cmdId=0x13 ZW_API_CONTROLLER_SEND_DATA | payload=01 | rsp status 0x01
-18:32:33.622 INFO [Z_Wave.h:201        ] << [REQ] cmdId=0x13 ZW_API_CONTROLLER_SEND_DATA | payload=05 00 | sessionid=0x05 tx status 0x00
-18:32:33.647 INFO [Z_Wave.h:201        ] << [REQ] cmdId=0x04 ZW_API_APPLICATION_COMMAND_HANDLER | payload=00 17 05 70 06 07 01 04
-18:32:33.648 INFO [Device.cpp:629      ] << CONFIGURATION_REPORT: node=23 param=7 size=1 value=4
-18:32:33.653 INFO [Node.cpp:783        ] << CONFIGURATION_REPORT: node 23 param 7 size 1 value 4
-18:32:33.654 INFO [Device.cpp:516      ] >> CONFIGURATION_GET: node 23 param=8
-18:32:33.654 INFO [Node.cpp:770        ] >> CONFIGURATION_GET: node 23 param 8
-18:32:33.719 INFO [Z_Wave.h:201        ] << [RES] cmdId=0x13 ZW_API_CONTROLLER_SEND_DATA | payload=01 | rsp status 0x01
-18:32:33.762 INFO [Z_Wave.h:201        ] << [REQ] cmdId=0x13 ZW_API_CONTROLLER_SEND_DATA | payload=05 00 | sessionid=0x05 tx status 0x00
-18:32:33.787 INFO [Z_Wave.h:201        ] << [REQ] cmdId=0x04 ZW_API_APPLICATION_COMMAND_HANDLER | payload=00 17 05 70 06 08 01 01
-18:32:33.787 INFO [Device.cpp:629      ] << CONFIGURATION_REPORT: node=23 param=8 size=1 value=1
-18:32:33.793 INFO [Node.cpp:783        ] << CONFIGURATION_REPORT: node 23 param 8 size 1 value 1
-18:32:33.793 INFO [Device.cpp:516      ] >> CONFIGURATION_GET: node 23 param=9
-18:32:33.793 INFO [Node.cpp:770        ] >> CONFIGURATION_GET: node 23 param 9
-18:32:33.858 INFO [Z_Wave.h:201        ] << [RES] cmdId=0x13 ZW_API_CONTROLLER_SEND_DATA | payload=01 | rsp status 0x01
-18:32:33.901 INFO [Z_Wave.h:201        ] << [REQ] cmdId=0x13 ZW_API_CONTROLLER_SEND_DATA | payload=05 00 | sessionid=0x05 tx status 0x00
-18:32:33.926 INFO [Z_Wave.h:201        ] << [REQ] cmdId=0x04 ZW_API_APPLICATION_COMMAND_HANDLER | payload=00 17 05 70 06 09 01 01
-18:32:33.927 INFO [Device.cpp:629      ] << CONFIGURATION_REPORT: node=23 param=9 size=1 value=1
-18:32:33.932 INFO [Node.cpp:783        ] << CONFIGURATION_REPORT: node 23 param 9 size 1 value 1
-18:32:33.932 INFO [Node.cpp:790        ] Configuration interview completed for node 23
-18:32:33.933 INFO [Node.h:506          ] Job erased queue size: 0
-18:32:34.682 INFO [Z_Wave.h:404        ] Job timeout: 1 attempt 163
-18:32:34.682 ERR  [Z_Wave.h:380        ] Job failed: 1
-18:32:50.064 INFO [Z_Wave.h:201        ] << [REQ] cmdId=0x49 ZW_API_APPLICATION_UPDATE | payload=84 18 0E 01 20 01 72 86 70 60 85 8E 30 EF 20 26 50 | event=UPDATE_STATE_NODE_INFO_RECEIVED (84 18 0E 01 20 01 72 86 70 60 85 8E 30 EF 20 26 50)
-18:32:50.065 INFO [InterviewManager.cpp:165] << Decoded NodeInfo: node=24 basic=0x01 generic=0x20 specific=0x01 ccCount=11
-18:32:50.091 INFO [Node.cpp:321        ] >> NODE VERSION_COMMAND_CLASS_GET CC [0x20] to node 24
-18:32:50.142 INFO [Z_Wave.h:201        ] << [RES] cmdId=0x13 ZW_API_CONTROLLER_SEND_DATA | payload=01 | rsp status 0x01
-18:32:50.185 INFO [Z_Wave.h:201        ] << [REQ] cmdId=0x13 ZW_API_CONTROLLER_SEND_DATA | payload=05 00 | sessionid=0x05 tx status 0x00
-18:32:50.208 INFO [Z_Wave.h:201        ] << [REQ] cmdId=0x04 ZW_API_APPLICATION_COMMAND_HANDLER | payload=00 18 04 86 14 20 01
-18:32:50.209 INFO [Device.cpp:30       ] << VERSION_COMMAND_CLASS_REPORT: node=24 cc=0x20 version=1
-18:32:50.216 INFO [Node.cpp:321        ] >> NODE VERSION_COMMAND_CLASS_GET CC [0x26] to node 24
-18:32:50.283 INFO [Z_Wave.h:201        ] << [RES] cmdId=0x13 ZW_API_CONTROLLER_SEND_DATA | payload=01 | rsp status 0x01
-18:32:50.325 INFO [Z_Wave.h:201        ] << [REQ] cmdId=0x13 ZW_API_CONTROLLER_SEND_DATA | payload=05 00 | sessionid=0x05 tx status 0x00
-18:32:50.350 INFO [Z_Wave.h:201        ] << [REQ] cmdId=0x04 ZW_API_APPLICATION_COMMAND_HANDLER | payload=00 18 04 86 14 26 01
-18:32:50.350 INFO [Device.cpp:30       ] << VERSION_COMMAND_CLASS_REPORT: node=24 cc=0x26 version=1
-18:32:50.357 INFO [Node.cpp:321        ] >> NODE VERSION_COMMAND_CLASS_GET CC [0x30] to node 24
-18:32:50.423 INFO [Z_Wave.h:201        ] << [RES] cmdId=0x13 ZW_API_CONTROLLER_SEND_DATA | payload=01 | rsp status 0x01
-18:32:50.466 INFO [Z_Wave.h:201        ] << [REQ] cmdId=0x13 ZW_API_CONTROLLER_SEND_DATA | payload=05 00 | sessionid=0x05 tx status 0x00
-18:32:50.491 INFO [Z_Wave.h:201        ] << [REQ] cmdId=0x04 ZW_API_APPLICATION_COMMAND_HANDLER | payload=00 18 04 86 14 30 01
-18:32:50.491 INFO [Device.cpp:30       ] << VERSION_COMMAND_CLASS_REPORT: node=24 cc=0x30 version=1
-18:32:50.497 INFO [Node.cpp:321        ] >> NODE VERSION_COMMAND_CLASS_GET CC [0x50] to node 24
-18:32:50.563 INFO [Z_Wave.h:201        ] << [RES] cmdId=0x13 ZW_API_CONTROLLER_SEND_DATA | payload=01 | rsp status 0x01
-18:32:50.606 INFO [Z_Wave.h:201        ] << [REQ] cmdId=0x13 ZW_API_CONTROLLER_SEND_DATA | payload=05 00 | sessionid=0x05 tx status 0x00
-18:32:50.630 INFO [Z_Wave.h:201        ] << [REQ] cmdId=0x04 ZW_API_APPLICATION_COMMAND_HANDLER | payload=00 18 04 86 14 50 02
-18:32:50.630 INFO [Device.cpp:30       ] << VERSION_COMMAND_CLASS_REPORT: node=24 cc=0x50 version=2
-18:32:50.637 INFO [Node.cpp:321        ] >> NODE VERSION_COMMAND_CLASS_GET CC [0x70] to node 24
-18:32:50.704 INFO [Z_Wave.h:201        ] << [RES] cmdId=0x13 ZW_API_CONTROLLER_SEND_DATA | payload=01 | rsp status 0x01
-18:32:50.747 INFO [Z_Wave.h:201        ] << [REQ] cmdId=0x13 ZW_API_CONTROLLER_SEND_DATA | payload=05 00 | sessionid=0x05 tx status 0x00
-18:32:50.771 INFO [Z_Wave.h:201        ] << [REQ] cmdId=0x04 ZW_API_APPLICATION_COMMAND_HANDLER | payload=00 18 04 86 14 70 01
-18:32:50.771 INFO [Device.cpp:30       ] << VERSION_COMMAND_CLASS_REPORT: node=24 cc=0x70 version=1
-18:32:50.778 INFO [Node.cpp:321        ] >> NODE VERSION_COMMAND_CLASS_GET CC [0x72] to node 24
-18:32:50.845 INFO [Z_Wave.h:201        ] << [RES] cmdId=0x13 ZW_API_CONTROLLER_SEND_DATA | payload=01 | rsp status 0x01
-18:32:50.887 INFO [Z_Wave.h:201        ] << [REQ] cmdId=0x13 ZW_API_CONTROLLER_SEND_DATA | payload=05 00 | sessionid=0x05 tx status 0x00
-18:32:50.911 INFO [Z_Wave.h:201        ] << [REQ] cmdId=0x04 ZW_API_APPLICATION_COMMAND_HANDLER | payload=00 18 04 86 14 72 01
-18:32:50.911 INFO [Device.cpp:30       ] << VERSION_COMMAND_CLASS_REPORT: node=24 cc=0x72 version=1
-18:32:50.919 INFO [Node.cpp:321        ] >> NODE VERSION_COMMAND_CLASS_GET CC [0x85] to node 24
-18:32:50.985 INFO [Z_Wave.h:201        ] << [RES] cmdId=0x13 ZW_API_CONTROLLER_SEND_DATA | payload=01 | rsp status 0x01
-18:32:51.027 INFO [Z_Wave.h:201        ] << [REQ] cmdId=0x13 ZW_API_CONTROLLER_SEND_DATA | payload=05 00 | sessionid=0x05 tx status 0x00
-18:32:51.051 INFO [Z_Wave.h:201        ] << [REQ] cmdId=0x04 ZW_API_APPLICATION_COMMAND_HANDLER | payload=00 18 04 86 14 85 01
-18:32:51.051 INFO [Device.cpp:30       ] << VERSION_COMMAND_CLASS_REPORT: node=24 cc=0x85 version=1
-18:32:51.059 INFO [Node.cpp:321        ] >> NODE VERSION_COMMAND_CLASS_GET CC [0x86] to node 24
-18:32:51.125 INFO [Z_Wave.h:201        ] << [RES] cmdId=0x13 ZW_API_CONTROLLER_SEND_DATA | payload=01 | rsp status 0x01
-18:32:51.168 INFO [Z_Wave.h:201        ] << [REQ] cmdId=0x13 ZW_API_CONTROLLER_SEND_DATA | payload=05 00 | sessionid=0x05 tx status 0x00
-18:32:51.192 INFO [Z_Wave.h:201        ] << [REQ] cmdId=0x04 ZW_API_APPLICATION_COMMAND_HANDLER | payload=00 18 04 86 14 86 01
-18:32:51.192 INFO [Device.cpp:30       ] << VERSION_COMMAND_CLASS_REPORT: node=24 cc=0x86 version=1
-18:32:51.200 INFO [Node.cpp:321        ] >> NODE VERSION_COMMAND_CLASS_GET CC [0x8E] to node 24
-18:32:51.267 INFO [Z_Wave.h:201        ] << [RES] cmdId=0x13 ZW_API_CONTROLLER_SEND_DATA | payload=01 | rsp status 0x01
-18:32:51.309 INFO [Z_Wave.h:201        ] << [REQ] cmdId=0x13 ZW_API_CONTROLLER_SEND_DATA | payload=05 00 | sessionid=0x05 tx status 0x00
-18:32:51.333 INFO [Z_Wave.h:201        ] << [REQ] cmdId=0x04 ZW_API_APPLICATION_COMMAND_HANDLER | payload=00 18 04 86 14 8E 01
-18:32:51.333 INFO [Device.cpp:30       ] << VERSION_COMMAND_CLASS_REPORT: node=24 cc=0x8E version=1
-18:32:51.342 INFO [Node.cpp:321        ] >> NODE VERSION_COMMAND_CLASS_GET CC [0xEF] to node 24
-18:32:51.408 INFO [Z_Wave.h:201        ] << [RES] cmdId=0x13 ZW_API_CONTROLLER_SEND_DATA | payload=01 | rsp status 0x01
-18:32:51.451 INFO [Z_Wave.h:201        ] << [REQ] cmdId=0x13 ZW_API_CONTROLLER_SEND_DATA | payload=05 00 | sessionid=0x05 tx status 0x00
-18:32:51.475 INFO [Z_Wave.h:201        ] << [REQ] cmdId=0x04 ZW_API_APPLICATION_COMMAND_HANDLER | payload=00 18 04 86 14 EF 01
-18:32:51.475 INFO [Device.cpp:30       ] << VERSION_COMMAND_CLASS_REPORT: node=24 cc=0xEF version=1
-18:32:51.482 INFO [Node.cpp:347        ] >> NODE MANUFACTURER_SPECIFIC_COMMAND_CLASS_GET to node 24
-18:32:51.549 INFO [Z_Wave.h:201        ] << [RES] cmdId=0x13 ZW_API_CONTROLLER_SEND_DATA | payload=01 | rsp status 0x01
-18:32:51.591 INFO [Z_Wave.h:201        ] << [REQ] cmdId=0x13 ZW_API_CONTROLLER_SEND_DATA | payload=05 00 | sessionid=0x05 tx status 0x00
-18:32:51.619 INFO [Z_Wave.h:201        ] << [REQ] cmdId=0x04 ZW_API_APPLICATION_COMMAND_HANDLER | payload=00 18 08 72 05 00 7A 00 03 00 04
-18:32:51.619 INFO [Device.cpp:78       ] << MANUFACTURER_SPECIFIC_REPORT: node=24 mfgId=0x007A prodType=0x0003 prodId=0x0004
-18:32:51.623 INFO_LOW [Node.cpp:419        ] No CC MULTI_CHANNEL_END_POINT_GET for node 24
-18:32:51.639 INFO [Node.h:436          ] EnqueueJob: num=1
-18:32:51.639 INFO [Node.h:436          ] EnqueueJob: num=2
-18:32:51.639 INFO [Node.h:436          ] EnqueueJob: num=3
-18:32:51.701 INFO [Node.h:497          ] Job peeked: 1
-18:32:51.702 INFO [Device.cpp:720      ] MF ASSOCIATION_GROUPINGS_GET: node 24
-18:32:51.702 INFO [Node.cpp:648        ] >> ASSOCIATION_GROUPINGS_GET: node 24
-18:32:51.753 INFO [Z_Wave.h:201        ] << [RES] cmdId=0x13 ZW_API_CONTROLLER_SEND_DATA | payload=01 | rsp status 0x01
-18:32:51.795 INFO [Z_Wave.h:201        ] << [REQ] cmdId=0x13 ZW_API_CONTROLLER_SEND_DATA | payload=05 00 | sessionid=0x05 tx status 0x00
-18:32:51.818 INFO [Z_Wave.h:201        ] << [REQ] cmdId=0x04 ZW_API_APPLICATION_COMMAND_HANDLER | payload=00 18 03 85 06 04
-18:32:51.819 INFO [Device.cpp:783      ] << ASSOCIATION_GROUPINGS_REPORT: node=24 Params = 0x04
-18:32:51.826 INFO [Device.cpp:710      ] MF ASSOCIATION_GET: node 24 group 1
-18:32:51.827 INFO [Node.cpp:663        ] >> ASSOCIATION_GET: node 24 group 1
-18:32:51.894 INFO [Z_Wave.h:201        ] << [RES] cmdId=0x13 ZW_API_CONTROLLER_SEND_DATA | payload=01 | rsp status 0x01
-18:32:51.937 INFO [Z_Wave.h:201        ] << [REQ] cmdId=0x13 ZW_API_CONTROLLER_SEND_DATA | payload=05 00 | sessionid=0x05 tx status 0x00
-18:32:51.961 INFO [Z_Wave.h:201        ] << [REQ] cmdId=0x04 ZW_API_APPLICATION_COMMAND_HANDLER | payload=00 18 05 85 03 01 0C 00
-18:32:51.962 INFO [Device.cpp:743      ] << ASSOCIATION_REPORT: node=24 Params = 0x01, 0x12, 0x00
-18:32:51.968 INFO [Device.cpp:710      ] MF ASSOCIATION_GET: node 24 group 2
-18:32:51.968 INFO [Node.cpp:663        ] >> ASSOCIATION_GET: node 24 group 2
-18:32:52.035 INFO [Z_Wave.h:201        ] << [RES] cmdId=0x13 ZW_API_CONTROLLER_SEND_DATA | payload=01 | rsp status 0x01
-18:32:52.078 INFO [Z_Wave.h:201        ] << [REQ] cmdId=0x13 ZW_API_CONTROLLER_SEND_DATA | payload=05 00 | sessionid=0x05 tx status 0x00
-18:32:52.102 INFO [Z_Wave.h:201        ] << [REQ] cmdId=0x04 ZW_API_APPLICATION_COMMAND_HANDLER | payload=00 18 05 85 03 02 0C 00
-18:32:52.103 INFO [Device.cpp:743      ] << ASSOCIATION_REPORT: node=24 Params = 0x02, 0x12, 0x00
-18:32:52.109 INFO [Device.cpp:710      ] MF ASSOCIATION_GET: node 24 group 3
-18:32:52.109 INFO [Node.cpp:663        ] >> ASSOCIATION_GET: node 24 group 3
-18:32:52.176 INFO [Z_Wave.h:201        ] << [RES] cmdId=0x13 ZW_API_CONTROLLER_SEND_DATA | payload=01 | rsp status 0x01
-18:32:52.218 INFO [Z_Wave.h:201        ] << [REQ] cmdId=0x13 ZW_API_CONTROLLER_SEND_DATA | payload=05 00 | sessionid=0x05 tx status 0x00
-18:32:52.243 INFO [Z_Wave.h:201        ] << [REQ] cmdId=0x04 ZW_API_APPLICATION_COMMAND_HANDLER | payload=00 18 05 85 03 03 0C 00
-18:32:52.244 INFO [Device.cpp:743      ] << ASSOCIATION_REPORT: node=24 Params = 0x03, 0x12, 0x00
-18:32:52.248 INFO [Device.cpp:710      ] MF ASSOCIATION_GET: node 24 group 4
-18:32:52.249 INFO [Node.cpp:663        ] >> ASSOCIATION_GET: node 24 group 4
-18:32:52.316 INFO [Z_Wave.h:201        ] << [RES] cmdId=0x13 ZW_API_CONTROLLER_SEND_DATA | payload=01 | rsp status 0x01
-18:32:52.358 INFO [Z_Wave.h:201        ] << [REQ] cmdId=0x13 ZW_API_CONTROLLER_SEND_DATA | payload=05 00 | sessionid=0x05 tx status 0x00
-18:32:52.383 INFO [Z_Wave.h:201        ] << [REQ] cmdId=0x04 ZW_API_APPLICATION_COMMAND_HANDLER | payload=00 18 05 85 03 04 0C 00
-18:32:52.383 INFO [Device.cpp:743      ] << ASSOCIATION_REPORT: node=24 Params = 0x04, 0x12, 0x00
-18:32:52.389 INFO [Node.h:506          ] Job erased queue size: 2
-18:32:52.389 INFO [Node.h:497          ] Job peeked: 2
-18:32:52.390 INFO [Device.cpp:820      ] MF MULTI_CHANNEL_ASSOCIATION_GROUPINGS_GET: node 24
-18:32:52.390 INFO [Node.cpp:716        ] >> MULTI_CHANNEL_ASSOCIATION_GROUPINGS_GET: node 24
-18:32:52.456 INFO [Z_Wave.h:201        ] << [RES] cmdId=0x13 ZW_API_CONTROLLER_SEND_DATA | payload=01 | rsp status 0x01
-18:32:52.477 INFO [Z_Wave.h:201        ] << [REQ] cmdId=0x13 ZW_API_CONTROLLER_SEND_DATA | payload=05 00 | sessionid=0x05 tx status 0x00
-18:32:52.503 INFO [Z_Wave.h:201        ] << [REQ] cmdId=0x04 ZW_API_APPLICATION_COMMAND_HANDLER | payload=00 18 03 8E 06 04
-18:32:52.503 INFO [Device.cpp:904      ] << MULTI_CHANNEL_ASSOCIATION_GROUPINGS_REPORT: node=24 supportedGroups=4
-18:32:52.514 INFO [Device.cpp:838      ] MF MULTI_CHANNEL_ASSOCIATION_GET: node 24 group 1
-18:32:52.514 INFO [Node.cpp:731        ] >> MULTI_CHANNEL_ASSOCIATION_GET: node 24 group 1
-18:32:52.581 INFO [Z_Wave.h:201        ] << [RES] cmdId=0x13 ZW_API_CONTROLLER_SEND_DATA | payload=01 | rsp status 0x01
-18:32:52.603 INFO [Z_Wave.h:201        ] << [REQ] cmdId=0x13 ZW_API_CONTROLLER_SEND_DATA | payload=05 00 | sessionid=0x05 tx status 0x00
-18:32:52.633 INFO [Z_Wave.h:201        ] << [REQ] cmdId=0x04 ZW_API_APPLICATION_COMMAND_HANDLER | payload=00 18 05 8E 03 01 0C 00
-18:32:52.633 INFO [Device.cpp:935      ] << MULTI_CHANNEL_ASSOCIATION_REPORT: node=24 Params = 0x01, 0x12, 0x00
-18:32:52.639 INFO [Device.cpp:838      ] MF MULTI_CHANNEL_ASSOCIATION_GET: node 24 group 2
-18:32:52.639 INFO [Node.cpp:731        ] >> MULTI_CHANNEL_ASSOCIATION_GET: node 24 group 2
-18:32:52.707 INFO [Z_Wave.h:201        ] << [RES] cmdId=0x13 ZW_API_CONTROLLER_SEND_DATA | payload=01 | rsp status 0x01
-18:32:52.729 INFO [Z_Wave.h:201        ] << [REQ] cmdId=0x13 ZW_API_CONTROLLER_SEND_DATA | payload=05 00 | sessionid=0x05 tx status 0x00
-18:32:52.759 INFO [Z_Wave.h:201        ] << [REQ] cmdId=0x04 ZW_API_APPLICATION_COMMAND_HANDLER | payload=00 18 05 8E 03 02 0C 00
-18:32:52.759 INFO [Device.cpp:935      ] << MULTI_CHANNEL_ASSOCIATION_REPORT: node=24 Params = 0x02, 0x12, 0x00
-18:32:52.764 INFO [Device.cpp:838      ] MF MULTI_CHANNEL_ASSOCIATION_GET: node 24 group 3
-18:32:52.765 INFO [Node.cpp:731        ] >> MULTI_CHANNEL_ASSOCIATION_GET: node 24 group 3
-18:32:52.832 INFO [Z_Wave.h:201        ] << [RES] cmdId=0x13 ZW_API_CONTROLLER_SEND_DATA | payload=01 | rsp status 0x01
-18:32:52.854 INFO [Z_Wave.h:201        ] << [REQ] cmdId=0x13 ZW_API_CONTROLLER_SEND_DATA | payload=05 00 | sessionid=0x05 tx status 0x00
-18:32:52.884 INFO [Z_Wave.h:201        ] << [REQ] cmdId=0x04 ZW_API_APPLICATION_COMMAND_HANDLER | payload=00 18 05 8E 03 03 0C 00
-18:32:52.884 INFO [Device.cpp:935      ] << MULTI_CHANNEL_ASSOCIATION_REPORT: node=24 Params = 0x03, 0x12, 0x00
-18:32:52.890 INFO [Device.cpp:838      ] MF MULTI_CHANNEL_ASSOCIATION_GET: node 24 group 4
-18:32:52.890 INFO [Node.cpp:731        ] >> MULTI_CHANNEL_ASSOCIATION_GET: node 24 group 4
-18:32:52.958 INFO [Z_Wave.h:201        ] << [RES] cmdId=0x13 ZW_API_CONTROLLER_SEND_DATA | payload=01 | rsp status 0x01
-18:32:52.980 INFO [Z_Wave.h:201        ] << [REQ] cmdId=0x13 ZW_API_CONTROLLER_SEND_DATA | payload=05 00 | sessionid=0x05 tx status 0x00
-18:32:53.010 INFO [Z_Wave.h:201        ] << [REQ] cmdId=0x04 ZW_API_APPLICATION_COMMAND_HANDLER | payload=00 18 05 8E 03 04 0C 00
-18:32:53.010 INFO [Device.cpp:935      ] << MULTI_CHANNEL_ASSOCIATION_REPORT: node=24 Params = 0x04, 0x12, 0x00
-18:32:53.015 INFO [Node.h:506          ] Job erased queue size: 1
-18:32:53.016 INFO [Node.h:497          ] Job peeked: 3
-18:32:53.016 INFO [Device.cpp:516      ] >> CONFIGURATION_GET: node 24 param=0
-18:32:53.016 INFO [Node.cpp:770        ] >> CONFIGURATION_GET: node 24 param 0
-18:32:53.081 INFO [Z_Wave.h:201        ] << [RES] cmdId=0x13 ZW_API_CONTROLLER_SEND_DATA | payload=01 | rsp status 0x01
-18:32:53.124 INFO [Z_Wave.h:201        ] << [REQ] cmdId=0x13 ZW_API_CONTROLLER_SEND_DATA | payload=05 00 | sessionid=0x05 tx status 0x00
-18:32:53.149 INFO [Z_Wave.h:201        ] << [REQ] cmdId=0x04 ZW_API_APPLICATION_COMMAND_HANDLER | payload=00 18 05 70 06 00 01 16
-18:32:53.149 INFO [Device.cpp:629      ] << CONFIGURATION_REPORT: node=24 param=0 size=1 value=22
-18:32:53.155 INFO [Node.cpp:783        ] << CONFIGURATION_REPORT: node 24 param 0 size 1 value 22
-18:32:53.155 INFO [Device.cpp:516      ] >> CONFIGURATION_GET: node 24 param=1
-18:32:53.155 INFO [Node.cpp:770        ] >> CONFIGURATION_GET: node 24 param 1
-18:32:53.221 INFO [Z_Wave.h:201        ] << [RES] cmdId=0x13 ZW_API_CONTROLLER_SEND_DATA | payload=01 | rsp status 0x01
-18:32:53.264 INFO [Z_Wave.h:201        ] << [REQ] cmdId=0x13 ZW_API_CONTROLLER_SEND_DATA | payload=05 00 | sessionid=0x05 tx status 0x00
-18:32:53.288 INFO [Z_Wave.h:201        ] << [REQ] cmdId=0x04 ZW_API_APPLICATION_COMMAND_HANDLER | payload=00 18 05 70 06 01 01 16
-18:32:53.289 INFO [Device.cpp:629      ] << CONFIGURATION_REPORT: node=24 param=1 size=1 value=22
-18:32:53.295 INFO [Node.cpp:783        ] << CONFIGURATION_REPORT: node 24 param 1 size 1 value 22
-18:32:53.296 INFO [Device.cpp:516      ] >> CONFIGURATION_GET: node 24 param=2
-18:32:53.296 INFO [Node.cpp:770        ] >> CONFIGURATION_GET: node 24 param 2
-18:32:53.362 INFO [Z_Wave.h:201        ] << [RES] cmdId=0x13 ZW_API_CONTROLLER_SEND_DATA | payload=01 | rsp status 0x01
-18:32:53.405 INFO [Z_Wave.h:201        ] << [REQ] cmdId=0x13 ZW_API_CONTROLLER_SEND_DATA | payload=05 00 | sessionid=0x05 tx status 0x00
-18:32:53.430 INFO [Z_Wave.h:201        ] << [REQ] cmdId=0x04 ZW_API_APPLICATION_COMMAND_HANDLER | payload=00 18 05 70 06 02 01 16
-18:32:53.430 INFO [Device.cpp:629      ] << CONFIGURATION_REPORT: node=24 param=2 size=1 value=22
-18:32:53.437 INFO [Node.cpp:783        ] << CONFIGURATION_REPORT: node 24 param 2 size 1 value 22
-18:32:53.437 INFO [Device.cpp:516      ] >> CONFIGURATION_GET: node 24 param=3
-18:32:53.437 INFO [Node.cpp:770        ] >> CONFIGURATION_GET: node 24 param 3
-18:32:53.502 INFO [Z_Wave.h:201        ] << [RES] cmdId=0x13 ZW_API_CONTROLLER_SEND_DATA | payload=01 | rsp status 0x01
-18:32:53.545 INFO [Z_Wave.h:201        ] << [REQ] cmdId=0x13 ZW_API_CONTROLLER_SEND_DATA | payload=05 00 | sessionid=0x05 tx status 0x00
-18:32:53.570 INFO [Z_Wave.h:201        ] << [REQ] cmdId=0x04 ZW_API_APPLICATION_COMMAND_HANDLER | payload=00 18 05 70 06 03 01 16
-18:32:53.570 INFO [Device.cpp:629      ] << CONFIGURATION_REPORT: node=24 param=3 size=1 value=22
-18:32:53.576 INFO [Node.cpp:783        ] << CONFIGURATION_REPORT: node 24 param 3 size 1 value 22
-18:32:53.576 INFO [Device.cpp:516      ] >> CONFIGURATION_GET: node 24 param=4
-18:32:53.576 INFO [Node.cpp:770        ] >> CONFIGURATION_GET: node 24 param 4
-18:32:53.642 INFO [Z_Wave.h:201        ] << [RES] cmdId=0x13 ZW_API_CONTROLLER_SEND_DATA | payload=01 | rsp status 0x01
-18:32:53.684 INFO [Z_Wave.h:201        ] << [REQ] cmdId=0x13 ZW_API_CONTROLLER_SEND_DATA | payload=05 00 | sessionid=0x05 tx status 0x00
-18:32:53.710 INFO [Z_Wave.h:201        ] << [REQ] cmdId=0x04 ZW_API_APPLICATION_COMMAND_HANDLER | payload=00 18 05 70 06 04 01 04
-18:32:53.710 INFO [Device.cpp:629      ] << CONFIGURATION_REPORT: node=24 param=4 size=1 value=4
-18:32:53.716 INFO [Node.cpp:783        ] << CONFIGURATION_REPORT: node 24 param 4 size 1 value 4
-18:32:53.716 INFO [Device.cpp:516      ] >> CONFIGURATION_GET: node 24 param=5
-18:32:53.716 INFO [Node.cpp:770        ] >> CONFIGURATION_GET: node 24 param 5
-18:32:53.782 INFO [Z_Wave.h:201        ] << [RES] cmdId=0x13 ZW_API_CONTROLLER_SEND_DATA | payload=01 | rsp status 0x01
-18:32:53.825 INFO [Z_Wave.h:201        ] << [REQ] cmdId=0x13 ZW_API_CONTROLLER_SEND_DATA | payload=05 00 | sessionid=0x05 tx status 0x00
-18:32:53.850 INFO [Z_Wave.h:201        ] << [REQ] cmdId=0x04 ZW_API_APPLICATION_COMMAND_HANDLER | payload=00 18 05 70 06 05 01 04
-18:32:53.850 INFO [Device.cpp:629      ] << CONFIGURATION_REPORT: node=24 param=5 size=1 value=4
-18:32:53.857 INFO [Node.cpp:783        ] << CONFIGURATION_REPORT: node 24 param 5 size 1 value 4
-18:32:53.857 INFO [Device.cpp:516      ] >> CONFIGURATION_GET: node 24 param=6
-18:32:53.857 INFO [Node.cpp:770        ] >> CONFIGURATION_GET: node 24 param 6
-18:32:53.923 INFO [Z_Wave.h:201        ] << [RES] cmdId=0x13 ZW_API_CONTROLLER_SEND_DATA | payload=01 | rsp status 0x01
-18:32:53.966 INFO [Z_Wave.h:201        ] << [REQ] cmdId=0x13 ZW_API_CONTROLLER_SEND_DATA | payload=05 00 | sessionid=0x05 tx status 0x00
-18:32:53.991 INFO [Z_Wave.h:201        ] << [REQ] cmdId=0x04 ZW_API_APPLICATION_COMMAND_HANDLER | payload=00 18 05 70 06 06 01 04
-18:32:53.991 INFO [Device.cpp:629      ] << CONFIGURATION_REPORT: node=24 param=6 size=1 value=4
-18:32:53.997 INFO [Node.cpp:783        ] << CONFIGURATION_REPORT: node 24 param 6 size 1 value 4
-18:32:53.997 INFO [Device.cpp:516      ] >> CONFIGURATION_GET: node 24 param=7
-18:32:53.997 INFO [Node.cpp:770        ] >> CONFIGURATION_GET: node 24 param 7
-18:32:54.063 INFO [Z_Wave.h:201        ] << [RES] cmdId=0x13 ZW_API_CONTROLLER_SEND_DATA | payload=01 | rsp status 0x01
-18:32:54.105 INFO [Z_Wave.h:201        ] << [REQ] cmdId=0x13 ZW_API_CONTROLLER_SEND_DATA | payload=05 00 | sessionid=0x05 tx status 0x00
-18:32:54.130 INFO [Z_Wave.h:201        ] << [REQ] cmdId=0x04 ZW_API_APPLICATION_COMMAND_HANDLER | payload=00 18 05 70 06 07 01 04
-18:32:54.131 INFO [Device.cpp:629      ] << CONFIGURATION_REPORT: node=24 param=7 size=1 value=4
-18:32:54.138 INFO [Node.cpp:783        ] << CONFIGURATION_REPORT: node 24 param 7 size 1 value 4
-18:32:54.138 INFO [Device.cpp:516      ] >> CONFIGURATION_GET: node 24 param=8
-18:32:54.138 INFO [Node.cpp:770        ] >> CONFIGURATION_GET: node 24 param 8
-18:32:54.205 INFO [Z_Wave.h:201        ] << [RES] cmdId=0x13 ZW_API_CONTROLLER_SEND_DATA | payload=01 | rsp status 0x01
-18:32:54.247 INFO [Z_Wave.h:201        ] << [REQ] cmdId=0x13 ZW_API_CONTROLLER_SEND_DATA | payload=05 00 | sessionid=0x05 tx status 0x00
-18:32:54.272 INFO [Z_Wave.h:201        ] << [REQ] cmdId=0x04 ZW_API_APPLICATION_COMMAND_HANDLER | payload=00 18 05 70 06 08 01 01
-18:32:54.272 INFO [Device.cpp:629      ] << CONFIGURATION_REPORT: node=24 param=8 size=1 value=1
-18:32:54.279 INFO [Node.cpp:783        ] << CONFIGURATION_REPORT: node 24 param 8 size 1 value 1
-18:32:54.279 INFO [Device.cpp:516      ] >> CONFIGURATION_GET: node 24 param=9
-18:32:54.279 INFO [Node.cpp:770        ] >> CONFIGURATION_GET: node 24 param 9
-18:32:54.345 INFO [Z_Wave.h:201        ] << [RES] cmdId=0x13 ZW_API_CONTROLLER_SEND_DATA | payload=01 | rsp status 0x01
-18:32:54.388 INFO [Z_Wave.h:201        ] << [REQ] cmdId=0x13 ZW_API_CONTROLLER_SEND_DATA | payload=05 00 | sessionid=0x05 tx status 0x00
-18:32:54.413 INFO [Z_Wave.h:201        ] << [REQ] cmdId=0x04 ZW_API_APPLICATION_COMMAND_HANDLER | payload=00 18 05 70 06 09 01 01
-18:32:54.413 INFO [Device.cpp:629      ] << CONFIGURATION_REPORT: node=24 param=9 size=1 value=1
-18:32:54.419 INFO [Node.cpp:783        ] << CONFIGURATION_REPORT: node 24 param 9 size 1 value 1
-18:32:54.419 INFO [Node.cpp:790        ] Configuration interview completed for node 24
-18:32:54.419 INFO [Node.h:506          ] Job erased queue size: 0
-18:32:55.139 INFO [Z_Wave.h:404        ] Job timeout: 1 attempt 163
-18:32:55.139 ERR  [Z_Wave.h:380        ] Job failed: 1
-18:34:07.358 INFO [Z_Wave.h:201        ] << [REQ] cmdId=0x49 ZW_API_APPLICATION_UPDATE | payload=84 18 0E 01 20 01 72 86 70 60 85 8E 30 EF 20 26 50 | event=UPDATE_STATE_NODE_INFO_RECEIVED (84 18 0E 01 20 01 72 86 70 60 85 8E 30 EF 20 26 50)
-18:34:07.359 INFO [InterviewManager.cpp:133] ----------------------------------- DecodeNodeInfo: node 24 already interviewed
-18:34:12.374 INFO [Z_Wave.h:404        ] Job timeout: 1 attempt 161
-18:34:12.375 ERR  [Z_Wave.h:380        ] Job failed: 1
-18:34:15.666 INFO [Z_Wave.h:201        ] << [REQ] cmdId=0x04 ZW_API_APPLICATION_COMMAND_HANDLER | payload=00 17 06 60 06 01 20 01 00
-18:34:15.666 INFO [Node.h:298          ] Encapsulated command class: 0x20 BASIC (to endpoint 1)
-18:34:15.667 INFO [Device.cpp:207      ] << BASIC_SET: node=23 value=0x00 destinationEP=1
-18:34:22.117 INFO [Z_Wave.h:201        ] << [REQ] cmdId=0x49 ZW_API_APPLICATION_UPDATE | payload=84 17 0E 01 20 01 72 86 70 60 85 8E 30 EF 20 26 50 | event=UPDATE_STATE_NODE_INFO_RECEIVED (84 17 0E 01 20 01 72 86 70 60 85 8E 30 EF 20 26 50)
-18:34:22.117 INFO [InterviewManager.cpp:133] ----------------------------------- DecodeNodeInfo: node 23 already interviewed
-18:34:27.143 INFO [Z_Wave.h:404        ] Job timeout: 1 attempt 161
-18:34:27.143 ERR  [Z_Wave.h:380        ] Job failed: 1
-18:37:15.061 INFO [Z_Wave.h:201        ] << [REQ] cmdId=0x49 ZW_API_APPLICATION_UPDATE | payload=84 18 0E 01 20 01 72 86 70 60 85 8E 30 EF 20 26 50 | event=UPDATE_STATE_NODE_INFO_RECEIVED (84 18 0E 01 20 01 72 86 70 60 85 8E 30 EF 20 26 50)
-18:37:15.061 INFO [InterviewManager.cpp:133] ----------------------------------- DecodeNodeInfo: node 24 already interviewed
-18:37:20.116 INFO [Z_Wave.h:404        ] Job timeout: 1 attempt 163
-18:37:20.116 ERR  [Z_Wave.h:380        ] Job failed: 1
-18:39:09.817 INFO [Z_Wave.h:201        ] << [REQ] cmdId=0x49 ZW_API_APPLICATION_UPDATE | payload=84 EF 0E 01 20 01 72 86 70 60 85 8E 30 EF 20 26 50 | event=UPDATE_STATE_NODE_INFO_RECEIVED (84 EF 0E 01 20 01 72 86 70 60 85 8E 30 EF 20 26 50)
-18:39:09.820 INFO [InterviewManager.cpp:165] << Decoded NodeInfo: node=239 basic=0x01 generic=0x20 specific=0x01 ccCount=11
-18:39:09.878 INFO [Node.cpp:321        ] >> NODE VERSION_COMMAND_CLASS_GET CC [0x20] to node 239
-18:39:09.897 INFO [Z_Wave.h:201        ] << [RES] cmdId=0x13 ZW_API_CONTROLLER_SEND_DATA | payload=01 | rsp status 0x01
-18:39:10.257 INFO [Z_Wave.h:201        ] << [REQ] cmdId=0x13 ZW_API_CONTROLLER_SEND_DATA | payload=05 01 | sessionid=0x05 tx status 0x01
-18:39:14.886 INFO [Z_Wave.h:404        ] Job timeout: 1 attempt 163
-18:39:14.886 ERR  [Z_Wave.h:380        ] Job failed: 1
-18:39:14.902 ERR  [Node.cpp:329        ] Version timeout: CC 0x20 for node 239
-18:39:14.902 INFO [Node.cpp:321        ] >> NODE VERSION_COMMAND_CLASS_GET CC [0x20] to node 239
-18:39:14.937 INFO [Z_Wave.h:201        ] << [RES] cmdId=0x13 ZW_API_CONTROLLER_SEND_DATA | payload=01 | rsp status 0x01
-18:39:15.418 INFO [Z_Wave.h:201        ] << [REQ] cmdId=0x13 ZW_API_CONTROLLER_SEND_DATA | payload=05 01 | sessionid=0x05 tx status 0x01
-18:39:19.930 ERR  [Node.cpp:329        ] Version timeout: CC 0x20 for node 239
-18:39:19.930 INFO [Node.cpp:321        ] >> NODE VERSION_COMMAND_CLASS_GET CC [0x20] to node 239
-18:39:19.965 INFO [Z_Wave.h:201        ] << [RES] cmdId=0x13 ZW_API_CONTROLLER_SEND_DATA | payload=01 | rsp status 0x01
-18:39:20.325 INFO [Z_Wave.h:201        ] << [REQ] cmdId=0x13 ZW_API_CONTROLLER_SEND_DATA | payload=05 01 | sessionid=0x05 tx status 0x01
-18:39:24.951 ERR  [Node.cpp:329        ] Version timeout: CC 0x20 for node 239
-18:39:24.952 INFO [Node.cpp:321        ] >> NODE VERSION_COMMAND_CLASS_GET CC [0x20] to node 239
-18:39:25.017 INFO [Z_Wave.h:201        ] << [RES] cmdId=0x13 ZW_API_CONTROLLER_SEND_DATA | payload=01 | rsp status 0x01
-18:39:25.378 INFO [Z_Wave.h:201        ] << [REQ] cmdId=0x13 ZW_API_CONTROLLER_SEND_DATA | payload=05 01 | sessionid=0x05 tx status 0x01
-18:39:29.972 ERR  [Node.cpp:329        ] Version timeout: CC 0x20 for node 239
-18:39:29.972 INFO [Node.cpp:321        ] >> NODE VERSION_COMMAND_CLASS_GET CC [0x26] to node 239
-18:39:30.007 INFO [Z_Wave.h:201        ] << [RES] cmdId=0x13 ZW_API_CONTROLLER_SEND_DATA | payload=01 | rsp status 0x01
-18:39:30.547 INFO [Z_Wave.h:201        ] << [REQ] cmdId=0x13 ZW_API_CONTROLLER_SEND_DATA | payload=05 01 | sessionid=0x05 tx status 0x01
-18:39:34.991 ERR  [Node.cpp:329        ] Version timeout: CC 0x26 for node 239
-18:39:34.991 INFO [Node.cpp:321        ] >> NODE VERSION_COMMAND_CLASS_GET CC [0x26] to node 239
-18:39:35.041 INFO [Z_Wave.h:201        ] << [RES] cmdId=0x13 ZW_API_CONTROLLER_SEND_DATA | payload=01 | rsp status 0x01
-18:39:35.521 INFO [Z_Wave.h:201        ] << [REQ] cmdId=0x13 ZW_API_CONTROLLER_SEND_DATA | payload=05 01 | sessionid=0x05 tx status 0x01
-18:39:40.020 ERR  [Node.cpp:329        ] Version timeout: CC 0x26 for node 239
-18:39:40.021 INFO [Node.cpp:321        ] >> NODE VERSION_COMMAND_CLASS_GET CC [0x26] to node 239
-18:39:40.087 INFO [Z_Wave.h:201        ] << [RES] cmdId=0x13 ZW_API_CONTROLLER_SEND_DATA | payload=01 | rsp status 0x01
-18:39:40.388 INFO [Z_Wave.h:201        ] << [REQ] cmdId=0x13 ZW_API_CONTROLLER_SEND_DATA | payload=05 01 | sessionid=0x05 tx status 0x01
-18:39:45.041 ERR  [Node.cpp:329        ] Version timeout: CC 0x26 for node 239
-18:39:45.042 INFO [Node.cpp:321        ] >> NODE VERSION_COMMAND_CLASS_GET CC [0x26] to node 239
-18:39:45.077 INFO [Z_Wave.h:201        ] << [RES] cmdId=0x13 ZW_API_CONTROLLER_SEND_DATA | payload=01 | rsp status 0x01
-18:39:45.498 INFO [Z_Wave.h:201        ] << [REQ] cmdId=0x13 ZW_API_CONTROLLER_SEND_DATA | payload=05 01 | sessionid=0x05 tx status 0x01
-18:39:50.060 ERR  [Node.cpp:329        ] Version timeout: CC 0x26 for node 239
-18:39:50.061 INFO [Node.cpp:321        ] >> NODE VERSION_COMMAND_CLASS_GET CC [0x30] to node 239
-18:39:50.127 INFO [Z_Wave.h:201        ] << [RES] cmdId=0x13 ZW_API_CONTROLLER_SEND_DATA | payload=01 | rsp status 0x01
-18:39:50.666 INFO [Z_Wave.h:201        ] << [REQ] cmdId=0x13 ZW_API_CONTROLLER_SEND_DATA | payload=05 01 | sessionid=0x05 tx status 0x01
-18:39:55.077 ERR  [Node.cpp:329        ] Version timeout: CC 0x30 for node 239
-18:39:55.077 INFO [Node.cpp:321        ] >> NODE VERSION_COMMAND_CLASS_GET CC [0x30] to node 239
-18:39:55.097 INFO [Z_Wave.h:201        ] << [RES] cmdId=0x13 ZW_API_CONTROLLER_SEND_DATA | payload=01 | rsp status 0x01
-18:39:55.456 INFO [Z_Wave.h:201        ] << [REQ] cmdId=0x13 ZW_API_CONTROLLER_SEND_DATA | payload=05 01 | sessionid=0x05 tx status 0x01
-18:40:00.100 ERR  [Node.cpp:329        ] Version timeout: CC 0x30 for node 239
-18:40:00.100 INFO [Node.cpp:321        ] >> NODE VERSION_COMMAND_CLASS_GET CC [0x30] to node 239
-18:40:00.119 INFO [Z_Wave.h:201        ] << [RES] cmdId=0x13 ZW_API_CONTROLLER_SEND_DATA | payload=01 | rsp status 0x01
-18:40:00.420 INFO [Z_Wave.h:201        ] << [REQ] cmdId=0x13 ZW_API_CONTROLLER_SEND_DATA | payload=05 01 | sessionid=0x05 tx status 0x01
-18:40:05.128 ERR  [Node.cpp:329        ] Version timeout: CC 0x30 for node 239
-18:40:05.128 INFO [Node.cpp:321        ] >> NODE VERSION_COMMAND_CLASS_GET CC [0x30] to node 239
-18:40:05.195 INFO [Z_Wave.h:201        ] << [RES] cmdId=0x13 ZW_API_CONTROLLER_SEND_DATA | payload=01 | rsp status 0x01
-18:40:05.674 INFO [Z_Wave.h:201        ] << [REQ] cmdId=0x13 ZW_API_CONTROLLER_SEND_DATA | payload=05 01 | sessionid=0x05 tx status 0x01
-18:40:10.152 ERR  [Node.cpp:329        ] Version timeout: CC 0x30 for node 239
-18:40:10.152 INFO [Node.cpp:321        ] >> NODE VERSION_COMMAND_CLASS_GET CC [0x50] to node 239
-18:40:10.203 INFO [Z_Wave.h:201        ] << [RES] cmdId=0x13 ZW_API_CONTROLLER_SEND_DATA | payload=01 | rsp status 0x01
-18:40:10.682 INFO [Z_Wave.h:201        ] << [REQ] cmdId=0x13 ZW_API_CONTROLLER_SEND_DATA | payload=05 01 | sessionid=0x05 tx status 0x01
-18:40:15.173 ERR  [Node.cpp:329        ] Version timeout: CC 0x50 for node 239
-18:40:15.173 INFO [Node.cpp:321        ] >> NODE VERSION_COMMAND_CLASS_GET CC [0x50] to node 239
-18:40:15.208 INFO [Z_Wave.h:201        ] << [RES] cmdId=0x13 ZW_API_CONTROLLER_SEND_DATA | payload=01 | rsp status 0x01
-18:40:15.568 INFO [Z_Wave.h:201        ] << [REQ] cmdId=0x13 ZW_API_CONTROLLER_SEND_DATA | payload=05 01 | sessionid=0x05 tx status 0x01
-18:40:20.203 ERR  [Node.cpp:329        ] Version timeout: CC 0x50 for node 239
-18:40:20.204 INFO [Node.cpp:321        ] >> NODE VERSION_COMMAND_CLASS_GET CC [0x50] to node 239
-18:40:20.222 INFO [Z_Wave.h:201        ] << [RES] cmdId=0x13 ZW_API_CONTROLLER_SEND_DATA | payload=01 | rsp status 0x01
-18:40:20.702 INFO [Z_Wave.h:201        ] << [REQ] cmdId=0x13 ZW_API_CONTROLLER_SEND_DATA | payload=05 01 | sessionid=0x05 tx status 0x01
-18:40:25.226 ERR  [Node.cpp:329        ] Version timeout: CC 0x50 for node 239
-18:40:25.227 INFO [Node.cpp:321        ] >> NODE VERSION_COMMAND_CLASS_GET CC [0x50] to node 239
-18:40:25.294 INFO [Z_Wave.h:201        ] << [RES] cmdId=0x13 ZW_API_CONTROLLER_SEND_DATA | payload=01 | rsp status 0x01
-18:40:25.654 INFO [Z_Wave.h:201        ] << [REQ] cmdId=0x13 ZW_API_CONTROLLER_SEND_DATA | payload=05 01 | sessionid=0x05 tx status 0x01
-18:40:30.252 ERR  [Node.cpp:329        ] Version timeout: CC 0x50 for node 239
-18:40:30.252 INFO [Node.cpp:321        ] >> NODE VERSION_COMMAND_CLASS_GET CC [0x70] to node 239
-18:40:30.317 INFO [Z_Wave.h:201        ] << [RES] cmdId=0x13 ZW_API_CONTROLLER_SEND_DATA | payload=01 | rsp status 0x01
-18:40:30.676 INFO [Z_Wave.h:201        ] << [REQ] cmdId=0x13 ZW_API_CONTROLLER_SEND_DATA | payload=05 01 | sessionid=0x05 tx status 0x01
-18:40:35.279 ERR  [Node.cpp:329        ] Version timeout: CC 0x70 for node 239
-18:40:35.279 INFO [Node.cpp:321        ] >> NODE VERSION_COMMAND_CLASS_GET CC [0x70] to node 239
-18:40:35.329 INFO [Z_Wave.h:201        ] << [RES] cmdId=0x13 ZW_API_CONTROLLER_SEND_DATA | payload=01 | rsp status 0x01
-18:40:35.811 INFO [Z_Wave.h:201        ] << [REQ] cmdId=0x13 ZW_API_CONTROLLER_SEND_DATA | payload=05 01 | sessionid=0x05 tx status 0x01
-18:40:40.307 ERR  [Node.cpp:329        ] Version timeout: CC 0x70 for node 239
-18:40:40.307 INFO [Node.cpp:321        ] >> NODE VERSION_COMMAND_CLASS_GET CC [0x70] to node 239
-18:40:40.327 INFO [Z_Wave.h:201        ] << [RES] cmdId=0x13 ZW_API_CONTROLLER_SEND_DATA | payload=01 | rsp status 0x01
-18:40:40.687 INFO [Z_Wave.h:201        ] << [REQ] cmdId=0x13 ZW_API_CONTROLLER_SEND_DATA | payload=05 01 | sessionid=0x05 tx status 0x01
-18:40:45.337 ERR  [Node.cpp:329        ] Version timeout: CC 0x70 for node 239
-18:40:45.337 INFO [Node.cpp:321        ] >> NODE VERSION_COMMAND_CLASS_GET CC [0x70] to node 239
-18:40:45.404 INFO [Z_Wave.h:201        ] << [RES] cmdId=0x13 ZW_API_CONTROLLER_SEND_DATA | payload=01 | rsp status 0x01
-18:40:45.765 INFO [Z_Wave.h:201        ] << [REQ] cmdId=0x13 ZW_API_CONTROLLER_SEND_DATA | payload=05 01 | sessionid=0x05 tx status 0x01
-18:40:50.358 ERR  [Node.cpp:329        ] Version timeout: CC 0x70 for node 239
-18:40:50.358 INFO [Node.cpp:321        ] >> NODE VERSION_COMMAND_CLASS_GET CC [0x72] to node 239
-18:40:50.409 INFO [Z_Wave.h:201        ] << [RES] cmdId=0x13 ZW_API_CONTROLLER_SEND_DATA | payload=01 | rsp status 0x01
-18:40:50.889 INFO [Z_Wave.h:201        ] << [REQ] cmdId=0x13 ZW_API_CONTROLLER_SEND_DATA | payload=05 01 | sessionid=0x05 tx status 0x01
-18:40:55.381 ERR  [Node.cpp:329        ] Version timeout: CC 0x72 for node 239
-18:40:55.381 INFO [Node.cpp:321        ] >> NODE VERSION_COMMAND_CLASS_GET CC [0x72] to node 239
-18:40:55.400 INFO [Z_Wave.h:201        ] << [RES] cmdId=0x13 ZW_API_CONTROLLER_SEND_DATA | payload=01 | rsp status 0x01
-18:40:55.941 INFO [Z_Wave.h:201        ] << [REQ] cmdId=0x13 ZW_API_CONTROLLER_SEND_DATA | payload=05 01 | sessionid=0x05 tx status 0x01
-18:41:00.410 ERR  [Node.cpp:329        ] Version timeout: CC 0x72 for node 239
-18:41:00.410 INFO [Node.cpp:321        ] >> NODE VERSION_COMMAND_CLASS_GET CC [0x72] to node 239
-18:41:00.461 INFO [Z_Wave.h:201        ] << [RES] cmdId=0x13 ZW_API_CONTROLLER_SEND_DATA | payload=01 | rsp status 0x01
-18:41:00.881 INFO [Z_Wave.h:201        ] << [REQ] cmdId=0x13 ZW_API_CONTROLLER_SEND_DATA | payload=05 01 | sessionid=0x05 tx status 0x01
-18:41:05.437 ERR  [Node.cpp:329        ] Version timeout: CC 0x72 for node 239
-18:41:05.437 INFO [Node.cpp:321        ] >> NODE VERSION_COMMAND_CLASS_GET CC [0x72] to node 239
-18:41:05.471 INFO [Z_Wave.h:201        ] << [RES] cmdId=0x13 ZW_API_CONTROLLER_SEND_DATA | payload=01 | rsp status 0x01
-18:41:05.771 INFO [Z_Wave.h:201        ] << [REQ] cmdId=0x13 ZW_API_CONTROLLER_SEND_DATA | payload=05 01 | sessionid=0x05 tx status 0x01
-18:41:10.458 ERR  [Node.cpp:329        ] Version timeout: CC 0x72 for node 239
-18:41:10.458 INFO [Node.cpp:321        ] >> NODE VERSION_COMMAND_CLASS_GET CC [0x85] to node 239
-18:41:10.493 INFO [Z_Wave.h:201        ] << [RES] cmdId=0x13 ZW_API_CONTROLLER_SEND_DATA | payload=01 | rsp status 0x01
-18:41:10.853 INFO [Z_Wave.h:201        ] << [REQ] cmdId=0x13 ZW_API_CONTROLLER_SEND_DATA | payload=05 01 | sessionid=0x05 tx status 0x01
-18:41:15.488 ERR  [Node.cpp:329        ] Version timeout: CC 0x85 for node 239
-18:41:15.488 INFO [Node.cpp:321        ] >> NODE VERSION_COMMAND_CLASS_GET CC [0x85] to node 239
-18:41:15.507 INFO [Z_Wave.h:201        ] << [RES] cmdId=0x13 ZW_API_CONTROLLER_SEND_DATA | payload=01 | rsp status 0x01
-18:41:16.047 INFO [Z_Wave.h:201        ] << [REQ] cmdId=0x13 ZW_API_CONTROLLER_SEND_DATA | payload=05 01 | sessionid=0x05 tx status 0x01
-18:41:20.518 ERR  [Node.cpp:329        ] Version timeout: CC 0x85 for node 239
-18:41:20.518 INFO [Node.cpp:321        ] >> NODE VERSION_COMMAND_CLASS_GET CC [0x85] to node 239
-18:41:20.569 INFO [Z_Wave.h:201        ] << [RES] cmdId=0x13 ZW_API_CONTROLLER_SEND_DATA | payload=01 | rsp status 0x01
-18:41:20.990 INFO [Z_Wave.h:201        ] << [REQ] cmdId=0x13 ZW_API_CONTROLLER_SEND_DATA | payload=05 01 | sessionid=0x05 tx status 0x01
-18:41:25.541 ERR  [Node.cpp:329        ] Version timeout: CC 0x85 for node 239
-18:41:25.541 INFO [Node.cpp:321        ] >> NODE VERSION_COMMAND_CLASS_GET CC [0x85] to node 239
-18:41:25.575 INFO [Z_Wave.h:201        ] << [RES] cmdId=0x13 ZW_API_CONTROLLER_SEND_DATA | payload=01 | rsp status 0x01
-18:41:25.816 INFO [Z_Wave.h:201        ] << [REQ] cmdId=0x13 ZW_API_CONTROLLER_SEND_DATA | payload=05 01 | sessionid=0x05 tx status 0x01
-18:41:30.562 ERR  [Node.cpp:329        ] Version timeout: CC 0x85 for node 239
-18:41:30.562 INFO [Node.cpp:321        ] >> NODE VERSION_COMMAND_CLASS_GET CC [0x86] to node 239
-18:41:30.596 INFO [Z_Wave.h:201        ] << [RES] cmdId=0x13 ZW_API_CONTROLLER_SEND_DATA | payload=01 | rsp status 0x01
-18:41:31.076 INFO [Z_Wave.h:201        ] << [REQ] cmdId=0x13 ZW_API_CONTROLLER_SEND_DATA | payload=05 01 | sessionid=0x05 tx status 0x01
-18:41:35.580 ERR  [Node.cpp:329        ] Version timeout: CC 0x86 for node 239
-18:41:35.581 INFO [Node.cpp:321        ] >> NODE VERSION_COMMAND_CLASS_GET CC [0x86] to node 239
-18:41:35.600 INFO [Z_Wave.h:201        ] << [RES] cmdId=0x13 ZW_API_CONTROLLER_SEND_DATA | payload=01 | rsp status 0x01
-18:41:36.080 INFO [Z_Wave.h:201        ] << [REQ] cmdId=0x13 ZW_API_CONTROLLER_SEND_DATA | payload=05 01 | sessionid=0x05 tx status 0x01
-18:41:40.598 ERR  [Node.cpp:329        ] Version timeout: CC 0x86 for node 239
-18:41:40.598 INFO [Node.cpp:321        ] >> NODE VERSION_COMMAND_CLASS_GET CC [0x86] to node 239
-18:41:40.664 INFO [Z_Wave.h:201        ] << [RES] cmdId=0x13 ZW_API_CONTROLLER_SEND_DATA | payload=01 | rsp status 0x01
-18:41:41.024 INFO [Z_Wave.h:201        ] << [REQ] cmdId=0x13 ZW_API_CONTROLLER_SEND_DATA | payload=05 01 | sessionid=0x05 tx status 0x01
-18:41:45.618 ERR  [Node.cpp:329        ] Version timeout: CC 0x86 for node 239
-18:41:45.618 INFO [Node.cpp:321        ] >> NODE VERSION_COMMAND_CLASS_GET CC [0x86] to node 239
-18:41:45.669 INFO [Z_Wave.h:201        ] << [RES] cmdId=0x13 ZW_API_CONTROLLER_SEND_DATA | payload=01 | rsp status 0x01
-18:41:46.148 INFO [Z_Wave.h:201        ] << [REQ] cmdId=0x13 ZW_API_CONTROLLER_SEND_DATA | payload=05 01 | sessionid=0x05 tx status 0x01
-18:41:50.641 ERR  [Node.cpp:329        ] Version timeout: CC 0x86 for node 239
-18:41:50.641 INFO [Node.cpp:321        ] >> NODE VERSION_COMMAND_CLASS_GET CC [0x8E] to node 239
-18:41:50.676 INFO [Z_Wave.h:201        ] << [RES] cmdId=0x13 ZW_API_CONTROLLER_SEND_DATA | payload=01 | rsp status 0x01
-18:41:51.036 INFO [Z_Wave.h:201        ] << [REQ] cmdId=0x13 ZW_API_CONTROLLER_SEND_DATA | payload=05 01 | sessionid=0x05 tx status 0x01
-18:41:55.659 ERR  [Node.cpp:329        ] Version timeout: CC 0x8E for node 239
-18:41:55.659 INFO [Node.cpp:321        ] >> NODE VERSION_COMMAND_CLASS_GET CC [0x8E] to node 239
-18:41:55.694 INFO [Z_Wave.h:201        ] << [RES] cmdId=0x13 ZW_API_CONTROLLER_SEND_DATA | payload=01 | rsp status 0x01
-18:41:56.055 INFO [Z_Wave.h:201        ] << [REQ] cmdId=0x13 ZW_API_CONTROLLER_SEND_DATA | payload=05 01 | sessionid=0x05 tx status 0x01
-18:42:00.681 ERR  [Node.cpp:329        ] Version timeout: CC 0x8E for node 239
-18:42:00.681 INFO [Node.cpp:321        ] >> NODE VERSION_COMMAND_CLASS_GET CC [0x8E] to node 239
-18:42:00.747 INFO [Z_Wave.h:201        ] << [RES] cmdId=0x13 ZW_API_CONTROLLER_SEND_DATA | payload=01 | rsp status 0x01
-18:42:01.227 INFO [Z_Wave.h:201        ] << [REQ] cmdId=0x13 ZW_API_CONTROLLER_SEND_DATA | payload=05 01 | sessionid=0x05 tx status 0x01
-18:42:05.707 ERR  [Node.cpp:329        ] Version timeout: CC 0x8E for node 239
-18:42:05.707 INFO [Node.cpp:321        ] >> NODE VERSION_COMMAND_CLASS_GET CC [0x8E] to node 239
-18:42:05.728 INFO [Z_Wave.h:201        ] << [RES] cmdId=0x13 ZW_API_CONTROLLER_SEND_DATA | payload=01 | rsp status 0x01
-18:42:06.147 INFO [Z_Wave.h:201        ] << [REQ] cmdId=0x13 ZW_API_CONTROLLER_SEND_DATA | payload=05 01 | sessionid=0x05 tx status 0x01
-18:42:10.737 ERR  [Node.cpp:329        ] Version timeout: CC 0x8E for node 239
-18:42:10.737 INFO [Node.cpp:321        ] >> NODE VERSION_COMMAND_CLASS_GET CC [0xEF] to node 239
-18:42:10.772 INFO [Z_Wave.h:201        ] << [RES] cmdId=0x13 ZW_API_CONTROLLER_SEND_DATA | payload=01 | rsp status 0x01
-18:42:11.073 INFO [Z_Wave.h:201        ] << [REQ] cmdId=0x13 ZW_API_CONTROLLER_SEND_DATA | payload=05 01 | sessionid=0x05 tx status 0x01
-18:42:15.755 ERR  [Node.cpp:329        ] Version timeout: CC 0xEF for node 239
-18:42:15.755 INFO [Node.cpp:321        ] >> NODE VERSION_COMMAND_CLASS_GET CC [0xEF] to node 239
-18:42:15.821 INFO [Z_Wave.h:201        ] << [RES] cmdId=0x13 ZW_API_CONTROLLER_SEND_DATA | payload=01 | rsp status 0x01
-18:42:16.241 INFO [Z_Wave.h:201        ] << [REQ] cmdId=0x13 ZW_API_CONTROLLER_SEND_DATA | payload=05 01 | sessionid=0x05 tx status 0x01
-18:42:20.778 ERR  [Node.cpp:329        ] Version timeout: CC 0xEF for node 239
-18:42:20.778 INFO [Node.cpp:321        ] >> NODE VERSION_COMMAND_CLASS_GET CC [0xEF] to node 239
-18:42:20.813 INFO [Z_Wave.h:201        ] << [RES] cmdId=0x13 ZW_API_CONTROLLER_SEND_DATA | payload=01 | rsp status 0x01
-18:42:21.354 INFO [Z_Wave.h:201        ] << [REQ] cmdId=0x13 ZW_API_CONTROLLER_SEND_DATA | payload=05 01 | sessionid=0x05 tx status 0x01
-18:42:25.795 ERR  [Node.cpp:329        ] Version timeout: CC 0xEF for node 239
-18:42:25.795 INFO [Node.cpp:321        ] >> NODE VERSION_COMMAND_CLASS_GET CC [0xEF] to node 239
-18:42:25.845 INFO [Z_Wave.h:201        ] << [RES] cmdId=0x13 ZW_API_CONTROLLER_SEND_DATA | payload=01 | rsp status 0x01
-18:42:26.205 INFO [Z_Wave.h:201        ] << [REQ] cmdId=0x13 ZW_API_CONTROLLER_SEND_DATA | payload=05 01 | sessionid=0x05 tx status 0x01
-18:42:30.822 ERR  [Node.cpp:329        ] Version timeout: CC 0xEF for node 239
-18:42:30.823 INFO [Node.cpp:347        ] >> NODE MANUFACTURER_SPECIFIC_COMMAND_CLASS_GET to node 239
-18:42:30.823 INFO_LOW [Node.cpp:419        ] No CC MULTI_CHANNEL_END_POINT_GET for node 239
+19:35:28.621 DBG  [Z_Wave_TCP.cpp:117  ] Hello ZWave World! Im a ZWaveCore app that can connect to a ZWave network.
+19:35:28.624 DBG  [Z_Wave_TCP.cpp:118  ] And connect to you with a TCP connection.
+19:35:28.659 ITF [Interface.cpp:16    ] OpenPort ok: port='COM3'
+19:35:28.666 DVC [InitializeManager.cpp:15] >> GetInitData: cmdId=0x02
+19:35:28.734 DBG  [Interface.cpp:112   ] >> Send: attempt=1 frame=[REQ] cmdId=0x02 FUNC_ID_GET_INIT_DATA | payload=(0)
+19:35:28.734 DBG  [Interface.cpp:113   ] >> FrameBytes: len=5 bytes=[01 03 00 02 FE ]
+19:35:28.783 DBG  [Interface.cpp:320   ] << Recv: bytesLen=39 bytes=[01 25 01 02 05 08 1D 01 00 F0 03 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 03 01 39 ]
+19:35:28.783 DBG  [Interface.cpp:323   ] << Recv frame [RES] cmdId=0x02 FUNC_ID_GET_INIT_DATA | payload=(34) 05 08 1D 01 00 F0 03 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 03 01
+19:35:28.784 DVC [Z_Wave.h:201        ] << [RES] cmdId=0x02 FUNC_ID_GET_INIT_DATA | payload=(34) 05 08 1D 01 00 F0 03 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 03 01
+19:35:28.784 DBG  [Z_Wave.h:211        ] << route=initializeManager [RES] cmdId=0x02 FUNC_ID_GET_INIT_DATA | payload=(34) 05 08 1D 01 00 F0 03 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 03 01
+19:35:28.784 DVC [InitializeManager.cpp:63] << GetInitData ApiVersion=5 Caps=8 NodeListLen=29 ChipType=ZW030x ChipVer=1 
+19:35:28.784 DVC [InitializeManager.cpp:69] << GetInitData: parsed nodeIds=7 (first=1, last=26)
+19:35:28.784 DVC [InitializeManager.cpp:173] >> GetCapabilities: cmdId=0x07
+19:35:28.859 DBG  [Interface.cpp:112   ] >> Send: attempt=1 frame=[REQ] cmdId=0x07 FUNC_ID_GET_CAPABILITIES | payload=(0)
+19:35:28.859 DBG  [Interface.cpp:113   ] >> FrameBytes: len=5 bytes=[01 03 00 07 FB ]
+19:35:28.865 DBG  [Interface.cpp:320   ] << Recv: bytesLen=45 bytes=[01 2B 01 07 03 07 00 86 00 02 00 01 FE 80 FE 88 0F 00 00 00 FB 97 7F 82 07 00 00 80 00 80 00 00 00 00 00 00 00 00 00 00 00 00 00 00 C2 ]
+19:35:28.865 DBG  [Interface.cpp:323   ] << Recv frame [RES] cmdId=0x07 FUNC_ID_GET_CAPABILITIES | payload=(40) 03 07 00 86 00 02 00 01 FE 80 FE 88 0F 00 00 00 FB 97 7F 82 07 00 00 80 00 80 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+19:35:28.865 DVC [Z_Wave.h:201        ] << [RES] cmdId=0x07 FUNC_ID_GET_CAPABILITIES | payload=(40) 03 07 00 86 00 02 00 01 FE 80 FE 88 0F 00 00 00 FB 97 7F 82 07 00 00 80 00 80 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+19:35:28.866 DBG  [Z_Wave.h:211        ] << route=initializeManager [RES] cmdId=0x07 FUNC_ID_GET_CAPABILITIES | payload=(40) 03 07 00 86 00 02 00 01 FE 80 FE 88 0F 00 00 00 FB 97 7F 82 07 00 00 80 00 80 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+19:35:28.866 DVC [InitializeManager.cpp:213] << GetCapabilities: appVer=3.7 mfg=0x0086 prodType=0x0002 prodId=0x0001 cmdCount=47 cmdList=[2 3 4 5 6 7 8 16 18 19 20 21 22 23 24 28 32 33 34 35 36 65 66 68 69 70 71 72 73 74 75 77 80 81 82 83 84 85 86 87 90 96 97 98 99 128 144 ] (payloadLen=40)
+19:35:28.866 DVC [InitializeManager.cpp:80] >> GetControllerCapabilities: cmdId=0x05
+19:35:28.937 DBG  [Interface.cpp:112   ] >> Send: attempt=1 frame=[REQ] cmdId=0x05 FUNC_ID_GET_CONTROLLER_CAPABILITIES | payload=(0)
+19:35:28.937 DBG  [Interface.cpp:113   ] >> FrameBytes: len=5 bytes=[01 03 00 05 F9 ]
+19:35:28.939 DBG  [Interface.cpp:320   ] << Recv: bytesLen=6 bytes=[01 04 01 05 1C E3 ]
+19:35:28.939 DBG  [Interface.cpp:323   ] << Recv frame [RES] cmdId=0x05 FUNC_ID_GET_CONTROLLER_CAPABILITIES | payload=(1) 1C
+19:35:28.939 DVC [Z_Wave.h:201        ] << [RES] cmdId=0x05 FUNC_ID_GET_CONTROLLER_CAPABILITIES | payload=(1) 1C
+19:35:28.940 DBG  [Z_Wave.h:211        ] << route=initializeManager [RES] cmdId=0x05 FUNC_ID_GET_CONTROLLER_CAPABILITIES | payload=(1) 1C
+19:35:28.940 DVC [InitializeManager.cpp:99] << GetControllerCapabilities: caps=0x1C secondary=false otherNet=false sisPresent=true sucEnabled=true noNodesIncluded=false (payloadLen=1)
+19:35:28.940 DVC [InitializeManager.cpp:233] >> GetNetworkIdsFromMemory: cmdId=0x20
+19:35:29.015 DBG  [Interface.cpp:112   ] >> Send: attempt=1 frame=[REQ] cmdId=0x20 ZW_API_GET_NETWORK_IDS_FROM_MEMORY | payload=(0)
+19:35:29.015 DBG  [Interface.cpp:113   ] >> FrameBytes: len=5 bytes=[01 03 00 20 DC ]
+19:35:29.017 DBG  [Interface.cpp:320   ] << Recv: bytesLen=10 bytes=[01 08 01 20 01 4C E4 51 01 2F ]
+19:35:29.017 DBG  [Interface.cpp:323   ] << Recv frame [RES] cmdId=0x20 ZW_API_GET_NETWORK_IDS_FROM_MEMORY | payload=(5) 01 4C E4 51 01
+19:35:29.018 DVC [Z_Wave.h:201        ] << [RES] cmdId=0x20 ZW_API_GET_NETWORK_IDS_FROM_MEMORY | payload=(5) 01 4C E4 51 01
+19:35:29.018 DBG  [Z_Wave.h:211        ] << route=initializeManager [RES] cmdId=0x20 ZW_API_GET_NETWORK_IDS_FROM_MEMORY | payload=(5) 01 4C E4 51 01
+19:35:29.018 DVC [InitializeManager.cpp:255] << GetNetworkIdsFromMemory: homeId=0x014CE451 nodeId=1 (payloadLen=5)
+19:35:29.018 DVC [InitializeManager.cpp:267] >> GetLibraryVersion: cmdId=0x15
+19:35:29.092 DBG  [Interface.cpp:112   ] >> Send: attempt=1 frame=[REQ] cmdId=0x15 FUNC_ID_GET_LIBRARY_VERSION | payload=(0)
+19:35:29.093 DBG  [Interface.cpp:113   ] >> FrameBytes: len=5 bytes=[01 03 00 15 E9 ]
+19:35:29.095 DBG  [Interface.cpp:320   ] << Recv: bytesLen=18 bytes=[01 10 01 15 5A 2D 57 61 76 65 20 32 2E 37 38 00 01 9B ]
+19:35:29.096 DBG  [Interface.cpp:323   ] << Recv frame [RES] cmdId=0x15 FUNC_ID_GET_LIBRARY_VERSION | payload=(13) 5A 2D 57 61 76 65 20 32 2E 37 38 00 01
+19:35:29.096 DVC [Z_Wave.h:201        ] << [RES] cmdId=0x15 FUNC_ID_GET_LIBRARY_VERSION | payload=(13) 5A 2D 57 61 76 65 20 32 2E 37 38 00 01
+19:35:29.096 DBG  [Z_Wave.h:211        ] << route=initializeManager [RES] cmdId=0x15 FUNC_ID_GET_LIBRARY_VERSION | payload=(13) 5A 2D 57 61 76 65 20 32 2E 37 38 00 01
+19:35:29.096 DVC [InitializeManager.cpp:306] << GetLibraryVersion: verStr='Z-Wave 2.78' libType=0x01 protoParsed=2.78 (payloadLen=13)
+19:35:29.156 DVC [Z_Wave.h:352        ] ----------------------------------- Initialization done.
+19:35:29.160 DVC [Z_Wave.h:370        ] ----------------------------------- Interview started. Node: 21
+19:35:29.160 DVC [InterviewManager.cpp:20] >> ZW_API_GET_NODE_INFO_PROTOCOL_DATA: node=21
+19:35:29.171 DBG  [Interface.cpp:112   ] >> Send: attempt=1 frame=[REQ] cmdId=0x41 ZW_API_GET_NODE_INFO_PROTOCOL_DATA | payload=(1) 15
+19:35:29.171 DBG  [Interface.cpp:113   ] >> FrameBytes: len=6 bytes=[01 04 00 41 15 AF ]
+19:35:29.174 DBG  [Interface.cpp:320   ] << Recv: bytesLen=11 bytes=[01 09 01 41 0A 06 00 01 20 01 9A ]
+19:35:29.174 DBG  [Interface.cpp:323   ] << Recv frame [RES] cmdId=0x41 ZW_API_GET_NODE_INFO_PROTOCOL_DATA | payload=(6) 0A 06 00 01 20 01
+19:35:29.174 DVC [Z_Wave.h:201        ] << [RES] cmdId=0x41 ZW_API_GET_NODE_INFO_PROTOCOL_DATA | payload=(6) 0A 06 00 01 20 01
+19:35:29.175 DBG  [Z_Wave.h:222        ] << route=interviewManager [RES] cmdId=0x41 ZW_API_GET_NODE_INFO_PROTOCOL_DATA | payload=(6) 0A 06 00 01 20 01
+19:35:29.175 DBG  [InterviewManager.h:68] HandleFrame called for node 21: [RES] cmdId=0x41 ZW_API_GET_NODE_INFO_PROTOCOL_DATA | payload=(6) 0A 06 00 01 20 01
+19:35:29.175 DVC [InterviewManager.cpp:69] << ZW_API_GET_NODE_INFO_PROTOCOL_DATA: node=21 listening=false routing=false speed=1 proto=2 basic=0x01 generic=0x20 specific=0x01 opt=0x06 speedExt=0x00 (payloadLen=6)
+19:35:29.216 DVC [Z_Wave.h:364        ] ----------------------------------- Interview pending. Node: 21 Not listening
+19:35:29.217 DVC [Z_Wave.h:370        ] ----------------------------------- Interview started. Node: 22
+19:35:29.217 DVC [InterviewManager.cpp:20] >> ZW_API_GET_NODE_INFO_PROTOCOL_DATA: node=22
+19:35:29.248 DBG  [Interface.cpp:112   ] >> Send: attempt=1 frame=[REQ] cmdId=0x41 ZW_API_GET_NODE_INFO_PROTOCOL_DATA | payload=(1) 16
+19:35:29.249 DBG  [Interface.cpp:113   ] >> FrameBytes: len=6 bytes=[01 04 00 41 16 AC ]
+19:35:29.251 DBG  [Interface.cpp:320   ] << Recv: bytesLen=11 bytes=[01 09 01 41 0A 06 00 01 20 01 9A ]
+19:35:29.251 DBG  [Interface.cpp:323   ] << Recv frame [RES] cmdId=0x41 ZW_API_GET_NODE_INFO_PROTOCOL_DATA | payload=(6) 0A 06 00 01 20 01
+19:35:29.252 DVC [Z_Wave.h:201        ] << [RES] cmdId=0x41 ZW_API_GET_NODE_INFO_PROTOCOL_DATA | payload=(6) 0A 06 00 01 20 01
+19:35:29.252 DBG  [Z_Wave.h:222        ] << route=interviewManager [RES] cmdId=0x41 ZW_API_GET_NODE_INFO_PROTOCOL_DATA | payload=(6) 0A 06 00 01 20 01
+19:35:29.252 DBG  [InterviewManager.h:68] HandleFrame called for node 22: [RES] cmdId=0x41 ZW_API_GET_NODE_INFO_PROTOCOL_DATA | payload=(6) 0A 06 00 01 20 01
+19:35:29.252 DVC [InterviewManager.cpp:69] << ZW_API_GET_NODE_INFO_PROTOCOL_DATA: node=22 listening=false routing=false speed=1 proto=2 basic=0x01 generic=0x20 specific=0x01 opt=0x06 speedExt=0x00 (payloadLen=6)
+19:35:29.279 DVC [Z_Wave.h:364        ] ----------------------------------- Interview pending. Node: 22 Not listening
+19:35:29.279 DVC [Z_Wave.h:370        ] ----------------------------------- Interview started. Node: 23
+19:35:29.280 DVC [InterviewManager.cpp:20] >> ZW_API_GET_NODE_INFO_PROTOCOL_DATA: node=23
+19:35:29.325 DBG  [Interface.cpp:112   ] >> Send: attempt=1 frame=[REQ] cmdId=0x41 ZW_API_GET_NODE_INFO_PROTOCOL_DATA | payload=(1) 17
+19:35:29.326 DBG  [Interface.cpp:113   ] >> FrameBytes: len=6 bytes=[01 04 00 41 17 AD ]
+19:35:29.328 DBG  [Interface.cpp:320   ] << Recv: bytesLen=11 bytes=[01 09 01 41 0A 06 00 01 20 01 9A ]
+19:35:29.328 DBG  [Interface.cpp:323   ] << Recv frame [RES] cmdId=0x41 ZW_API_GET_NODE_INFO_PROTOCOL_DATA | payload=(6) 0A 06 00 01 20 01
+19:35:29.329 DVC [Z_Wave.h:201        ] << [RES] cmdId=0x41 ZW_API_GET_NODE_INFO_PROTOCOL_DATA | payload=(6) 0A 06 00 01 20 01
+19:35:29.329 DBG  [Z_Wave.h:222        ] << route=interviewManager [RES] cmdId=0x41 ZW_API_GET_NODE_INFO_PROTOCOL_DATA | payload=(6) 0A 06 00 01 20 01
+19:35:29.329 DBG  [InterviewManager.h:68] HandleFrame called for node 23: [RES] cmdId=0x41 ZW_API_GET_NODE_INFO_PROTOCOL_DATA | payload=(6) 0A 06 00 01 20 01
+19:35:29.330 DVC [InterviewManager.cpp:69] << ZW_API_GET_NODE_INFO_PROTOCOL_DATA: node=23 listening=false routing=false speed=1 proto=2 basic=0x01 generic=0x20 specific=0x01 opt=0x06 speedExt=0x00 (payloadLen=6)
+19:35:29.342 DVC [Z_Wave.h:364        ] ----------------------------------- Interview pending. Node: 23 Not listening
+19:35:29.355 DVC [Z_Wave.h:370        ] ----------------------------------- Interview started. Node: 24
+19:35:29.356 DVC [InterviewManager.cpp:20] >> ZW_API_GET_NODE_INFO_PROTOCOL_DATA: node=24
+19:35:29.404 DBG  [Interface.cpp:112   ] >> Send: attempt=1 frame=[REQ] cmdId=0x41 ZW_API_GET_NODE_INFO_PROTOCOL_DATA | payload=(1) 18
+19:35:29.404 DBG  [Interface.cpp:113   ] >> FrameBytes: len=6 bytes=[01 04 00 41 18 A2 ]
+19:35:29.407 DBG  [Interface.cpp:320   ] << Recv: bytesLen=11 bytes=[01 09 01 41 0A 06 00 01 20 01 9A ]
+19:35:29.407 DBG  [Interface.cpp:323   ] << Recv frame [RES] cmdId=0x41 ZW_API_GET_NODE_INFO_PROTOCOL_DATA | payload=(6) 0A 06 00 01 20 01
+19:35:29.407 DVC [Z_Wave.h:201        ] << [RES] cmdId=0x41 ZW_API_GET_NODE_INFO_PROTOCOL_DATA | payload=(6) 0A 06 00 01 20 01
+19:35:29.408 DBG  [Z_Wave.h:222        ] << route=interviewManager [RES] cmdId=0x41 ZW_API_GET_NODE_INFO_PROTOCOL_DATA | payload=(6) 0A 06 00 01 20 01
+19:35:29.408 DBG  [InterviewManager.h:68] HandleFrame called for node 24: [RES] cmdId=0x41 ZW_API_GET_NODE_INFO_PROTOCOL_DATA | payload=(6) 0A 06 00 01 20 01
+19:35:29.408 DVC [InterviewManager.cpp:69] << ZW_API_GET_NODE_INFO_PROTOCOL_DATA: node=24 listening=false routing=false speed=1 proto=2 basic=0x01 generic=0x20 specific=0x01 opt=0x06 speedExt=0x00 (payloadLen=6)
+19:35:29.420 DVC [Z_Wave.h:364        ] ----------------------------------- Interview pending. Node: 24 Not listening
+19:35:29.421 DVC [Z_Wave.h:370        ] ----------------------------------- Interview started. Node: 25
+19:35:29.421 DVC [InterviewManager.cpp:20] >> ZW_API_GET_NODE_INFO_PROTOCOL_DATA: node=25
+19:35:29.481 DBG  [Interface.cpp:112   ] >> Send: attempt=1 frame=[REQ] cmdId=0x41 ZW_API_GET_NODE_INFO_PROTOCOL_DATA | payload=(1) 19
+19:35:29.481 DBG  [Interface.cpp:113   ] >> FrameBytes: len=6 bytes=[01 04 00 41 19 A3 ]
+19:35:29.483 DBG  [Interface.cpp:320   ] << Recv: bytesLen=11 bytes=[01 09 01 41 0A 06 00 01 20 01 9A ]
+19:35:29.483 DBG  [Interface.cpp:323   ] << Recv frame [RES] cmdId=0x41 ZW_API_GET_NODE_INFO_PROTOCOL_DATA | payload=(6) 0A 06 00 01 20 01
+19:35:29.484 DVC [Z_Wave.h:201        ] << [RES] cmdId=0x41 ZW_API_GET_NODE_INFO_PROTOCOL_DATA | payload=(6) 0A 06 00 01 20 01
+19:35:29.484 DBG  [Z_Wave.h:222        ] << route=interviewManager [RES] cmdId=0x41 ZW_API_GET_NODE_INFO_PROTOCOL_DATA | payload=(6) 0A 06 00 01 20 01
+19:35:29.484 DBG  [InterviewManager.h:68] HandleFrame called for node 25: [RES] cmdId=0x41 ZW_API_GET_NODE_INFO_PROTOCOL_DATA | payload=(6) 0A 06 00 01 20 01
+19:35:29.485 DVC [InterviewManager.cpp:69] << ZW_API_GET_NODE_INFO_PROTOCOL_DATA: node=25 listening=false routing=false speed=1 proto=2 basic=0x01 generic=0x20 specific=0x01 opt=0x06 speedExt=0x00 (payloadLen=6)
+19:35:29.544 DVC [Z_Wave.h:364        ] ----------------------------------- Interview pending. Node: 25 Not listening
+19:35:29.545 DVC [Z_Wave.h:370        ] ----------------------------------- Interview started. Node: 26
+19:35:29.545 DVC [InterviewManager.cpp:20] >> ZW_API_GET_NODE_INFO_PROTOCOL_DATA: node=26
+19:35:29.559 DBG  [Interface.cpp:112   ] >> Send: attempt=1 frame=[REQ] cmdId=0x41 ZW_API_GET_NODE_INFO_PROTOCOL_DATA | payload=(1) 1A
+19:35:29.560 DBG  [Interface.cpp:113   ] >> FrameBytes: len=6 bytes=[01 04 00 41 1A A0 ]
+19:35:29.562 DBG  [Interface.cpp:320   ] << Recv: bytesLen=11 bytes=[01 09 01 41 C9 0C 00 04 10 01 66 ]
+19:35:29.562 DBG  [Interface.cpp:323   ] << Recv frame [RES] cmdId=0x41 ZW_API_GET_NODE_INFO_PROTOCOL_DATA | payload=(6) C9 0C 00 04 10 01
+19:35:29.563 DVC [Z_Wave.h:201        ] << [RES] cmdId=0x41 ZW_API_GET_NODE_INFO_PROTOCOL_DATA | payload=(6) C9 0C 00 04 10 01
+19:35:29.563 DBG  [Z_Wave.h:222        ] << route=interviewManager [RES] cmdId=0x41 ZW_API_GET_NODE_INFO_PROTOCOL_DATA | payload=(6) C9 0C 00 04 10 01
+19:35:29.563 DBG  [InterviewManager.h:68] HandleFrame called for node 26: [RES] cmdId=0x41 ZW_API_GET_NODE_INFO_PROTOCOL_DATA | payload=(6) C9 0C 00 04 10 01
+19:35:29.563 DVC [InterviewManager.cpp:69] << ZW_API_GET_NODE_INFO_PROTOCOL_DATA: node=26 listening=true routing=true speed=1 proto=1 basic=0x04 generic=0x10 specific=0x01 opt=0x0C speedExt=0x00 (payloadLen=6)
+19:35:29.564 DVC [InterviewManager.cpp:111] >> ZW_API_REQUEST_NODE_INFORMATION: node=26
+19:35:29.638 DBG  [Interface.cpp:112   ] >> Send: attempt=1 frame=[REQ] cmdId=0x60 ZW_API_REQUEST_NODE_INFORMATION | payload=(1) 1A
+19:35:29.638 DBG  [Interface.cpp:113   ] >> FrameBytes: len=6 bytes=[01 04 00 60 1A 81 ]
+19:35:29.642 DBG  [Interface.cpp:320   ] << Recv: bytesLen=6 bytes=[01 04 01 60 01 9B ]
+19:35:29.642 DBG  [Interface.cpp:323   ] << Recv frame [RES] cmdId=0x60 ZW_API_REQUEST_NODE_INFORMATION | payload=(1) 01
+19:35:29.643 DVC [Z_Wave.h:201        ] << [RES] cmdId=0x60 ZW_API_REQUEST_NODE_INFORMATION | payload=(1) 01
+19:35:29.643 DBG  [Z_Wave.h:222        ] << route=interviewManager [RES] cmdId=0x60 ZW_API_REQUEST_NODE_INFORMATION | payload=(1) 01
+19:35:29.643 DBG  [InterviewManager.h:68] HandleFrame called for node 26: [RES] cmdId=0x60 ZW_API_REQUEST_NODE_INFORMATION | payload=(1) 01
+19:35:29.719 DBG  [Interface.cpp:320   ] << Recv: bytesLen=19 bytes=[01 11 00 49 84 1A 0B 04 10 01 72 86 70 85 25 28 27 75 79 ]
+19:35:29.719 DBG  [Interface.cpp:323   ] << Recv frame [REQ] cmdId=0x49 ZW_API_APPLICATION_UPDATE | payload=(14) 84 1A 0B 04 10 01 72 86 70 85 25 28 27 75 | event=UPDATE_STATE_NODE_ADDED
+19:35:29.720 DVC [Z_Wave.h:201        ] << [REQ] cmdId=0x49 ZW_API_APPLICATION_UPDATE | payload=(14) 84 1A 0B 04 10 01 72 86 70 85 25 28 27 75 | event=UPDATE_STATE_NODE_ADDED
+19:35:29.720 DBG  [Z_Wave.h:222        ] << route=interviewManager [REQ] cmdId=0x49 ZW_API_APPLICATION_UPDATE | payload=(14) 84 1A 0B 04 10 01 72 86 70 85 25 28 27 75 | event=UPDATE_STATE_NODE_ADDED
+19:35:29.720 DBG  [InterviewManager.h:68] HandleFrame called for node 26: [REQ] cmdId=0x49 ZW_API_APPLICATION_UPDATE | payload=(14) 84 1A 0B 04 10 01 72 86 70 85 25 28 27 75 | event=UPDATE_STATE_NODE_ADDED
+19:35:29.721 DBG  [InterviewManager.h:129] << ZW_API_APPLICATION_UPDATE: unexpected event=0x84 payloadLen=14
+19:35:34.558 DVC [Z_Wave.h:404        ] Job timeout: 1 attempt 161
+19:35:34.558 ERR  [Z_Wave.h:380        ] Job failed: 1

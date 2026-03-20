@@ -15,7 +15,7 @@
 #include <thread>
 #include <vector>
 
-class Z_Wave : private ZW_Interface
+class Z_Wave : private Interface
 {
 public:
 	Z_Wave() :
@@ -30,7 +30,7 @@ public:
 	}
 	bool OpenPort(const std::string& portname)
 	{
-		if (ZW_Interface::OpenPort(portname))
+		if (Interface::OpenPort(portname))
 		{
 			StartJobWorker();
 			return true;
@@ -40,8 +40,9 @@ public:
 	void ClosePort()
 	{
 		StopJobWorker();
-		ZW_Interface::ClosePort();
+		Interface::ClosePort();
 	}
+	using Interface::IsSerialOpen;
 
 	//******************************************************************
 	// UI interface
@@ -51,10 +52,10 @@ public:
 		if (module.InitializationState != ZW_Module::eInitializationState::NotInitialized)
 			return;
 
-		EnqueueJob(eJobs::INITIALIZE, 0);
+		EnqueueJob(eJobs::INITIALIZE);
 		/*
 				initializeManager.Start();
-				Log.AddL(eLogTypes::INFO, MakeTag(), "----------------------------------- Initialization done.");
+				Log.AddL(eLogTypes::DVC, MakeTag(), "----------------------------------- Initialization done.");
 
 				if(module.InitializationState == ZW_Module::eInitializationState::Initialized)
 				StartInterview();
@@ -68,7 +69,7 @@ public:
 
 		for (size_t i = 0; i < module.NodeIds.size(); i++)
 		{
-			if (module.NodeIds[i] != 0 && module.NodeIds[i] != 1)
+			if (module.NodeIds[i] != (node_t)0 && module.NodeIds[i] != (node_t)1)
 			{
 				ZW_Node* node = nodes.GetOrCreate(module.NodeIds[i], [this](const ZW_APIFrame& f) { Enqueue(f); });
 				if (node)
@@ -78,17 +79,16 @@ public:
 		}
 	}
 
-	virtual std::string HostToString()
-	{
-		return module.ToString();
-	}
+	ZW_Module& GetModule() { return module; }
+
+	std::string HostToString() { return module.ToString(); }
 
 	std::string NodesToString(int width) const
 	{
 		return this->nodes.ToString(width);
 	}
 
-	void RequestBattery(uint8_t nodeid)
+	void RequestBattery(node_t nodeid)
 	{
 		ZW_Node* node = nodes.Get(nodeid);
 		if(!node) return;
@@ -97,7 +97,7 @@ public:
 		node->EnqueueJob(job);
 	}
 
-	void AssociationInterview(uint8_t nodeid)
+	void AssociationInterview(node_t nodeid)
 	{
 		ZW_Node* node = nodes.Get(nodeid);
 		if (!node) return;
@@ -108,7 +108,7 @@ public:
 		node->EnqueueJob(job);
 	}
 
-	void ConfigurationInterview(uint8_t nodeid)
+	void ConfigurationInterview(node_t nodeid)
 	{
 		ZW_Node* node = nodes.Get(nodeid);
 		if (!node) return;
@@ -117,23 +117,23 @@ public:
 		node->EnqueueJob(job);
 	}
 
-	void IsDead(uint8_t nodeid)
+	void IsDead(node_t nodeid)
 	{
 		ZW_APIFrame frame;
-		frame.Make(eCommandIds::ZW_API_IS_NODE_FAILED, { nodeid, 0x0A });
+		frame.Make(eCommandIds::ZW_API_IS_NODE_FAILED, { nodeid.value, 0x0A });
 		Enqueue(frame);
 		//		EnqueueJob(eJobs::IS_DEAD, nodeid);
 	}
 
-	void Remove(uint8_t nodeid)
+	void Remove(node_t nodeid)
 	{
 		ZW_APIFrame frame;
-		frame.Make(eCommandIds::ZW_API_REMOVE_FAILED_NODE, {nodeid, 0x0A});
+		frame.Make(eCommandIds::ZW_API_REMOVE_FAILED_NODE, {nodeid.value, 0x0A});
 		Enqueue(frame);
 		StartInitialization();
 	}
 
-	void Bind(uint8_t nodeid, uint8_t groupid, uint8_t targetnodeid)
+	void Bind(node_t nodeid, uint8_t groupid, node_t targetnodeid)
 	{
 		ZW_Node* node = nodes.Get(nodeid);
 		if (!node) return;
@@ -145,7 +145,7 @@ public:
 //		AssociationInterview(nodeid);
 	}
 
-	void Unbind(uint8_t nodeid, uint8_t groupid, uint8_t targetnodeid)
+	void Unbind(node_t nodeid, uint8_t groupid, node_t targetnodeid)
 	{
 		ZW_Node* node = nodes.Get(nodeid);
 		if (!node) return;
@@ -156,7 +156,7 @@ public:
 		node->EnqueueJob(job);
 //		AssociationInterview(nodeid);
 	}
-	void MCBind(uint8_t nodeid, uint8_t groupid, uint8_t targetNodeid, uint8_t targetEndpoint)
+	void MCBind(node_t nodeid, uint8_t groupid, node_t targetNodeid, uint8_t targetEndpoint)
 	{
 		ZW_Node* node = nodes.Get(nodeid);
 		if (!node) return;
@@ -168,7 +168,7 @@ public:
 		node->EnqueueJob(job);
 		//		AssociationInterview(nodeid);
 	}
-	void MCUnbind(uint8_t nodeid, uint8_t groupid, uint8_t targetNodeid, uint8_t targetEndpoint)
+	void MCUnbind(node_t nodeid, uint8_t groupid, node_t targetNodeid, uint8_t targetEndpoint)
 	{
 		ZW_Node* node = nodes.Get(nodeid);
 		if (!node) return;
@@ -181,7 +181,7 @@ public:
 //		AssociationInterview(nodeid);
 	}
 
-	void Configure(uint8_t nodeid, uint8_t param, uint32_t value)
+	void Configure(node_t nodeid, uint8_t param, uint32_t value)
 	{
 		ZW_Node* node = nodes.Get(nodeid);
 		if (!node) return;
@@ -198,7 +198,7 @@ protected:
 
 	bool OnFrameReceived(const ZW_APIFrame& frame) override
 	{
-		Log.AddL(eLogTypes::INFO, MakeTag(), "<< {}", frame.Info());
+		Log.AddL(eLogTypes::DVC, MakeTag(), "<< {}", frame.Info());
 		switch (frame.APICmd.CmdId)
 		{
 		case eCommandIds::FUNC_ID_GET_INIT_DATA:
@@ -215,7 +215,7 @@ protected:
 			{
 				ApplicationUpdateEvent event = static_cast<ApplicationUpdateEvent>(frame.payload[0]);
 				if (event == ApplicationUpdateEvent::UPDATE_STATE_NODE_INFO_RECEIVED)
-					EnqueueJob(eJobs::INTERVIEW, frame.payload[1]);
+					EnqueueJob(eJobs::INTERVIEW, node_t{ frame.payload[1] });
 			}
 		case eCommandIds::ZW_API_GET_NODE_INFO_PROTOCOL_DATA:
 		case eCommandIds::ZW_API_REQUEST_NODE_INFORMATION:
@@ -224,9 +224,9 @@ protected:
 
 		case eCommandIds::ZW_API_CONTROLLER_SEND_DATA:
 			//SendDataManager.HandleTransmitResult(frame.payload);
-			if (frame.type == ZW_APIFrame::FrameTypes::RES)
+			if (frame.Type() == APIFrame::eFrameTypes::RES)
 				Log.AddL(eLogTypes::DBG, MakeTag(), "<< route=sendData type=RES txStatus=0x{:02X} len={}", frame.payload[0], frame.payload.size());
-			if (frame.type == ZW_APIFrame::FrameTypes::REQ)
+			if (frame.Type() == APIFrame::eFrameTypes::REQ)
 				Log.AddL(eLogTypes::DBG, MakeTag(), "<< route=sendData type=REQ sessionId={} txStatus=0x{:02X} len={}", frame.payload[0], frame.payload[1], frame.payload.size());
 			return true;
 
@@ -263,15 +263,15 @@ protected:
 		case eCommandIds::ZW_API_APPLICATION_UPDATE:
 		case eCommandIds::ZW_API_GET_NODE_INFO_PROTOCOL_DATA:
 		case eCommandIds::ZW_API_REQUEST_NODE_INFORMATION:
-			Log.AddL(eLogTypes::INFO, MakeTag(), "<< route=interviewManager TIMEOUT {}", frame.Info());
+			Log.AddL(eLogTypes::DVC, MakeTag(), "<< route=interviewManager TIMEOUT {}", frame.Info());
 			return interviewManager.HandleFrameTimeout(frame);
 
 		case eCommandIds::ZW_API_CONTROLLER_SEND_DATA:
 			return true;
 
 		case eCommandIds::ZW_API_APPLICATION_COMMAND_HANDLER:
-			Log.AddL(eLogTypes::INFO, MakeTag(), "<< route=ccDispatcher TIMEOUT {}", frame.Info());
-			//			CCDispatcher.HandleCCFrameTimeout(frame.payload);
+			Log.AddL(eLogTypes::DVC, MakeTag(), "<< route=ccDispatcher TIMEOUT {}", frame.Info());
+			//CCDispatcher.HandleCCFrameTimeout(frame.payload);
 			return true;
 		}
 
@@ -294,7 +294,7 @@ private:
 	struct Job
 	{
 		eJobs job;
-		uint8_t nodeid;
+		node_t nodeid;
 		uint16_t attempts = 0;
 	};
 
@@ -308,7 +308,7 @@ private:
 	static constexpr int kMaxJobAttempts = 5;
 	static constexpr auto kJobTimeout = std::chrono::seconds(5);
 
-	void EnqueueJob(eJobs job, uint8_t nodeid)
+	void EnqueueJob(eJobs job, node_t nodeid = (node_t)0)
 	{
 		std::scoped_lock lock(jobQueueMutex);
 		jobQueue.push_back(Job{ job, nodeid });
@@ -349,7 +349,7 @@ private:
 				//			initializeManager.StartOrResume();
 			else if (module.InitializationState == ZW_Module::eInitializationState::Initialized)
 			{
-				Log.AddL(eLogTypes::INFO, MakeTag(), "----------------------------------- Initialization done.");
+				Log.AddL(eLogTypes::DVC, MakeTag(), "----------------------------------- Initialization done.");
 				StartInterview();
 				return eJobResult::Done;
 			}
@@ -361,13 +361,13 @@ private:
 				if (interviewManager.Done(job.nodeid))
 				{
 					if (node = nodes.Get(job.nodeid))
-						Log.AddL(eLogTypes::INFO, MakeTag(), "----------------------------------- Interview pending. Node: {} {}", node->NodeId, node->IsListening() ? "Listening" : "Not listening");
+						Log.AddL(eLogTypes::DVC, MakeTag(), "----------------------------------- Interview pending. Node: {} {}", node->NodeId, node->IsListening() ? "Listening" : "Not listening");
 					else
-						Log.AddL(eLogTypes::INFO, MakeTag(), "----------------------------------- Interview done. Node: {}", job.nodeid);
+						Log.AddL(eLogTypes::DVC, MakeTag(), "----------------------------------- Interview done. Node: {}", job.nodeid);
 					return eJobResult::Done;
 				}
 				if ((node = nodes.Get(job.nodeid)) && node->GetInterviewState() == ZW_Node::eInterviewState::NotInterviewed)
-					Log.AddL(eLogTypes::INFO, MakeTag(), "----------------------------------- Interview started. Node: {}", node->NodeId);
+					Log.AddL(eLogTypes::DVC, MakeTag(), "----------------------------------- Interview started. Node: {}", node->NodeId);
 				interviewManager.Start(job.nodeid);
 			}
 			return eJobResult::Pending;
@@ -382,7 +382,7 @@ private:
 		if (job.job == eJobs::INITIALIZE)
 		{
 			//			initializeManager.Reset();
-			EnqueueJob(eJobs::INITIALIZE, 0);
+			EnqueueJob(eJobs::INITIALIZE);
 		}
 	}
 
@@ -401,7 +401,7 @@ private:
 				if (now - jobStartTime > kJobTimeout)
 				{
 //					jobAttempts++;
-					Log.AddL(eLogTypes::INFO, MakeTag(), "Job timeout: {} attempt {}", static_cast<int>(job.job), jobAttempts);
+					Log.AddL(eLogTypes::DVC, MakeTag(), "Job timeout: {} attempt {}", static_cast<int>(job.job), jobAttempts);
 					jobStartTime = now;
 					if (jobAttempts >= kMaxJobAttempts)
 					{

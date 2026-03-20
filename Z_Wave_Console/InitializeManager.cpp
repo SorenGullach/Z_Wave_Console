@@ -1,4 +1,3 @@
-
 #include "Logging.h"
 #include "InitializeManager.h"
 
@@ -13,11 +12,11 @@ void ZW_InitializeManager::GetInitData()
 {
 	ZW_APIFrame frame;
 	frame.Make(eCommandIds::FUNC_ID_GET_INIT_DATA);
-	Log.AddL(eLogTypes::INFO, MakeTag(), ">> GetInitData: cmdId=0x{:02X}", static_cast<uint8_t>(eCommandIds::FUNC_ID_GET_INIT_DATA));
+	Log.AddL(eLogTypes::DVC, MakeTag(), ">> GetInitData: cmdId=0x{:02X}", static_cast<uint8_t>(eCommandIds::FUNC_ID_GET_INIT_DATA));
 	enqueue(frame);
 }
 
-void ZW_InitializeManager::DecodeInitData(const std::vector<uint8_t>& payload)
+void ZW_InitializeManager::DecodeInitData(const APIFrame::PayLoad& payload)
 {
 	// Response payload format (excluding command id, which is in the frame function id):
 	// [0] Z-Wave API Version
@@ -50,24 +49,25 @@ void ZW_InitializeManager::DecodeInitData(const std::vector<uint8_t>& payload)
 		{
 			bool nodeExists = ((payload[nodeListOffset + i] >> j) & 0x01) > 0;
 			if (nodeExists)
-				module.NodeIds.push_back(static_cast<uint8_t>((i * 8 + j) + 1));
+				module.NodeIds.push_back(node_t(static_cast<uint8_t>((i * 8 + j) + 1)));
 		}
 	}
 
 	const size_t chipOffset = nodeListOffset + module.NodeListLength;
 	if (payload.size() >= chipOffset + 2)
 	{
-		module.ChipType = payload[chipOffset];
+		module.ChipType = (ZW_Module::eChipTypes)payload[chipOffset];
 		module.ChipVersion = payload[chipOffset + 1];
 	}
 
-	Log.AddL(eLogTypes::INFO, MakeTag(), "<< GetInitData ApiVersion={} Caps={} NodeListLen={} ChipType={} ChipVer={} ",
+	Log.AddL(eLogTypes::DVC, MakeTag(), "<< GetInitData ApiVersion={} Caps={} NodeListLen={} ChipType={} ChipVer={} ",
 			 module.ApiVersion,
 			 module.ApiCapabilities,
 			 module.NodeListLength,
-			 module.ChipType,
+			 module.ChipNames(),
 			 module.ChipVersion);
-	Log.AddL(eLogTypes::INFO, MakeTag(), "<< GetInitData: parsed nodeIds={} (first={}, last={})", module.NodeIds.size(), module.NodeIds.empty() ? 0 : module.NodeIds.front(), module.NodeIds.empty() ? 0 : module.NodeIds.back());
+	Log.AddL(eLogTypes::DVC, MakeTag(), "<< GetInitData: parsed nodeIds={} (first={}, last={})", module.NodeIds.size(), module.NodeIds.empty() ? node_t{} : module.NodeIds.front(), module.NodeIds.empty() ? node_t{} : module.NodeIds.back());
+	NotifyUI(UINotify::ControllerChanged);
 }
 
 /////////////////////////////////////////////////
@@ -77,11 +77,11 @@ void ZW_InitializeManager::GetControllerCapabilities()
 {
 	ZW_APIFrame frame;
 	frame.Make(eCommandIds::FUNC_ID_GET_CONTROLLER_CAPABILITIES);
-	Log.AddL(eLogTypes::INFO, MakeTag(), ">> GetControllerCapabilities: cmdId=0x{:02X}", static_cast<uint8_t>(eCommandIds::FUNC_ID_GET_CONTROLLER_CAPABILITIES));
+	Log.AddL(eLogTypes::DVC, MakeTag(), ">> GetControllerCapabilities: cmdId=0x{:02X}", static_cast<uint8_t>(eCommandIds::FUNC_ID_GET_CONTROLLER_CAPABILITIES));
 	enqueue(frame);
 }
 
-void ZW_InitializeManager::DecodeControllerCapabilities(const std::vector<uint8_t>& payload)
+void ZW_InitializeManager::DecodeControllerCapabilities(const APIFrame::PayLoad& payload)
 {
 	// Response payload format (excluding command id):
 	// [0] Controller capabilities bitmask
@@ -95,7 +95,7 @@ void ZW_InitializeManager::DecodeControllerCapabilities(const std::vector<uint8_
 	module.IsSUCEnabled = (ControllerCapabilities & 0x10) != 0;
 	module.IsNoNodesIncluded = (ControllerCapabilities & 0x20) != 0;
 
-	Log.AddL(eLogTypes::INFO,
+	Log.AddL(eLogTypes::DVC,
 			 MakeTag(),
 			 "<< GetControllerCapabilities: caps=0x{:02X} secondary={} otherNet={} sisPresent={} sucEnabled={} noNodesIncluded={} (payloadLen={})",
 			 ControllerCapabilities,
@@ -105,6 +105,8 @@ void ZW_InitializeManager::DecodeControllerCapabilities(const std::vector<uint8_
 			 module.IsSUCEnabled,
 			 module.IsNoNodesIncluded,
 			 payload.size());
+	
+	NotifyUI(UINotify::ControllerChanged);
 }
 
 /////////////////////////////////////////////////
@@ -114,11 +116,11 @@ void ZW_InitializeManager::GetProtocolVersion()
 {
 	ZW_APIFrame frame;
 	frame.Make(eCommandIds::FUNC_ID_GET_PROTOCOL_VERSION);
-	Log.AddL(eLogTypes::INFO, MakeTag(), ">> GetProtocolVersion: cmdId=0x{:02X}", static_cast<uint8_t>(eCommandIds::FUNC_ID_GET_PROTOCOL_VERSION));
+	Log.AddL(eLogTypes::DVC, MakeTag(), ">> GetProtocolVersion: cmdId=0x{:02X}", static_cast<uint8_t>(eCommandIds::FUNC_ID_GET_PROTOCOL_VERSION));
 	enqueue(frame);
 }
 
-void ZW_InitializeManager::DecodeProtocolVersion(const std::vector<uint8_t>& payload)
+void ZW_InitializeManager::DecodeProtocolVersion(const APIFrame::PayLoad& payload)
 {
 	// Response payload format (excluding command id):
 	// [0] Protocol Type
@@ -147,7 +149,7 @@ void ZW_InitializeManager::DecodeProtocolVersion(const std::vector<uint8_t>& pay
 	else if (payload.size() > 6)
 		module.ProtocolGitCommitHash.assign(payload.begin() + 6, payload.end());
 
-	Log.AddL(eLogTypes::INFO,
+	Log.AddL(eLogTypes::DVC,
 			 MakeTag(),
 			 "<< GetProtocolVersion: type=0x{:02X} ver={}.{}.{} build={} hashLen={} (payloadLen={})",
 			 module.ProtocolType,
@@ -157,6 +159,8 @@ void ZW_InitializeManager::DecodeProtocolVersion(const std::vector<uint8_t>& pay
 			 module.AppFrameworkBuildNumber,
 			 module.ProtocolGitCommitHash.size(),
 			 payload.size());
+
+	NotifyUI(UINotify::ControllerChanged);
 }
 
 //////////////////////////////////////////////////
@@ -166,11 +170,11 @@ void ZW_InitializeManager::GetCapabilities()
 {
 	ZW_APIFrame frame;
 	frame.Make(eCommandIds::FUNC_ID_GET_CAPABILITIES);
-	Log.AddL(eLogTypes::INFO, MakeTag(), ">> GetCapabilities: cmdId=0x{:02X}", static_cast<uint8_t>(eCommandIds::FUNC_ID_GET_CAPABILITIES));
+	Log.AddL(eLogTypes::DVC, MakeTag(), ">> GetCapabilities: cmdId=0x{:02X}", static_cast<uint8_t>(eCommandIds::FUNC_ID_GET_CAPABILITIES));
 	enqueue(frame);
 }
 
-void ZW_InitializeManager::DecodeCapabilities(const std::vector<uint8_t>& payload)
+void ZW_InitializeManager::DecodeCapabilities(const APIFrame::PayLoad& payload)
 {
 	// Response payload format (excluding command id):
 	// [0] API version
@@ -206,7 +210,7 @@ void ZW_InitializeManager::DecodeCapabilities(const std::vector<uint8_t>& payloa
 		}
 	}
 
-	Log.AddL(eLogTypes::INFO, MakeTag(), "<< GetCapabilities: appVer={}.{} mfg=0x{:04X} prodType=0x{:04X} prodId=0x{:04X} cmdCount={} cmdList=[{}] (payloadLen={})",
+	Log.AddL(eLogTypes::DVC, MakeTag(), "<< GetCapabilities: appVer={}.{} mfg=0x{:04X} prodType=0x{:04X} prodId=0x{:04X} cmdCount={} cmdList=[{}] (payloadLen={})",
 			 module.AppVersion,
 			 module.AppRevision,
 			 module.ManufacturerId,
@@ -215,6 +219,8 @@ void ZW_InitializeManager::DecodeCapabilities(const std::vector<uint8_t>& payloa
 			 module.ApiCommands.size(),
 			 oss.str(),
 			 payload.size());
+
+	NotifyUI(UINotify::ControllerChanged);
 }
 
 /////////////////////////////////////////////////
@@ -224,11 +230,11 @@ void ZW_InitializeManager::GetNetworkIdsFromMemory()
 {
 	ZW_APIFrame frame;
 	frame.Make(eCommandIds::ZW_API_GET_NETWORK_IDS_FROM_MEMORY);
-	Log.AddL(eLogTypes::INFO, MakeTag(), ">> GetNetworkIdsFromMemory: cmdId=0x{:02X}", static_cast<uint8_t>(eCommandIds::ZW_API_GET_NETWORK_IDS_FROM_MEMORY));
+	Log.AddL(eLogTypes::DVC, MakeTag(), ">> GetNetworkIdsFromMemory: cmdId=0x{:02X}", static_cast<uint8_t>(eCommandIds::ZW_API_GET_NETWORK_IDS_FROM_MEMORY));
 	enqueue(frame);
 }
 
-void ZW_InitializeManager::DecodeNetworkIdsFromMemory(const std::vector<uint8_t>& payload)
+void ZW_InitializeManager::DecodeNetworkIdsFromMemory(const APIFrame::PayLoad& payload)
 {
 	// Response payload format (excluding command id):
 	// [0..3] HomeID (4 bytes)
@@ -246,7 +252,9 @@ void ZW_InitializeManager::DecodeNetworkIdsFromMemory(const std::vector<uint8_t>
 	else
 		module.NodeId = payload[4];
 
-	Log.AddL(eLogTypes::INFO, MakeTag(), "<< GetNetworkIdsFromMemory: homeId=0x{:08X} nodeId={} (payloadLen={})", module.HomeId, module.NodeId, payload.size());
+	Log.AddL(eLogTypes::DVC, MakeTag(), "<< GetNetworkIdsFromMemory: homeId=0x{:08X} nodeId={} (payloadLen={})", module.HomeId, module.NodeId, payload.size());
+
+	NotifyUI(UINotify::ControllerChanged);
 }
 
 //////////////////////////////////////////////////
@@ -256,11 +264,11 @@ void ZW_InitializeManager::GetLibraryVersion()
 {
 	ZW_APIFrame frame;
 	frame.Make(eCommandIds::FUNC_ID_GET_LIBRARY_VERSION);
-	Log.AddL(eLogTypes::INFO, MakeTag(), ">> GetLibraryVersion: cmdId=0x{:02X}", static_cast<uint8_t>(eCommandIds::FUNC_ID_GET_LIBRARY_VERSION));
+	Log.AddL(eLogTypes::DVC, MakeTag(), ">> GetLibraryVersion: cmdId=0x{:02X}", static_cast<uint8_t>(eCommandIds::FUNC_ID_GET_LIBRARY_VERSION));
 	enqueue(frame);
 }
 
-void ZW_InitializeManager::DecodeLibraryVersion(const std::vector<uint8_t>& payload)
+void ZW_InitializeManager::DecodeLibraryVersion(const APIFrame::PayLoad& payload)
 {
 	// Spec (4.3.11): 12-byte version string (may not be NUL-terminated, padded with NUL)
 	// followed by 1 byte library type.
@@ -295,7 +303,9 @@ void ZW_InitializeManager::DecodeLibraryVersion(const std::vector<uint8_t>& payl
 		}
 	}
 
-	Log.AddL(eLogTypes::INFO, MakeTag(), "<< GetLibraryVersion: verStr='{}' libType=0x{:02X} protoParsed={}.{} (payloadLen={})", module.LibraryVersion, module.libraryType, module.ProtocolMajor, module.ProtocolMinor, payload.size());
+	Log.AddL(eLogTypes::DVC, MakeTag(), "<< GetLibraryVersion: verStr='{}' libType=0x{:02X} protoParsed={}.{} (payloadLen={})", module.LibraryVersion, module.libraryType, module.ProtocolMajor, module.ProtocolMinor, payload.size());
+
+	NotifyUI(UINotify::ControllerChanged);
 }
 
 //////////////////////////////////////////////////
@@ -305,15 +315,15 @@ void ZW_InitializeManager::GetLibraryType()
 {
 	ZW_APIFrame frame;
 	frame.Make(eCommandIds::FUNC_ID_GET_LIBRARY_TYPE);
-	Log.AddL(eLogTypes::INFO, MakeTag(), ">> GetLibraryType: cmdId=0x{:02X}", static_cast<uint8_t>(eCommandIds::FUNC_ID_GET_LIBRARY_TYPE));
+	Log.AddL(eLogTypes::DVC, MakeTag(), ">> GetLibraryType: cmdId=0x{:02X}", static_cast<uint8_t>(eCommandIds::FUNC_ID_GET_LIBRARY_TYPE));
 	enqueue(frame);
 }
 
-void ZW_InitializeManager::DecodeLibraryType(const std::vector<uint8_t>& payload)
+void ZW_InitializeManager::DecodeLibraryType(const APIFrame::PayLoad& payload)
 {
 	if (payload.empty())
 	{
-		Log.AddL(eLogTypes::INFO, MakeTag(), "<< LibraryType (invalid payload)");
+		Log.AddL(eLogTypes::DVC, MakeTag(), "<< LibraryType (invalid payload)");
 		return;
 	}
 
@@ -332,5 +342,7 @@ void ZW_InitializeManager::DecodeLibraryType(const std::vector<uint8_t>& payload
 		break;
 	}
 
-	Log.AddL(eLogTypes::INFO, MakeTag(), "<< GetLibraryType: type=0x{:02X} ({}) (payloadLen={})", module.libraryType, typeStr, payload.size());
+	Log.AddL(eLogTypes::DVC, MakeTag(), "<< GetLibraryType: type=0x{:02X} ({}) (payloadLen={})", module.libraryType, typeStr, payload.size());
+
+	NotifyUI(UINotify::ControllerChanged);
 }

@@ -19,7 +19,7 @@ public:
 		activeNode(nullptr)
 	{};
 
-	void Start(uint8_t nodeid)
+	void Start(node_t nodeid)
 	{
 		ZW_Node* node = nodes.GetOrCreate(nodeid, enqueue);
 		if (!node) return;
@@ -49,7 +49,7 @@ public:
 		}
 	}
 
-	bool Done(uint8_t nodeid) const
+	bool Done(node_t nodeid) const
 	{
 		const ZW_Node* node = nodes.Get(nodeid);
 		if (node)
@@ -65,7 +65,7 @@ public:
 
 	bool HandleFrame(const ZW_APIFrame& frame)
 	{
-		Log.AddL(eLogTypes::DBG, MakeTag(), "HandleFrame called for node {}: {}", activeNode ? activeNode->NodeId : 0, frame.Info());
+		Log.AddL(eLogTypes::DBG, MakeTag(), "HandleFrame called for node {}: {}", activeNode ? activeNode->NodeId : (node_t)0, frame.Info());
 
 		switch (frame.APICmd.CmdId)
 		{
@@ -93,8 +93,8 @@ public:
 
 	bool HandleFrameTimeout(const ZW_APIFrame& frame)
 	{
-		Log.AddL(eLogTypes::INFO, MakeTag(), "HandleFrameTimeout called for node {}: {}",
-				 activeNode ? activeNode->NodeId : 0, frame.Info());
+		Log.AddL(eLogTypes::DVC, MakeTag(), "HandleFrameTimeout called for node {}: {}",
+				 activeNode ? activeNode->NodeId : (node_t)0, frame.Info());
 		return false;
 	}
 
@@ -137,9 +137,9 @@ private:
 	ZW_Nodes& nodes;
 	ZW_Node* activeNode = nullptr;
 
-	void RequestNodeProtocolInfo(uint8_t nodeid);
-	void DecodeNodeProtocolInfo(uint8_t nodeid, const std::vector<uint8_t>& payload);
-	void RequestNodeInformation(uint8_t nodeid);
-	void DecodeNodeInfo(const std::vector<uint8_t>& payload);
+	void RequestNodeProtocolInfo(node_t nodeid);
+	void DecodeNodeProtocolInfo(node_t nodeid, const APIFrame::PayLoad& payload);
+	void RequestNodeInformation(node_t nodeid);
+	void DecodeNodeInfo(const APIFrame::PayLoad& payload);
 };
 

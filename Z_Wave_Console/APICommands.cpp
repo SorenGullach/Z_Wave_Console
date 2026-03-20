@@ -692,9 +692,9 @@ APICommand APICommands[256] =
 	// 0xEA
 	{ eCommandIds::FUNC_ID_GET_MANUFACTURER_INFO, eFlowType::AckWithResponse
 	#ifdef _DEBUG
-	, "FUNC_ID_GET_MANUFACTURER_INFO", "Get Manufacturer Info Command"
+	, "FUNC_ID_GET_MANUFACTURER_INFO", "Get Manufacturer DVC Command"
 	#endif
-	}, // Get Manufacturer Info Command
+	}, // Get Manufacturer DVC Command
 	// 0xEB
 	{ eCommandIds::ZW_API_NONCE_UPDATE, eFlowType::Unsolicited
 	#ifdef _DEBUG

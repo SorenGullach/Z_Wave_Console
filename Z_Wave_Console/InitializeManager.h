@@ -1,12 +1,14 @@
 #pragma once
 
+#include <cstdint>
+#include <iterator>
+#include <vector>
+
 #include "Logging.h"
 #include "Module.h"
 #include "APICommands.h"
 #include "APIFrame.h"
-#include <cstdint>
-#include <iterator>
-#include <vector>
+#include "Notify.h"
 
 class ZW_InitializeManager
 {
@@ -54,11 +56,12 @@ public:
 		const size_t count = std::size(InitSequence);
 		if (currentStep >= count || frame.APICmd.CmdId != InitSequence[currentStep].CmdId)
 		{
-			Log.AddL(eLogTypes::INFO, MakeTag(), "<< Unhandled Initialization command: {}", frame.Info());
+			Log.AddL(eLogTypes::DVC, MakeTag(), "<< Unhandled Initialization command: {}", frame.Info());
 			return false;
 		}
 
 		module.InitializationState = ZW_Module::eInitializationState::Paused;
+
 		return true;
 	}
 
@@ -71,49 +74,49 @@ private:
 	// GET INIT DATA (0x02)
 	// ------------------------------------------------------------
 	void GetInitData();
-	void DecodeInitData(const std::vector<uint8_t>& payload);
+	void DecodeInitData(const APIFrame::PayLoad& payload);
 
 	// ------------------------------------------------------------
 	// GET CONTROLLER CAPABILITIES (0x05)
 	// ------------------------------------------------------------
 	void GetControllerCapabilities();
-	void DecodeControllerCapabilities(const std::vector<uint8_t>& payload);
+	void DecodeControllerCapabilities(const APIFrame::PayLoad& payload);
 
 	// ------------------------------------------------------------
 	// GET PROTOCOL VERSION (0x09)
 	// ------------------------------------------------------------
 	void GetProtocolVersion();
-	void DecodeProtocolVersion(const std::vector<uint8_t>& payload);
+	void DecodeProtocolVersion(const APIFrame::PayLoad& payload);
 
 	// ------------------------------------------------------------
 	// GET CAPABILITIES (0x07)
 	// ------------------------------------------------------------
 	void GetCapabilities();
-	void DecodeCapabilities(const std::vector<uint8_t>& payload);
+	void DecodeCapabilities(const APIFrame::PayLoad& payload);
 
 	// ------------------------------------------------------------
 	// GET NETWORK IDS FROM MEMORY (0x20)
 	// ------------------------------------------------------------
 	void GetNetworkIdsFromMemory();
-	void DecodeNetworkIdsFromMemory(const std::vector<uint8_t>& payload);
+	void DecodeNetworkIdsFromMemory(const APIFrame::PayLoad& payload);
 
 	// ------------------------------------------------------------
 	// LIBRARY VERSION
 	// ------------------------------------------------------------
 	void GetLibraryVersion();
-	void DecodeLibraryVersion(const std::vector<uint8_t>& payload);
+	void DecodeLibraryVersion(const APIFrame::PayLoad& payload);
 
 	// ------------------------------------------------------------
 	// LIBRARY TYPE
 	// ------------------------------------------------------------
 	void GetLibraryType();
-	void DecodeLibraryType(const std::vector<uint8_t>& payload);
+	void DecodeLibraryType(const APIFrame::PayLoad& payload);
 
 	// ===============================================================
 	// Init sequence (table-driven)
 	// ===============================================================
 	using InitAction = void (ZW_InitializeManager::*)();
-	using InitDecodeAction = void (ZW_InitializeManager::*)(const std::vector<uint8_t>& payload);
+	using InitDecodeAction = void (ZW_InitializeManager::*)(const APIFrame::PayLoad& payload);
 
 	struct InitStep
 	{

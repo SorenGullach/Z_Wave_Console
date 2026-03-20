@@ -15,8 +15,8 @@ public:
 		enqueue(enqueue)
 	{}
 
-	void HandleCCFrame(const std::vector<uint8_t>& payload);
-	void HandleCCFrameTimeout(const std::vector<uint8_t>& payload);
+	void HandleCCFrame(const APIFrame::PayLoad& payload);
+	void HandleCCFrameTimeout(const APIFrame::PayLoad& payload);
 
 private:
 	EnqueueFn enqueue;

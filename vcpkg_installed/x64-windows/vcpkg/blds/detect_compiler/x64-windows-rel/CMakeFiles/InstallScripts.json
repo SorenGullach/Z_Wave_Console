@@ -1,0 +1,7 @@
+{
+	"InstallScripts" : 
+	[
+		"C:/Projects/Z_Wave/vcpkg_installed/x64-windows/vcpkg/blds/detect_compiler/x64-windows-rel/cmake_install.cmake"
+	],
+	"Parallel" : false
+}

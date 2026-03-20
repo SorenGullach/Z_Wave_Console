@@ -131,14 +131,16 @@
     <ClCompile Include="CCDispatcher.cpp" />
     <ClCompile Include="Device.cpp" />
     <ClCompile Include="InterviewManager.cpp" />
+    <ClCompile Include="JsonUtils.cpp" />
     <ClCompile Include="Module.cpp" />
     <ClCompile Include="InitializeManager.cpp" />
     <ClCompile Include="Interface.cpp" />
     <ClCompile Include="Node.cpp" />
     <ClCompile Include="Nodes.cpp" />
     <ClCompile Include="SerialPort.cpp" />
+    <ClCompile Include="TcpServer.cpp" />
     <ClCompile Include="Z_Wave.cpp" />
-    <ClCompile Include="Z_Wave_Console.cpp" />
+    <ClCompile Include="Z_Wave_TCP.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="APICommands.h" />
@@ -149,12 +151,17 @@
     <ClInclude Include="Device.h" />
     <ClInclude Include="InitializeManager.h" />
     <ClInclude Include="InterviewManager.h" />
+    <ClInclude Include="JSONConversions.h" />
+    <ClInclude Include="JsonUtils.h" />
     <ClInclude Include="Module.h" />
     <ClInclude Include="Interface.h" />
     <ClInclude Include="Logging.h" />
     <ClInclude Include="Node.h" />
+    <ClInclude Include="NodeId.h" />
     <ClInclude Include="Nodes.h" />
+    <ClInclude Include="Notify.h" />
     <ClInclude Include="SerialPort.h" />
+    <ClInclude Include="TcpServer.h" />
     <ClInclude Include="Z_Wave.h" />
   </ItemGroup>
   <ItemGroup>

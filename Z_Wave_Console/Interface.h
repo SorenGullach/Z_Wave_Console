@@ -25,22 +25,23 @@
 // NOTE: Derived classes implement `OnFrameReceived()` to route responses.
 // ===============================================================
 
-class ZW_Interface
+class Interface
 {
 public:
-	ZW_Interface();
-	~ZW_Interface()	{ ClosePort(); }
+	Interface();
+	~Interface() { ClosePort(); }
 
 	bool OpenPort(const std::string& portname);
 	void ClosePort();
+	bool IsSerialOpen() const;
 
 	// Enqueue a command to be sent
-	void Enqueue(const ZW_APIFrame& frame);
+	void Enqueue(const APIFrame& frame);
 protected:
 
-	virtual bool OnFrameReceived(const ZW_APIFrame& frame);
-	virtual bool OnFrameReceivedTimeout(const ZW_APIFrame& frame);
-	
+	virtual bool OnFrameReceived(const APIFrame& frame);
+	virtual bool OnFrameReceivedTimeout(const APIFrame& frame);
+
 private:
 	SerialPort serial;
 	mutable std::mutex serialMutex;
@@ -59,9 +60,10 @@ private:
 		WaitingForCallback
 	};
 
-	struct Command
+	struct CommandFrame
 	{
-		ZW_APIFrame cmd;
+		APIFrame cmd;
+		inline eFlowType Flow() { return cmd.APICmd.Flow; };
 		int attempts = 0; // attemts per cmd
 		std::vector<uint8_t> FrameBytes;
 	};
@@ -73,20 +75,18 @@ private:
 	const std::chrono::milliseconds coolDown{ 50 };
 
 	std::mutex queueMutex;
-	std::queue<Command> cmdQueue;
+	std::queue<CommandFrame> cmdQueue;
 
 	const int maxRetries = 3;
-	Command LastCmd;
+	CommandFrame LastCmd;
 	int consecutiveChecksumErrors = 0;
 
-	bool TryDequeueNext(Command& out);
+	bool TryDequeueNext(CommandFrame& out);
 
 	// Back-off according to Tn = 100 + n * 1000 ms (Section 3.4.1)
 	std::chrono::milliseconds BackoffDelay(int attempt) const;
 
-	void SendCommand(Command& cmd);
-
-	bool IsSerialOpen() const;
+	void SendCommand(CommandFrame& cmd);
 
 	int SerialRead(uint8_t* buffer, int size);
 	int SerialWrite(const uint8_t* buffer, int size);
@@ -109,5 +109,5 @@ private:
 	bool ReadFrameWithTimeout(std::vector<uint8_t>& buffer);
 	void ProcessValidFrame(const std::vector<uint8_t>& buffer);
 
-	void Run();
+	void ProcessSerialCommunication();
 };

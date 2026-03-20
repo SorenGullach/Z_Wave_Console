@@ -209,6 +209,15 @@ extern APICommand APICommands[256];
 
 enum class ApplicationUpdateEvent : uint8_t
 {
+	UPDATE_STATE_NODE_INFO_RECEIVED = 0x81, // Legacy NIF: [81][NodeID][Len][Info...]
+	UPDATE_STATE_NODE_INFO_REQ_DONE = 0x82, // RequestNodeInfo ACK
+	UPDATE_STATE_NODE_INFO_REQ_FAILED = 0x83, // RequestNodeInfo NAK
+	UPDATE_STATE_NODE_ADDED = 0x84, // Node added (legacy format)
+	UPDATE_STATE_NODE_REMOVED = 0x85  // Node removed
+};
+
+enum class ApplicationUpdateEvent500 : uint8_t
+{
 	UPDATE_STATE_SUC_ID = 0x10, // SIS Node ID updated
 	UPDATE_STATE_DELETE_DONE = 0x20, // Node deleted from network
 	UPDATE_STATE_NEW_ID_ASSIGNED = 0x40, // New node added to network
@@ -216,7 +225,7 @@ enum class ApplicationUpdateEvent : uint8_t
 	UPDATE_STATE_NODE_INFO_REQ_FAILED = 0x81, // RequestNodeInformation not acknowledged
 	UPDATE_STATE_NODE_INFO_REQ_DONE = 0x82, // RequestNodeInformation acknowledged
 	UPDATE_STATE_NOP_POWER_RECEIVED = 0x83, // NOP Power received
-	UPDATE_STATE_NODE_INFO_RECEIVED = 0x84, // Node Information Frame received
+	UPDATE_STATE_NODE_INFO_RECEIVED = 0x84, // Full NIF (Basic/Generic/Specific/CCs)
 	UPDATE_STATE_NODE_INFO_SMARTSTART_HOMEID_RECEIVED = 0x85, // SmartStart Prime (Z-Wave)
 	UPDATE_STATE_INCLUDED_NODE_INFO_RECEIVED = 0x86, // SmartStart Included Node Info (ZW or ZWLR)
 	UPDATE_STATE_NODE_INFO_SMARTSTART_HOMEID_RECEIVED_LR = 0x87 // SmartStart Prime (Z-Wave LR)
@@ -226,21 +235,66 @@ inline std::string ToString(ApplicationUpdateEvent event)
 {
 	switch (event)
 	{
-		case ApplicationUpdateEvent::UPDATE_STATE_SUC_ID: return "UPDATE_STATE_SUC_ID";
-		case ApplicationUpdateEvent::UPDATE_STATE_DELETE_DONE: return "UPDATE_STATE_DELETE_DONE";
-		case ApplicationUpdateEvent::UPDATE_STATE_NEW_ID_ASSIGNED: return "UPDATE_STATE_NEW_ID_ASSIGNED";
-		case ApplicationUpdateEvent::UPDATE_STATE_ROUTING_PENDING: return "UPDATE_STATE_ROUTING_PENDING";
-		case ApplicationUpdateEvent::UPDATE_STATE_NODE_INFO_REQ_FAILED: return "UPDATE_STATE_NODE_INFO_REQ_FAILED";
-		case ApplicationUpdateEvent::UPDATE_STATE_NODE_INFO_REQ_DONE: return "UPDATE_STATE_NODE_INFO_REQ_DONE";
-		case ApplicationUpdateEvent::UPDATE_STATE_NOP_POWER_RECEIVED: return "UPDATE_STATE_NOP_POWER_RECEIVED";
-		case ApplicationUpdateEvent::UPDATE_STATE_NODE_INFO_RECEIVED: return "UPDATE_STATE_NODE_INFO_RECEIVED";
-		case ApplicationUpdateEvent::UPDATE_STATE_NODE_INFO_SMARTSTART_HOMEID_RECEIVED: return "UPDATE_STATE_NODE_INFO_SMARTSTART_HOMEID_RECEIVED";
-		case ApplicationUpdateEvent::UPDATE_STATE_INCLUDED_NODE_INFO_RECEIVED: return "UPDATE_STATE_INCLUDED_NODE_INFO_RECEIVED";
-		case ApplicationUpdateEvent::UPDATE_STATE_NODE_INFO_SMARTSTART_HOMEID_RECEIVED_LR: return "UPDATE_STATE_NODE_INFO_SMARTSTART_HOMEID_RECEIVED_LR";
-		default: return "UNKNOWN";
+	case ApplicationUpdateEvent::UPDATE_STATE_NODE_INFO_RECEIVED:
+		return "UPDATE_STATE_NODE_INFO_RECEIVED"; // 0x81
+
+	case ApplicationUpdateEvent::UPDATE_STATE_NODE_INFO_REQ_DONE:
+		return "UPDATE_STATE_NODE_INFO_REQ_DONE"; // 0x82
+
+	case ApplicationUpdateEvent::UPDATE_STATE_NODE_INFO_REQ_FAILED:
+		return "UPDATE_STATE_NODE_INFO_REQ_FAILED"; // 0x83
+
+	case ApplicationUpdateEvent::UPDATE_STATE_NODE_ADDED:
+		return "UPDATE_STATE_NODE_ADDED"; // 0x84
+
+	case ApplicationUpdateEvent::UPDATE_STATE_NODE_REMOVED:
+		return "UPDATE_STATE_NODE_REMOVED"; // 0x85
+
+	default:
+		return "UNKNOWN_300_EVENT";
 	}
-	
-	return "UNKNOWN";
+}
+
+inline std::string ToString(ApplicationUpdateEvent500 event)
+{
+	switch (event)
+	{
+	case ApplicationUpdateEvent500::UPDATE_STATE_SUC_ID:
+		return "UPDATE_STATE_SUC_ID"; // 0x10
+
+	case ApplicationUpdateEvent500::UPDATE_STATE_DELETE_DONE:
+		return "UPDATE_STATE_DELETE_DONE"; // 0x20
+
+	case ApplicationUpdateEvent500::UPDATE_STATE_NEW_ID_ASSIGNED:
+		return "UPDATE_STATE_NEW_ID_ASSIGNED"; // 0x40
+
+	case ApplicationUpdateEvent500::UPDATE_STATE_ROUTING_PENDING:
+		return "UPDATE_STATE_ROUTING_PENDING"; // 0x80
+
+	case ApplicationUpdateEvent500::UPDATE_STATE_NODE_INFO_REQ_FAILED:
+		return "UPDATE_STATE_NODE_INFO_REQ_FAILED"; // 0x81
+
+	case ApplicationUpdateEvent500::UPDATE_STATE_NODE_INFO_REQ_DONE:
+		return "UPDATE_STATE_NODE_INFO_REQ_DONE"; // 0x82
+
+	case ApplicationUpdateEvent500::UPDATE_STATE_NOP_POWER_RECEIVED:
+		return "UPDATE_STATE_NOP_POWER_RECEIVED"; // 0x83
+
+	case ApplicationUpdateEvent500::UPDATE_STATE_NODE_INFO_RECEIVED:
+		return "UPDATE_STATE_NODE_INFO_RECEIVED"; // 0x84
+
+	case ApplicationUpdateEvent500::UPDATE_STATE_NODE_INFO_SMARTSTART_HOMEID_RECEIVED:
+		return "UPDATE_STATE_NODE_INFO_SMARTSTART_HOMEID_RECEIVED"; // 0x85
+
+	case ApplicationUpdateEvent500::UPDATE_STATE_INCLUDED_NODE_INFO_RECEIVED:
+		return "UPDATE_STATE_INCLUDED_NODE_INFO_RECEIVED"; // 0x86
+
+	case ApplicationUpdateEvent500::UPDATE_STATE_NODE_INFO_SMARTSTART_HOMEID_RECEIVED_LR:
+		return "UPDATE_STATE_NODE_INFO_SMARTSTART_HOMEID_RECEIVED_LR"; // 0x87
+
+	default:
+		return "UNKNOWN_500_EVENT";
+	}
 }
 
 inline std::string ToString(eCommandIds command)

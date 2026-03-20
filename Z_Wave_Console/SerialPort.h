@@ -2,6 +2,16 @@
 #include <string>
 #include <vector>
 #include <cstdint>
+
+// Prevent `windows.h` from including the legacy `winsock.h`.
+// This project uses Winsock2 (`winsock2.h`) elsewhere (see `TcpServer.h`).
+#ifndef WIN32_LEAN_AND_MEAN
+#define WIN32_LEAN_AND_MEAN
+#endif
+#ifndef _WINSOCKAPI_
+#define _WINSOCKAPI_
+#endif
+
 #include <windows.h>
 
 class SerialPort
