@@ -4,244 +4,543 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:helpers="clr-namespace:Z_Wave_UI.Helpers"
-        xmlns:local="clr-namespace:Z_Wave_UI"
+        xmlns:local="clr-namespace:Z_Wave_UI" xmlns:viewmodels="clr-namespace:Z_Wave_UI.ViewModels" d:DataContext="{d:DesignInstance Type=viewmodels:MainViewModel}"
         mc:Ignorable="d"
-        Title="MainWindow" Height="auto" Width="auto" MinHeight="600" MinWidth="800">
-    <Grid>
-		<Grid.RowDefinitions>
-			<RowDefinition Height="*" />
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="Auto" />
-		</Grid.RowDefinitions>
+        Title="Z‑Wave Controller"
+        Background="#F5F7FA"
+        MinHeight="600" MinWidth="900">
 
-        <TabControl Grid.Row="0" >
+    <Window.Resources>
+
+        <!-- Vibrant Color Palette (Colors) -->
+        <Color x:Key="AccentBlueColor">#1E88E5</Color>
+        <Color x:Key="AccentCyanColor">#00BCD4</Color>
+        <Color x:Key="AccentOrangeColor">#FF9800</Color>
+
+        <!-- Brushes (use these for BorderBrush / Foreground / Background setters) -->
+        <SolidColorBrush x:Key="AccentBlueBrush" Color="{StaticResource AccentBlueColor}" />
+        <SolidColorBrush x:Key="AccentCyanBrush" Color="{StaticResource AccentCyanColor}" />
+        <SolidColorBrush x:Key="AccentOrangeBrush" Color="{StaticResource AccentOrangeColor}" />
+
+        <SolidColorBrush x:Key="CardBackground" Color="#FFFFFF"/>
+        <SolidColorBrush x:Key="CardBorder" Color="#D0D7E2"/>
+        <SolidColorBrush x:Key="TagBackground" Color="#E3F2FD"/>
+        <SolidColorBrush x:Key="TagBorder" Color="#90CAF9"/>
+
+        <!-- Global Text Style -->
+        <Style TargetType="TextBlock">
+            <Setter Property="Foreground" Value="#263238"/>
+            <Setter Property="FontSize" Value="13"/>
+        </Style>
+
+        <!-- Vibrant GroupBox -->
+        <Style TargetType="GroupBox">
+            <Setter Property="Margin" Value="0,0,8,12"/>
+            <Setter Property="Padding" Value="0"/>
+            <Setter Property="BorderBrush" Value="{StaticResource CardBorder}"/>
+            <Setter Property="BorderThickness" Value="4"/>
+            <Setter Property="Background" Value="{StaticResource CardBackground}"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="GroupBox">
+                        <Grid>
+                            <Border Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="6"
+                                SnapsToDevicePixels="True">
+                                <Border.Effect>
+                                    <DropShadowEffect BlurRadius="8" ShadowDepth="2" Opacity="0.15"/>
+                                </Border.Effect>
+                            </Border>
+
+                            <StackPanel>
+                                <!-- Vibrant Header -->
+                                <Border Padding="8"
+                                    CornerRadius="6,6,0,0">
+                                    <Border.Background>
+                                        <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                                            <GradientStop Color="{StaticResource AccentBlueColor}" Offset="0"/>
+                                            <GradientStop Color="{StaticResource AccentCyanColor}" Offset="1"/>
+                                        </LinearGradientBrush>
+                                    </Border.Background>
+                                    <TextBlock Text="{TemplateBinding Header}"
+                                           Foreground="White"
+                                           FontWeight="Bold"
+                                           FontSize="14"/>
+                                </Border>
+
+                                <ContentPresenter Margin="12"/>
+                            </StackPanel>
+                        </Grid>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Vibrant Tag Style -->
+        <Style x:Key="TagStyle" TargetType="Border">
+            <Setter Property="Background" Value="{StaticResource TagBackground}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource TagBorder}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="CornerRadius" Value="4"/>
+            <Setter Property="Padding" Value="4,2"/>
+            <Setter Property="Margin" Value="3"/>
+            <Setter Property="Effect">
+                <Setter.Value>
+                    <DropShadowEffect BlurRadius="4" ShadowDepth="1" Opacity="0.2"/>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Highlighted Values -->
+        <Style x:Key="ValueHighlight" TargetType="TextBlock">
+            <Setter Property="Foreground" Value="{StaticResource AccentBlueBrush}"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+        </Style>
+
+        <SolidColorBrush x:Key="SomeBorderBrush" Color="#FFD0D7E2" />
+
+        <!-- Vibrant Button with Rounded Corners -->
+        <Style TargetType="Button">
+            <Setter Property="Padding" Value="8,4"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="Background">
+                <Setter.Value>
+                    <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                        <GradientStop Color="#1E88E5" Offset="0"/>
+                        <GradientStop Color="#00BCD4" Offset="1"/>
+                    </LinearGradientBrush>
+                </Setter.Value>
+            </Setter>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Effect">
+                <Setter.Value>
+                    <DropShadowEffect BlurRadius="6" ShadowDepth="2" Opacity="0.25"/>
+                </Setter.Value>
+            </Setter>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border
+                            
+                            Background="{TemplateBinding Background}"
+                            CornerRadius="4"
+                            SnapsToDevicePixels="True" Padding="4,4,4,4">
+                            <ContentPresenter
+                                HorizontalAlignment="Center"
+                                VerticalAlignment="Center"
+                                RecognizesAccessKey="True"/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Vibrant Checkbox -->
+        <Style TargetType="CheckBox">
+            <Setter Property="Foreground" Value="#263238"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Margin" Value="0,4,12,0"/>
+        </Style>
+
+        <!-- Level Tag Style -->
+        <Style x:Key="LevelTagStyle" TargetType="Border">
+            <Setter Property="CornerRadius" Value="4"/>
+            <Setter Property="Padding" Value="6,2"/>
+            <Setter Property="Margin" Value="3"/>
+            <Setter Property="Background" Value="#E3F2FD"/>
+            <Setter Property="BorderBrush" Value="#64B5F6"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Effect">
+                <Setter.Value>
+                    <DropShadowEffect BlurRadius="4" ShadowDepth="1" Opacity="0.2"/>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- DataGrid Vibrant Theme -->
+        <Style TargetType="DataGrid">
+            <Setter Property="Background" Value="White"/>
+            <Setter Property="BorderBrush" Value="#D0D7E2"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="RowBackground" Value="#FAFAFA"/>
+            <Setter Property="AlternatingRowBackground" Value="#F0F4F8"/>
+            <Setter Property="HorizontalGridLinesBrush" Value="#CFD8DC"/>
+            <Setter Property="VerticalGridLinesBrush" Value="#CFD8DC"/>
+            <Setter Property="Effect">
+                <Setter.Value>
+                    <DropShadowEffect BlurRadius="8" ShadowDepth="2" Opacity="0.15"/>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Header Style -->
+        <Style TargetType="DataGridColumnHeader">
+            <Setter Property="Background">
+                <Setter.Value>
+                    <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                        <GradientStop Color="#1E88E5" Offset="0"/>
+                        <GradientStop Color="#00BCD4" Offset="1"/>
+                    </LinearGradientBrush>
+                </Setter.Value>
+            </Setter>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="Padding" Value="6"/>
+        </Style>
+
+        <!-- Log Level Coloring -->
+        <Style TargetType="TextBlock" x:Key="LevelColorizer">
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding Level}" Value="ERR">
+                    <Setter Property="Foreground" Value="#E53935"/>
+                    <Setter Property="FontWeight" Value="Bold"/>
+                </DataTrigger>
+                <DataTrigger Binding="{Binding Level}" Value="WRN">
+                    <Setter Property="Foreground" Value="#FB8C00"/>
+                    <Setter Property="FontWeight" Value="Bold"/>
+                </DataTrigger>
+                <DataTrigger Binding="{Binding Level}" Value="INF">
+                    <Setter Property="Foreground" Value="#1E88E5"/>
+                </DataTrigger>
+                <DataTrigger Binding="{Binding Level}" Value="DBG">
+                    <Setter Property="Foreground" Value="#6B7A89"/>
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+
+    </Window.Resources>
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <!-- Tabs -->
+        <TabControl Grid.Row="0" Background="#F5F7FA">
+            <TabItem Header="Nodes">
+                <Grid Margin="12">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" MinWidth="200"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <TreeView Grid.Column="0" ItemsSource="{Binding NodeList.Tree}">
+                        <TreeView.Resources>
+
+                            <!-- Floor Template -->
+                            <HierarchicalDataTemplate DataType="{x:Type viewmodels:FloorGroup}" ItemsSource="{Binding Rooms}">
+                                <TextBlock Text="{Binding Name}" FontWeight="Bold" />
+                            </HierarchicalDataTemplate>
+
+                            <!-- Room Template -->
+                            <HierarchicalDataTemplate DataType="{x:Type viewmodels:RoomGroup}" ItemsSource="{Binding Nodes}">
+                                <TextBlock Text="{Binding Name}" />
+                            </HierarchicalDataTemplate>
+
+                            <!-- Node Template -->
+                            <DataTemplate DataType="{x:Type viewmodels:NodeListInfo}">
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock Text="{Binding NodeId}" FontWeight="Bold" />
+                                    <TextBlock Text=" (" Foreground="Gray"/>
+                                    <TextBlock Text="{Binding State}" Foreground="Gray"/>
+                                    <TextBlock Text=")" Foreground="Gray"/>
+                                    <TextBlock Text="{Binding InterviewState}" Foreground="Gray"/>
+                                    <TextBlock Text=")" Foreground="Gray"/>
+                                </StackPanel>
+                            </DataTemplate>
+
+                        </TreeView.Resources>
+                    </TreeView>
+                    <ScrollViewer Grid.Column="1" VerticalScrollBarVisibility="Auto" DataContext="{Binding NodeInfo}">
+                        <Grid Margin="12">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <GroupBox >
+
+                            </GroupBox>
+                        </Grid>
+                    </ScrollViewer>
+                </Grid>
+            </TabItem>
             <TabItem Header="Module info" DataContext="{Binding ModuleInfo}">
                 <ScrollViewer VerticalScrollBarVisibility="Auto">
-                    <Grid Margin="8">
+                    <Grid Margin="12">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*" />
                             <ColumnDefinition Width="*" />
                         </Grid.ColumnDefinitions>
+
                         <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto" />
-                            <RowDefinition Height="Auto" />
-                            <RowDefinition Height="Auto" />
-                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
                         </Grid.RowDefinitions>
 
-                        <GroupBox Header="Status" Grid.Row="0" Grid.Column="0" Margin="0,0,8,8">
-                            <StackPanel Margin="8">
+                        <!-- STATUS -->
+                        <GroupBox Header="Status" Grid.Row="0" Grid.Column="0">
+                            <StackPanel>
                                 <StackPanel Orientation="Horizontal">
-                                    <TextBlock Text="Initialization:" Width="120" />
-                                    <TextBlock Text="{Binding InitializationState}" />
+                                    <TextBlock Text="Initialization:" Width="120"/>
+                                    <TextBlock Text="{Binding InitializationState}" 
+                                               Foreground="#4A90E2" FontWeight="Bold"/>
                                 </StackPanel>
                             </StackPanel>
                         </GroupBox>
 
-                        <GroupBox Header="API" Grid.Row="0" Grid.Column="1" Margin="0,0,0,8">
-                            <StackPanel Margin="8">
+                        <!-- API -->
+                        <GroupBox Header="API" Grid.Row="0" Grid.Column="1">
+                            <StackPanel>
                                 <StackPanel Orientation="Horizontal">
-                                    <TextBlock Text="Version:" Width="120" />
-                                    <TextBlock Text="{Binding ApiVersion}" />
+                                    <TextBlock Text="Version:" Width="120"/>
+                                    <TextBlock Text="{Binding ApiVersion}"/>
                                 </StackPanel>
                                 <StackPanel Orientation="Horizontal">
-                                    <TextBlock Text="Capabilities:" Width="120" />
-                                    <TextBlock Text="{Binding ApiCapabilities}" />
-                                </StackPanel>
-                                <StackPanel Orientation="Horizontal">
-                                    <TextBlock Text="Capabilities Desc:" Width="120" />
-                                    <TextBlock Text="{Binding ApiCapabilitiesDescription}" TextWrapping="Wrap" />
-                                </StackPanel>
-                            </StackPanel>
-                        </GroupBox>
-
-                        <GroupBox Header="Network" Grid.Row="1" Grid.Column="0" Margin="0,0,8,8">
-                            <StackPanel Margin="8">
-                                <StackPanel Orientation="Horizontal">
-                                    <TextBlock Text="HomeId:" Width="120" />
-                                    <TextBlock Text="{Binding HomeIdHex}" />
-                                </StackPanel>
-                                <StackPanel Orientation="Horizontal">
-                                    <TextBlock Text="NodeId:" Width="120" />
-                                    <TextBlock Text="{Binding NodeId}" />
+                                    <TextBlock Text="Capabilities:" Width="120"/>
+                                    <TextBlock Text="{Binding ApiCapabilities}" Margin="0,0,3,0"/>
+                                    <TextBlock Text="{Binding ApiCapabilitiesDescription}" 
+                                               Foreground="#6B7A89"/>
                                 </StackPanel>
                             </StackPanel>
                         </GroupBox>
 
-                        <GroupBox Header="Library / App" Grid.Row="1" Grid.Column="1" Margin="0,0,0,8">
-                            <StackPanel Margin="8">
+                        <!-- NETWORK -->
+                        <GroupBox Header="Network" Grid.Row="1" Grid.Column="0">
+                            <StackPanel>
                                 <StackPanel Orientation="Horizontal">
-                                    <TextBlock Text="Library Version:" Width="120" />
-                                    <TextBlock Text="{Binding LibraryVersion}" />
+                                    <TextBlock Text="HomeId:" Width="120"/>
+                                    <TextBlock Text="{Binding HomeIdHex}" FontWeight="Bold"/>
                                 </StackPanel>
                                 <StackPanel Orientation="Horizontal">
-                                    <TextBlock Text="Library Type:" Width="120" />
-                                    <TextBlock Text="{Binding LibraryType}" />
-                                </StackPanel>
-                                <StackPanel Orientation="Horizontal">
-                                    <TextBlock Text="Library Type Name:" Width="120" />
-                                    <TextBlock Text="{Binding LibraryTypeName}" TextWrapping="Wrap" />
-                                </StackPanel>
-                                <StackPanel Orientation="Horizontal">
-                                    <TextBlock Text="App Version:" Width="120" />
-                                    <TextBlock Text="{Binding AppVersion}" />
-                                </StackPanel>
-                                <StackPanel Orientation="Horizontal">
-                                    <TextBlock Text="App Revision:" Width="120" />
-                                    <TextBlock Text="{Binding AppRevision}" />
+                                    <TextBlock Text="NodeId:" Width="120"/>
+                                    <TextBlock Text="{Binding NodeId}"/>
                                 </StackPanel>
                             </StackPanel>
                         </GroupBox>
 
-                        <GroupBox Header="Node Ids" Grid.Row="2" Grid.Column="0" Margin="0,0,8,8">
-                            <ItemsControl ItemsSource="{Binding NodeIds}" Margin="8">
+                        <!-- LIBRARY -->
+                        <GroupBox Header="Library / App" Grid.Row="1" Grid.Column="1">
+                            <StackPanel>
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock Text="Library Version:" Width="120"/>
+                                    <TextBlock Text="{Binding LibraryVersion}"/>
+                                </StackPanel>
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock Text="Library Type:" Width="120"/>
+                                    <TextBlock Text="{Binding LibraryType}" Margin="0,0,3,0"/>
+                                    <TextBlock Text="{Binding LibraryTypeName}" Foreground="#6B7A89"/>
+                                </StackPanel>
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock Text="App Version:" Width="120"/>
+                                    <TextBlock Text="{Binding AppVersion}"/>
+                                </StackPanel>
+                            </StackPanel>
+                        </GroupBox>
+
+                        <!-- NODE IDS -->
+                        <GroupBox Header="Node Ids" Grid.Row="2" Grid.Column="0">
+                            <ItemsControl ItemsSource="{Binding NodeIds}">
                                 <ItemsControl.ItemsPanel>
                                     <ItemsPanelTemplate>
-                                        <WrapPanel />
+                                        <WrapPanel/>
                                     </ItemsPanelTemplate>
                                 </ItemsControl.ItemsPanel>
                                 <ItemsControl.ItemTemplate>
                                     <DataTemplate>
-                                        <Border Background="#EEEEEE" CornerRadius="2" Padding="4" Margin="2">
-                                            <TextBlock Text="{Binding}" />
+                                        <Border Style="{StaticResource TagStyle}">
+                                            <TextBlock Text="{Binding}"/>
                                         </Border>
                                     </DataTemplate>
                                 </ItemsControl.ItemTemplate>
                             </ItemsControl>
                         </GroupBox>
 
-                        <GroupBox Header="API Commands" Grid.Row="2" Grid.Column="1" Margin="0,0,0,8">
-                            <ItemsControl ItemsSource="{Binding ApiCommands}" Margin="8">
+                        <!-- API COMMANDS -->
+                        <GroupBox Header="API Commands" Grid.Row="2" Grid.Column="1">
+                            <ItemsControl ItemsSource="{Binding ApiCommands}">
                                 <ItemsControl.ItemsPanel>
                                     <ItemsPanelTemplate>
-                                        <WrapPanel />
+                                        <WrapPanel/>
                                     </ItemsPanelTemplate>
                                 </ItemsControl.ItemsPanel>
                                 <ItemsControl.ItemTemplate>
                                     <DataTemplate>
-                                        <Border Background="#EEEEEE" CornerRadius="2" Padding="4" Margin="2">
-                                            <TextBlock Text="{Binding}" />
+                                        <Border Style="{StaticResource TagStyle}">
+                                            <TextBlock Text="{Binding StringFormat=0x{0:X2}}"/>
                                         </Border>
                                     </DataTemplate>
                                 </ItemsControl.ItemTemplate>
                             </ItemsControl>
                         </GroupBox>
 
-                        <GroupBox Header="Controller Flags" Grid.Row="3" Grid.Column="0" Margin="0,0,8,0">
-                            <ItemsControl ItemsSource="{Binding ControllerFlags}" Margin="8">
+                        <!-- CONTROLLER FLAGS -->
+                        <GroupBox Header="Controller Flags" Grid.Row="3" Grid.Column="0">
+                            <ItemsControl ItemsSource="{Binding ControllerFlags}">
                                 <ItemsControl.ItemsPanel>
                                     <ItemsPanelTemplate>
-                                        <WrapPanel />
+                                        <WrapPanel/>
                                     </ItemsPanelTemplate>
                                 </ItemsControl.ItemsPanel>
                                 <ItemsControl.ItemTemplate>
                                     <DataTemplate>
-                                        <Border Background="#EEEEEE" CornerRadius="2" Padding="4" Margin="2">
-                                            <TextBlock Text="{Binding}" />
+                                        <Border Style="{StaticResource TagStyle}">
+                                            <TextBlock Text="{Binding}"/>
                                         </Border>
                                     </DataTemplate>
                                 </ItemsControl.ItemTemplate>
                             </ItemsControl>
                         </GroupBox>
 
+                        <!-- RIGHT COLUMN: CHIP / PROTOCOL / MANUFACTURER -->
                         <StackPanel Grid.Row="3" Grid.Column="1">
-                            <GroupBox Header="Chip" Margin="0,0,0,8">
-                                <ItemsControl ItemsSource="{Binding Chip}" Margin="8">
-                                    <ItemsControl.ItemsPanel>
-                                        <ItemsPanelTemplate>
-                                            <WrapPanel />
-                                        </ItemsPanelTemplate>
-                                    </ItemsControl.ItemsPanel>
-                                    <ItemsControl.ItemTemplate>
-                                        <DataTemplate>
-                                            <Border Background="#EEEEEE" CornerRadius="2" Padding="4" Margin="2">
-                                                <TextBlock Text="{Binding}" />
-                                            </Border>
-                                        </DataTemplate>
-                                    </ItemsControl.ItemTemplate>
-                                </ItemsControl>
+
+                            <GroupBox Header="Chip">
+                                <StackPanel>
+                                    <StackPanel Orientation="Horizontal">
+                                        <TextBlock Text="Type:" Width="60"/>
+                                        <TextBlock>
+                                            <TextBlock.Text>
+                                                <MultiBinding StringFormat="{}{0} {1}">
+                                                    <Binding Path="ChipType"/>
+                                                    <Binding Path="ChipName"/>
+                                                </MultiBinding>
+                                            </TextBlock.Text>
+                                        </TextBlock>
+                                    </StackPanel>
+
+                                    <StackPanel Orientation="Horizontal">
+                                        <TextBlock Text="Version:" Width="60"/>
+                                        <TextBlock Text="{Binding ChipVersion}"/>
+                                    </StackPanel>
+                                </StackPanel>
                             </GroupBox>
 
-                            <GroupBox Header="Protocol Version" Margin="0,0,0,8">
-                                <ItemsControl ItemsSource="{Binding ProtocolVersion}" Margin="8">
-                                    <ItemsControl.ItemsPanel>
-                                        <ItemsPanelTemplate>
-                                            <WrapPanel />
-                                        </ItemsPanelTemplate>
-                                    </ItemsControl.ItemsPanel>
-                                    <ItemsControl.ItemTemplate>
-                                        <DataTemplate>
-                                            <Border Background="#EEEEEE" CornerRadius="2" Padding="4" Margin="2">
-                                                <TextBlock Text="{Binding}" />
-                                            </Border>
-                                        </DataTemplate>
-                                    </ItemsControl.ItemTemplate>
-                                </ItemsControl>
+                            <GroupBox Header="Protocol Version">
+                                <StackPanel>
+                                    <StackPanel Orientation="Horizontal">
+                                        <TextBlock Text="Type:" Width="60"/>
+                                        <TextBlock Text="{Binding ProtocolType}"/>
+                                    </StackPanel>
+
+                                    <StackPanel Orientation="Horizontal">
+                                        <TextBlock Text="Version:" Width="60"/>
+                                        <TextBlock Text="{Binding ProtocolVersion}"/>
+                                    </StackPanel>
+                                </StackPanel>
                             </GroupBox>
 
                             <GroupBox Header="Manufacturer">
-                                <ItemsControl ItemsSource="{Binding Manufacturer}" Margin="8">
-                                    <ItemsControl.ItemsPanel>
-                                        <ItemsPanelTemplate>
-                                            <WrapPanel />
-                                        </ItemsPanelTemplate>
-                                    </ItemsControl.ItemsPanel>
-                                    <ItemsControl.ItemTemplate>
-                                        <DataTemplate>
-                                            <Border Background="#EEEEEE" CornerRadius="2" Padding="4" Margin="2">
-                                                <TextBlock Text="{Binding}" />
-                                            </Border>
-                                        </DataTemplate>
-                                    </ItemsControl.ItemTemplate>
-                                </ItemsControl>
+                                <StackPanel>
+                                    <StackPanel Orientation="Horizontal">
+                                        <TextBlock Text="Id:" Width="100"/>
+                                        <TextBlock>
+                                            <TextBlock.Text>
+                                                <MultiBinding StringFormat="{}{0} {1}">
+                                                    <Binding Path="ManufacturerId"/>
+                                                    <Binding Path="ManufacturerName"/>
+                                                </MultiBinding>
+                                            </TextBlock.Text>
+                                        </TextBlock>
+                                    </StackPanel>
+
+                                    <StackPanel Orientation="Horizontal">
+                                        <TextBlock Text="Product Type:" Width="100"/>
+                                        <TextBlock>
+                                            <TextBlock.Text>
+                                                <MultiBinding StringFormat="{}{0} {1}">
+                                                    <Binding Path="ProductType"/>
+                                                    <Binding Path="ProductTypeName"/>
+                                                </MultiBinding>
+                                            </TextBlock.Text>
+                                        </TextBlock>
+                                    </StackPanel>
+
+                                    <StackPanel Orientation="Horizontal">
+                                        <TextBlock Text="Product Id:" Width="100"/>
+                                        <TextBlock>
+                                            <TextBlock.Text>
+                                                <MultiBinding StringFormat="{}{0} {1}">
+                                                    <Binding Path="ProductId"/>
+                                                    <Binding Path="ProductIdName"/>
+                                                </MultiBinding>
+                                            </TextBlock.Text>
+                                        </TextBlock>
+                                    </StackPanel>
+                                </StackPanel>
                             </GroupBox>
+
                         </StackPanel>
+
                     </Grid>
                 </ScrollViewer>
             </TabItem>
+
             <TabItem Header="Logging" DataContext="{Binding Logging}">
-                <Grid>
-					<Grid.RowDefinitions>
-						<RowDefinition Height="Auto" />
-						<RowDefinition Height="*" />
-					</Grid.RowDefinitions>
+                <Grid Background="#F5F7FA">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
 
-					<StackPanel Grid.Row="0" Orientation="Horizontal" Margin="8,8,8,0">
-						<Button Content="Copy" MinWidth ="50" Margin="10,3,10,3" Command="{Binding CopyLogsCommand}" />
-                        <TextBlock Text="Levels:" VerticalAlignment="Center" Margin="0,0,6,0" />
-						<ItemsControl ItemsSource="{Binding LevelFilters}">
-							<ItemsControl.ItemsPanel>
-								<ItemsPanelTemplate>
-									<WrapPanel />
-								</ItemsPanelTemplate>
-							</ItemsControl.ItemsPanel>
-							<ItemsControl.ItemTemplate>
-								<DataTemplate>
-									<CheckBox Content="{Binding Level}"
-											  IsChecked="{Binding IsEnabled, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-											  Margin="0,5,12,0" />
-								</DataTemplate>
-							</ItemsControl.ItemTemplate>
-						</ItemsControl>
-					</StackPanel>
+                    <!-- Top Bar -->
+                    <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="12,12,12,4">
+                        <Button Content="Copy" MinWidth="70" Command="{Binding CopyLogsCommand}" />
 
+                        <TextBlock Text="Levels:" VerticalAlignment="Center" Margin="16,0,6,0" 
+                       Foreground="#263238" FontWeight="Bold"/>
+
+                        <ItemsControl ItemsSource="{Binding LevelFilters}">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <WrapPanel />
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Border Style="{StaticResource LevelTagStyle}">
+                                        <CheckBox Content="{Binding Level}"
+                                      IsChecked="{Binding IsEnabled, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                      Foreground="#263238"/>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </StackPanel>
+
+                    <!-- DataGrid -->
                     <DataGrid Grid.Row="1"
-					  ItemsSource="{Binding LogsView}"
-					  helpers:DataGridAutoScrollBehavior.AutoScrollToEnd="True"
-					  IsReadOnly="True"
-					  AutoGenerateColumns="False"
-					  HeadersVisibility="Column"
-					  CanUserAddRows="False"
-					  CanUserDeleteRows="False"
-					  Margin="8">
+                  ItemsSource="{Binding LogsView}"
+                  helpers:DataGridAutoScrollBehavior.AutoScrollToEnd="True"
+                  IsReadOnly="True"
+                  AutoGenerateColumns="False"
+                  HeadersVisibility="Column"
+                  CanUserAddRows="False"
+                  CanUserDeleteRows="False"
+                  Margin="12">
+
                         <DataGrid.Columns>
                             <DataGridTextColumn Header="Time" Width="80" Binding="{Binding DisplayTime}" />
-                            <DataGridTextColumn Header="Level" Width="60" Binding="{Binding Level}" />
+
+                            <DataGridTextColumn Header="Level" Width="60">
+                                <DataGridTextColumn.ElementStyle>
+                                    <Style TargetType="TextBlock" BasedOn="{StaticResource LevelColorizer}">
+                                        <Setter Property="Text" Value="{Binding Level}"/>
+                                    </Style>
+                                </DataGridTextColumn.ElementStyle>
+                            </DataGridTextColumn>
+
                             <DataGridTextColumn Header="Tag" Width="200" Binding="{Binding Tag}" />
                             <DataGridTextColumn Header="Message" Width="*" Binding="{Binding Message}" />
                         </DataGrid.Columns>
+
                     </DataGrid>
-				</Grid>
+                </Grid>
             </TabItem>
         </TabControl>
         <Border Grid.Row="1" Padding="8" BorderBrush="#DDDDDD" BorderThickness="0,0,0,1" DataContext="{Binding Connection}">
@@ -261,11 +560,12 @@
                 </StackPanel>
             </DockPanel>
         </Border>
-        <TextBlock Grid.Row="2"
+        <Border Grid.Row="2" Padding="8" BorderBrush="#DDDDDD" BorderThickness="0,0,0,1" DataContext="{Binding Connection}">
+            <TextBlock 
 				   Text="{Binding StatusMessage}"
 				   Margin="8"
 				   Foreground="Gray"
 				   HorizontalAlignment="Left" />
-
+        </Border>
     </Grid>
 </Window>

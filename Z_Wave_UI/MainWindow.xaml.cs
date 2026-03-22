@@ -18,6 +18,7 @@ namespace Z_Wave_UI
             viewModel = new MainViewModel();
             DataContext = viewModel;
 
+            Loaded += (_, _) => _ = viewModel.Connection.TryAutoConnectAsync();
             Closed += (_, _) => viewModel.Dispose();
         }
     }

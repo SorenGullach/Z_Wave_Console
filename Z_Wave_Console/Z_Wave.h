@@ -80,6 +80,7 @@ public:
 	}
 
 	ZW_Module& GetModule() { return module; }
+	ZW_Nodes& GetNodes() { return nodes; }
 
 	std::string HostToString() { return module.ToString(); }
 

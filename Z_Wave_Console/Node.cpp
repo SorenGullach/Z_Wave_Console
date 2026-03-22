@@ -2,6 +2,39 @@
 
 #include "Node.h"
 
+std::string ZW_NodeInfo::NodeStateString() const
+{
+	DebugLockGuard lock(stateMutex);
+	switch (nodeState)
+	{
+	case eNodeState::New:    return "New";
+	case eNodeState::Awake:  return "Awake";
+	case eNodeState::Sleepy: return "Sleepy";
+	}
+	return "Unknown";
+}
+
+std::string ZW_NodeInfo::InterviewStateString() const
+{
+	DebugLockGuard lock(stateMutex);
+	switch (interviewState)
+	{
+	case eInterviewState::NotInterviewed: return "NotInterviewed";
+	case eInterviewState::ProtocolInfoPending: return "ProtocolInfoPending";
+	case eInterviewState::ProtocolInfoDone: return "ProtocolInfoDone";
+	case eInterviewState::NodeInfoPending: return "NodeInfoPending";
+	case eInterviewState::NodeInfoDone: return "NodeInfoDone";
+	case eInterviewState::CCVersionPending: return "CCVersionPending";
+	case eInterviewState::CCVersionDone: return "CCVersionDone";
+	case eInterviewState::CCMnfcSpecPending: return "CCMnfcSpecPending";
+	case eInterviewState::CCMnfcSpecDone: return "CCMnfcSpecDone";
+	case eInterviewState::CCMultiChannelPending: return "CCMultiChannelPending";
+	case eInterviewState::CCMultiChannelDone: return "CCMultiChannelDone";
+	case eInterviewState::InterviewDone: return "InterviewDone";
+	}
+	return "Unknown";
+}
+
 bool ZW_NodeInfo::supportsCC(eCommandClass cc) const
 {
 	// 1) Check if CC is in the NIF (authoritative)

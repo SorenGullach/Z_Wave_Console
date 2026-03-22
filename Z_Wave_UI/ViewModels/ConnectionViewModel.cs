@@ -16,6 +16,8 @@ public sealed class ConnectionViewModel : ViewModelBase
 
     private string host = "127.0.0.1";
     private int port = 5555;
+    private bool autoConnect;
+    private bool suppressSettingsSave;
 
     private readonly AsyncRelayCommand connectCommand;
     private readonly AsyncRelayCommand disconnectCommand;
@@ -39,18 +41,28 @@ public sealed class ConnectionViewModel : ViewModelBase
         connectCommand = new AsyncRelayCommand(ConnectAsync, () => !IsConnected);
         disconnectCommand = new AsyncRelayCommand(DisconnectAsync, () => IsConnected);
         refreshLogsCommand = new AsyncRelayCommand(RefreshLogsAsync, () => IsConnected);
+
+        LoadSettings();
     }
 
     public string Host
     {
         get => host;
-        set => SetProperty(ref host, value);
+        set
+        {
+            if (SetProperty(ref host, value))
+                SaveSettings();
+        }
     }
 
     public int Port
     {
         get => port;
-        set => SetProperty(ref port, value);
+        set
+        {
+            if (SetProperty(ref port, value))
+                SaveSettings();
+        }
     }
 
     public bool IsConnected => tcpService.IsConnected;
@@ -58,6 +70,14 @@ public sealed class ConnectionViewModel : ViewModelBase
     public AsyncRelayCommand ConnectCommand => connectCommand;
     public AsyncRelayCommand DisconnectCommand => disconnectCommand;
     public AsyncRelayCommand RefreshLogsCommand => refreshLogsCommand;
+
+    public Task TryAutoConnectAsync()
+    {
+        if (!autoConnect)
+            return Task.CompletedTask;
+
+        return ConnectAsync();
+    }
 
     public async Task ConnectAsync()
     {
@@ -73,8 +93,13 @@ public sealed class ConnectionViewModel : ViewModelBase
             });
 
             SetStatusMessage($"Connected to {Host}:{Port}");
+
+            autoConnect = true;
+            SaveSettings();
+
             await RefreshLogsAsync().ConfigureAwait(false);
             await RefreshModuleInfoAsync().ConfigureAwait(false);
+            await RefreshNodeListAsync().ConfigureAwait(false);
         }
         catch (Exception ex)
         {
@@ -86,6 +111,9 @@ public sealed class ConnectionViewModel : ViewModelBase
     public async Task DisconnectAsync()
     {
         await tcpService.DisconnectAsync().ConfigureAwait(false);
+
+        autoConnect = false;
+        SaveSettings();
 
         await dispatcher.InvokeAsync(() =>
         {
@@ -126,6 +154,21 @@ public sealed class ConnectionViewModel : ViewModelBase
         }
     }
 
+    public async Task RefreshNodeListAsync()
+    {
+        if (!IsConnected)
+            return;
+
+        try
+        {
+            await tcpService.SendLineAsync("{\"type\":\"list_nodes\"}", CancellationToken.None).ConfigureAwait(false);
+        }
+        catch (Exception ex)
+        {
+            SetStatusMessage(ex.Message);
+        }
+    }
+
     public void HandleConnectionClosed()
     {
         _ = dispatcher.InvokeAsync(() =>
@@ -151,5 +194,29 @@ public sealed class ConnectionViewModel : ViewModelBase
             setStatusMessage(message);
         else
             _ = dispatcher.InvokeAsync(() => setStatusMessage(message));
+    }
+
+    private void LoadSettings()
+    {
+        suppressSettingsSave = true;
+        try
+        {
+            var settings = ConnectionSettingsStore.Load(host, port);
+            Host = settings.Host;
+            Port = settings.Port;
+            autoConnect = settings.AutoConnect;
+        }
+        finally
+        {
+            suppressSettingsSave = false;
+        }
+    }
+
+    private void SaveSettings()
+    {
+        if (suppressSettingsSave)
+            return;
+
+        ConnectionSettingsStore.Save(new ConnectionSettings(Host, Port, autoConnect));
     }
 }

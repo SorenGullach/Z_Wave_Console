@@ -128,7 +128,8 @@ std::vector<std::string> ZW_Module::ProtocolVersionStrings() const
 std::vector<std::string> ZW_Module::ChipStrings() const
 {
 	return {
-		std::string("type=") + std::to_string((int)ChipType) + ": " + ChipNames() + " " +
+		"type=" + std::to_string((int)ChipType),
+		"typeName=" + ChipName(),
 		"version=" + std::to_string(ChipVersion)
 	};
 }
@@ -138,9 +139,72 @@ std::vector<std::string> ZW_Module::ManufacturerStrings() const
 {
 	return {
 		"id=" + std::to_string(ManufacturerId),
+		"idName=" + GetManufacturer(),
 		"productType=" + std::to_string(ProductType),
-		"productId=" + std::to_string(ProductId)
+		"productTypeName=" + GetProductTypeName(),
+		"productId=" + std::to_string(ProductId),
+		"productIdName=" + GetProductIdName()
 	};
+}
+
+std::string ZW_Module::GetManufacturer() const
+{
+	switch (ManufacturerId)
+	{
+	case 0x0001: return "Sigma Designs";
+	case 0x0086: return "Merten / Schneider Electric";
+	case 0x010F: return "Fibaro";
+	case 0x014A: return "Heatit / Thermo-Floor";
+	case 0x018E: return "Aeotec";
+	case 0x021F: return "Zooz";
+	case 0x0258: return "Shelly";
+	case 0x0260: return "Qubino";
+	case 0x027A: return "GE / Jasco";
+	case 0x0315: return "Ring";
+	case 0x0371: return "Inovelli";
+		// Add more as needed…
+	default: return "Unknown";
+	}
+}
+
+std::string ZW_Module::GetProductTypeName() const
+{
+	switch (ProductType)
+	{
+	case 0x0001: return "Binary Switch";
+	case 0x0002: return "Multilevel Switch";
+	case 0x0003: return "Binary Sensor";
+	case 0x0004: return "Multilevel Sensor";
+	case 0x0005: return "Remote Control";
+	case 0x0006: return "Wall Controller";
+	case 0x0007: return "Thermostat";
+	case 0x0008: return "Meter";
+	case 0x0009: return "Scene Controller";
+	case 0x0100: return "Generic Controller";
+	case 0x0200: return "Lighting Device";
+	case 0x0300: return "Security Device";
+		// Add more as needed…
+	default: return "Unknown";
+	}
+}
+
+std::string ZW_Module::GetProductIdName() const
+{
+	switch (ProductId)
+	{
+	case 0x0001: return "Basic Device";
+	case 0x0002: return "Dimmer";
+	case 0x0003: return "Relay Switch";
+	case 0x0004: return "Motion Sensor";
+	case 0x0005: return "Door/Window Sensor";
+	case 0x0006: return "Keypad";
+	case 0x0007: return "Energy Meter";
+	case 0x0008: return "Scene Controller";
+	case 0x1000: return "Wall Controller (Merten)";
+	case 0x2000: return "Heatit Z-Push Button";
+		// Add more as needed…
+	default: return "Unknown";
+	}
 }
 
 // Controller flags as readable strings
@@ -194,7 +258,7 @@ std::string ZW_Module::DescribeControllerCapabilities() const
 	return s.empty() ? "None" : s;
 }
 
-std::string ZW_Module::ChipNames() const
+std::string ZW_Module::ChipName() const
 {
 	eChipTypes t = ChipType;
 	switch (t)

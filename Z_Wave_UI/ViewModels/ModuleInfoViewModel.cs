@@ -1,4 +1,5 @@
 using System.Collections.ObjectModel;
+using System.Net.Sockets;
 using System.Text.Json;
 using System.Windows.Threading;
 
@@ -18,11 +19,24 @@ public sealed class ModuleInfoViewModel : ViewModelBase
     private int libraryType;
     private string libraryTypeName = string.Empty;
 
-    private int appVersion;
-    private int appRevision;
+    private float appVersion;
 
     private uint homeId;
     private int nodeId;
+
+    private int chipType;
+    private string chipName = string.Empty;
+    private int chipVersion;
+
+    private int manufacturerId;
+    private string manufacturerName = string.Empty;
+    private int productType;
+    private string productTypeName = string.Empty;
+    private int productId;
+    private string productIdName = string.Empty;
+
+    private int protocolType;
+    private string protocolVersion = string.Empty;
 
     public ModuleInfoViewModel(Dispatcher dispatcher, Action<string> setStatusMessage)
     {
@@ -72,16 +86,10 @@ public sealed class ModuleInfoViewModel : ViewModelBase
         private set => SetProperty(ref libraryTypeName, value);
     }
 
-    public int AppVersion
+    public float AppVersion
     {
         get => appVersion;
         private set => SetProperty(ref appVersion, value);
-    }
-
-    public int AppRevision
-    {
-        get => appRevision;
-        private set => SetProperty(ref appRevision, value);
     }
 
     public uint HomeId
@@ -108,11 +116,67 @@ public sealed class ModuleInfoViewModel : ViewModelBase
 
     public ObservableCollection<string> ControllerFlags { get; } = new();
 
-    public ObservableCollection<string> Chip { get; } = new();
+    public int ChipType
+    {
+        get => chipType;
+        private set => SetProperty(ref chipType, value);
+    }
 
-    public ObservableCollection<string> ProtocolVersion { get; } = new();
+    public string ChipName
+    {
+        get => chipName;
+        private set => SetProperty(ref chipName, value);
+    }
 
-    public ObservableCollection<string> Manufacturer { get; } = new();
+    public int ChipVersion
+    {
+        get => chipVersion;
+        private set => SetProperty(ref chipVersion, value);
+    }
+
+    public int ManufacturerId
+    {
+        get => manufacturerId;
+        private set => SetProperty(ref manufacturerId, value);
+    }
+
+    public string ManufacturerName
+    {
+        get => manufacturerName;
+        private set => SetProperty(ref manufacturerName, value);
+    }
+
+    public int ProductType
+    {
+        get => productType;
+        private set => SetProperty(ref productType, value);
+    }
+
+    public string ProductTypeName
+    {
+        get => productTypeName;
+        private set => SetProperty(ref productTypeName, value);
+    }
+
+    public int ProductId
+    {
+        get => productId;
+        private set => SetProperty(ref productId, value);
+    }
+
+    public string ProductIdName
+    {
+        get => productIdName;
+        private set => SetProperty(ref productIdName, value);
+    }
+
+    public int ProtocolType
+    { get => protocolType; private set => SetProperty(ref protocolType, value); }
+    public string ProtocolVersion
+    {
+        get => protocolVersion;
+        private set => SetProperty(ref protocolVersion, value);
+    }
 
     public void Clear()
     {
@@ -167,16 +231,23 @@ public sealed class ModuleInfoViewModel : ViewModelBase
         LibraryType = 0;
         LibraryTypeName = string.Empty;
         AppVersion = 0;
-        AppRevision = 0;
         HomeId = 0;
         NodeId = 0;
+        ProtocolType = 0;
+        ProtocolVersion = string.Empty;
+        ChipType = 0;
+        ChipName = string.Empty;
+        ChipVersion = 0;
+        ManufacturerId = 0;
+        ManufacturerName = string.Empty;
+        ProductType = 0;
+        ProductTypeName = string.Empty;
+        ProductId = 0;
+        ProductIdName = string.Empty;
 
         NodeIds.Clear();
         ApiCommands.Clear();
         ControllerFlags.Clear();
-        Chip.Clear();
-        ProtocolVersion.Clear();
-        Manufacturer.Clear();
     }
 
     private sealed record ControllerInfo(
@@ -191,8 +262,7 @@ public sealed class ModuleInfoViewModel : ViewModelBase
         string LibraryVersion,
         int LibraryType,
         string LibraryTypeName,
-        int AppVersion,
-        int AppRevision,
+        float AppVersion,
         uint HomeId,
         int NodeId,
         IReadOnlyList<int> NodeIds,
@@ -231,12 +301,15 @@ public sealed class ModuleInfoViewModel : ViewModelBase
             libraryTypeName = GetString(libraryElement, "typeName");
         }
 
-        var appVersion = 0;
-        var appRevision = 0;
+        float appVersion = 0;
         if (root.TryGetProperty("application", out var applicationElement) && applicationElement.ValueKind == JsonValueKind.Object)
         {
-            appVersion = GetInt(applicationElement, "version");
-            appRevision = GetInt(applicationElement, "revision");
+            int Version = GetInt(applicationElement, "version");
+            int Revision = GetInt(applicationElement, "revision");
+            if(Revision<10)
+                appVersion = Version + (Revision / 10f);
+            else
+                appVersion = Version + (Revision / 100f);
         }
 
         var homeId = 0u;
@@ -263,7 +336,6 @@ public sealed class ModuleInfoViewModel : ViewModelBase
             libraryType,
             libraryTypeName,
             appVersion,
-            appRevision,
             homeId,
             nodeId,
             nodeIds,
@@ -282,17 +354,70 @@ public sealed class ModuleInfoViewModel : ViewModelBase
         LibraryTypeName = info.LibraryTypeName;
 
         AppVersion = info.AppVersion;
-        AppRevision = info.AppRevision;
 
         HomeId = info.HomeId;
         NodeId = info.NodeId;
 
         ReplaceAll(ControllerFlags, info.ControllerFlags);
-        ReplaceAll(Chip, info.Chip);
-        ReplaceAll(ProtocolVersion, info.ProtocolVersion);
-        ReplaceAll(Manufacturer, info.Manufacturer);
+
+        var chipTypeText = TryGetValue(info.Chip, "type");
+        ChipType = int.TryParse(chipTypeText, out var chipTypeValue) ? chipTypeValue : 0;
+        ChipName = TryGetValue(info.Chip, "typeName") ?? string.Empty;
+        var chipVersionText = TryGetValue(info.Chip, "version");
+        ChipVersion = int.TryParse(chipVersionText, out var chipVersionValue) ? chipVersionValue : 0;
+
+        var protocolTypeText = TryGetValue(info.ProtocolVersion, "type");
+        ProtocolType = int.TryParse(protocolTypeText, out var protocolType) ? protocolType : 0;
+        ProtocolVersion = BuildProtocolVersionDisplay(info.ProtocolVersion);
+
+        var manufacturerIdText = TryGetValue(info.Manufacturer, "id");
+        ManufacturerId = int.TryParse(manufacturerIdText, out var manufacturerIdValue) ? manufacturerIdValue : 0;
+        ManufacturerName = TryGetValue(info.Manufacturer, "idName") ?? string.Empty;
+
+        var productTypeText = TryGetValue(info.Manufacturer, "productType");
+        ProductType = int.TryParse(productTypeText, out var productTypeValue) ? productTypeValue : 0;
+        ProductTypeName = TryGetValue(info.Manufacturer, "productTypeName") ?? string.Empty;
+
+        var productIdText = TryGetValue(info.Manufacturer, "productId");
+        ProductId = int.TryParse(productIdText, out var productIdValue) ? productIdValue : 0;
+        ProductIdName = TryGetValue(info.Manufacturer, "productIdName") ?? string.Empty;
+
         ReplaceAll(NodeIds, info.NodeIds);
         ReplaceAll(ApiCommands, info.ApiCommands);
+    }
+
+    private static string BuildProtocolVersionDisplay(IReadOnlyList<string> protocolVersion)
+    {
+        var major = TryGetValue(protocolVersion, "major");
+        var minor = TryGetValue(protocolVersion, "minor");
+        var revision = TryGetValue(protocolVersion, "revision");
+
+        if (major is null || minor is null || revision is null)
+            return string.Empty;
+
+        return $"{major}.{minor}.{revision}";
+    }
+
+    private static string? TryGetValue(IReadOnlyList<string> items, string key)
+    {
+        foreach (var item in items)
+        {
+            if (string.IsNullOrWhiteSpace(item))
+                continue;
+
+            var idx = item.IndexOf('=');
+            if (idx <= 0)
+                continue;
+
+            var k = item[..idx];
+            if (!string.Equals(k, key, StringComparison.OrdinalIgnoreCase))
+                continue;
+
+            var v = item[(idx + 1)..];
+            return v;
+        }
+
+        return null;
     }
 
     private static void ReplaceAll<T>(ObservableCollection<T> target, IReadOnlyList<T> items)

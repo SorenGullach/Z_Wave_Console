@@ -16,6 +16,9 @@ public:
 	std::vector<std::string> ProtocolVersionStrings() const;
 	std::vector<std::string> ChipStrings() const;
 	std::vector<std::string> ManufacturerStrings() const;
+	std::string GetManufacturer() const;
+	std::string GetProductTypeName() const;
+	std::string GetProductIdName() const;
 	std::vector<std::string> ControllerFlagStrings() const;
 	std::string GetLibraryTypeName() const;
 	std::string DescribeControllerCapabilities() const;
@@ -41,7 +44,7 @@ public:
 		// 800 series (Z-Wave Plus Gen3)
 		ZW080x = 0x08    // ZGM230S, ZGM230P
 	};
-	std::string ChipNames() const;
+	std::string ChipName() const;
 	std::string DescribeApiCapabilities() const;
 
 	// 4.3.11 Get Library Version (0x15)

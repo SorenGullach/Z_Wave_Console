@@ -35,6 +35,8 @@ public:
 
 	// ===================== Members =====================
 	const node_t NodeId;
+	std::string Floor;
+	std::string Room;
 
 	// ---------- Protocol DVC ----------
 	struct ProtocolInfo
@@ -203,6 +205,9 @@ public:
 	std::optional<uint8_t> switchMultilevelValue;
 	std::optional<uint8_t> sensorBinaryValue;
 	std::optional<uint8_t> protectionState;
+
+	std::string NodeStateString() const;
+	std::string InterviewStateString() const;
 
 protected:
 	mutable DebugMutex stateMutex;

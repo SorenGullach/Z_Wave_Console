@@ -34,10 +34,10 @@ protected:
 		
 		if (type == "get_controller_info")
 			return JSONConversions::ToJSON(ZW.GetModule());
-/*
+
 		if (type == "list_nodes")
-			return ""; //GetNodeList();
-*/
+			return JSONConversions::ToJSON(ZW.GetNodes());
+
 		if (type == "get_logs")
 		{
 			int count = 200;
@@ -46,14 +46,14 @@ protected:
 				count = 0;
 			return JSONConversions::ToJSON(Log.GetLogEntrys(count));
 		}
-		/*
+		
 		if (type == "get_node")
 		{
 			int id = 0;
 			JsonUtils::TryExtractInt(message, "nodeId", id);
-			return ""; //GetNodeDetails((node_t)id);
+			return JSONConversions::ToJSON((node_t)id, ZW.GetNodes());
 		}
-
+		/*
 		if (type == "soft_reset")
 		{
 			if (!ZW.IsSerialOpen())

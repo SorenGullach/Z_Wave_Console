@@ -64,7 +64,7 @@ void ZW_InitializeManager::DecodeInitData(const APIFrame::PayLoad& payload)
 			 module.ApiVersion,
 			 module.ApiCapabilities,
 			 module.NodeListLength,
-			 module.ChipNames(),
+			 module.ChipName(),
 			 module.ChipVersion);
 	Log.AddL(eLogTypes::DVC, MakeTag(), "<< GetInitData: parsed nodeIds={} (first={}, last={})", module.NodeIds.size(), module.NodeIds.empty() ? node_t{} : module.NodeIds.front(), module.NodeIds.empty() ? node_t{} : module.NodeIds.back());
 	NotifyUI(UINotify::ControllerChanged);
