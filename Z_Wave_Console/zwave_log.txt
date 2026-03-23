@@ -1,126 +1,126 @@
-20:56:43.442 DBG  [Z_Wave_TCP.cpp:117  ] Hello ZWave World! Im a ZWaveCore app that can connect to a ZWave network.
-20:56:43.445 DBG  [Z_Wave_TCP.cpp:118  ] And connect to you with a TCP connection.
-20:56:43.481 ITF [Interface.cpp:16    ] OpenPort ok: port='COM3'
-20:56:43.490 DVC [InitializeManager.cpp:15] >> GetInitData: cmdId=0x02
-20:56:43.550 DBG  [Interface.cpp:112   ] >> Send: attempt=1 frame=[REQ] cmdId=0x02 FUNC_ID_GET_INIT_DATA | payload=(0)
-20:56:43.550 DBG  [Interface.cpp:113   ] >> FrameBytes: len=5 bytes=[01 03 00 02 FE ]
-20:56:43.599 DBG  [Interface.cpp:320   ] << Recv: bytesLen=39 bytes=[01 25 01 02 05 08 1D 01 00 F0 03 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 03 01 39 ]
-20:56:43.599 DBG  [Interface.cpp:323   ] << Recv frame [RES] cmdId=0x02 FUNC_ID_GET_INIT_DATA | payload=(34) 05 08 1D 01 00 F0 03 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 03 01
-20:56:43.600 DVC [Z_Wave.h:202        ] << [RES] cmdId=0x02 FUNC_ID_GET_INIT_DATA | payload=(34) 05 08 1D 01 00 F0 03 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 03 01
-20:56:43.600 DBG  [Z_Wave.h:212        ] << route=initializeManager [RES] cmdId=0x02 FUNC_ID_GET_INIT_DATA | payload=(34) 05 08 1D 01 00 F0 03 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 03 01
-20:56:43.600 DVC [InitializeManager.cpp:63] << GetInitData ApiVersion=5 Caps=8 NodeListLen=29 ChipType=ZW030x ChipVer=1 
-20:56:43.600 DVC [InitializeManager.cpp:69] << GetInitData: parsed nodeIds=7 (first=1, last=26)
-20:56:43.600 DVC [InitializeManager.cpp:173] >> GetCapabilities: cmdId=0x07
-20:56:43.674 DBG  [Interface.cpp:112   ] >> Send: attempt=1 frame=[REQ] cmdId=0x07 FUNC_ID_GET_CAPABILITIES | payload=(0)
-20:56:43.674 DBG  [Interface.cpp:113   ] >> FrameBytes: len=5 bytes=[01 03 00 07 FB ]
-20:56:43.679 DBG  [Interface.cpp:320   ] << Recv: bytesLen=45 bytes=[01 2B 01 07 03 07 00 86 00 02 00 01 FE 80 FE 88 0F 00 00 00 FB 97 7F 82 07 00 00 80 00 80 00 00 00 00 00 00 00 00 00 00 00 00 00 00 C2 ]
-20:56:43.680 DBG  [Interface.cpp:323   ] << Recv frame [RES] cmdId=0x07 FUNC_ID_GET_CAPABILITIES | payload=(40) 03 07 00 86 00 02 00 01 FE 80 FE 88 0F 00 00 00 FB 97 7F 82 07 00 00 80 00 80 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-20:56:43.680 DVC [Z_Wave.h:202        ] << [RES] cmdId=0x07 FUNC_ID_GET_CAPABILITIES | payload=(40) 03 07 00 86 00 02 00 01 FE 80 FE 88 0F 00 00 00 FB 97 7F 82 07 00 00 80 00 80 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-20:56:43.680 DBG  [Z_Wave.h:212        ] << route=initializeManager [RES] cmdId=0x07 FUNC_ID_GET_CAPABILITIES | payload=(40) 03 07 00 86 00 02 00 01 FE 80 FE 88 0F 00 00 00 FB 97 7F 82 07 00 00 80 00 80 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-20:56:43.680 DVC [InitializeManager.cpp:213] << GetCapabilities: appVer=3.7 mfg=0x0086 prodType=0x0002 prodId=0x0001 cmdCount=47 cmdList=[2 3 4 5 6 7 8 16 18 19 20 21 22 23 24 28 32 33 34 35 36 65 66 68 69 70 71 72 73 74 75 77 80 81 82 83 84 85 86 87 90 96 97 98 99 128 144 ] (payloadLen=40)
-20:56:43.681 DVC [InitializeManager.cpp:80] >> GetControllerCapabilities: cmdId=0x05
-20:56:43.752 DBG  [Interface.cpp:112   ] >> Send: attempt=1 frame=[REQ] cmdId=0x05 FUNC_ID_GET_CONTROLLER_CAPABILITIES | payload=(0)
-20:56:43.752 DBG  [Interface.cpp:113   ] >> FrameBytes: len=5 bytes=[01 03 00 05 F9 ]
-20:56:43.754 DBG  [Interface.cpp:320   ] << Recv: bytesLen=6 bytes=[01 04 01 05 1C E3 ]
-20:56:43.754 DBG  [Interface.cpp:323   ] << Recv frame [RES] cmdId=0x05 FUNC_ID_GET_CONTROLLER_CAPABILITIES | payload=(1) 1C
-20:56:43.754 DVC [Z_Wave.h:202        ] << [RES] cmdId=0x05 FUNC_ID_GET_CONTROLLER_CAPABILITIES | payload=(1) 1C
-20:56:43.754 DBG  [Z_Wave.h:212        ] << route=initializeManager [RES] cmdId=0x05 FUNC_ID_GET_CONTROLLER_CAPABILITIES | payload=(1) 1C
-20:56:43.754 DVC [InitializeManager.cpp:99] << GetControllerCapabilities: caps=0x1C secondary=false otherNet=false sisPresent=true sucEnabled=true noNodesIncluded=false (payloadLen=1)
-20:56:43.755 DVC [InitializeManager.cpp:233] >> GetNetworkIdsFromMemory: cmdId=0x20
-20:56:43.829 DBG  [Interface.cpp:112   ] >> Send: attempt=1 frame=[REQ] cmdId=0x20 ZW_API_GET_NETWORK_IDS_FROM_MEMORY | payload=(0)
-20:56:43.829 DBG  [Interface.cpp:113   ] >> FrameBytes: len=5 bytes=[01 03 00 20 DC ]
-20:56:43.831 DBG  [Interface.cpp:320   ] << Recv: bytesLen=10 bytes=[01 08 01 20 01 4C E4 51 01 2F ]
-20:56:43.832 DBG  [Interface.cpp:323   ] << Recv frame [RES] cmdId=0x20 ZW_API_GET_NETWORK_IDS_FROM_MEMORY | payload=(5) 01 4C E4 51 01
-20:56:43.832 DVC [Z_Wave.h:202        ] << [RES] cmdId=0x20 ZW_API_GET_NETWORK_IDS_FROM_MEMORY | payload=(5) 01 4C E4 51 01
-20:56:43.832 DBG  [Z_Wave.h:212        ] << route=initializeManager [RES] cmdId=0x20 ZW_API_GET_NETWORK_IDS_FROM_MEMORY | payload=(5) 01 4C E4 51 01
-20:56:43.832 DVC [InitializeManager.cpp:255] << GetNetworkIdsFromMemory: homeId=0x014CE451 nodeId=1 (payloadLen=5)
-20:56:43.833 DVC [InitializeManager.cpp:267] >> GetLibraryVersion: cmdId=0x15
-20:56:43.893 DBG  [Interface.cpp:112   ] >> Send: attempt=1 frame=[REQ] cmdId=0x15 FUNC_ID_GET_LIBRARY_VERSION | payload=(0)
-20:56:43.893 DBG  [Interface.cpp:113   ] >> FrameBytes: len=5 bytes=[01 03 00 15 E9 ]
-20:56:43.896 DBG  [Interface.cpp:320   ] << Recv: bytesLen=18 bytes=[01 10 01 15 5A 2D 57 61 76 65 20 32 2E 37 38 00 01 9B ]
-20:56:43.896 DBG  [Interface.cpp:323   ] << Recv frame [RES] cmdId=0x15 FUNC_ID_GET_LIBRARY_VERSION | payload=(13) 5A 2D 57 61 76 65 20 32 2E 37 38 00 01
-20:56:43.896 DVC [Z_Wave.h:202        ] << [RES] cmdId=0x15 FUNC_ID_GET_LIBRARY_VERSION | payload=(13) 5A 2D 57 61 76 65 20 32 2E 37 38 00 01
-20:56:43.896 DBG  [Z_Wave.h:212        ] << route=initializeManager [RES] cmdId=0x15 FUNC_ID_GET_LIBRARY_VERSION | payload=(13) 5A 2D 57 61 76 65 20 32 2E 37 38 00 01
-20:56:43.897 DVC [InitializeManager.cpp:306] << GetLibraryVersion: verStr='Z-Wave 2.78' libType=0x01 protoParsed=2.78 (payloadLen=13)
-20:56:43.923 DVC [Z_Wave.h:353        ] ----------------------------------- Initialization done.
-20:56:43.927 DVC [Z_Wave.h:371        ] ----------------------------------- Interview started. Node: 21
-20:56:43.927 DVC [InterviewManager.cpp:20] >> ZW_API_GET_NODE_INFO_PROTOCOL_DATA: node=21
-20:56:43.970 DBG  [Interface.cpp:112   ] >> Send: attempt=1 frame=[REQ] cmdId=0x41 ZW_API_GET_NODE_INFO_PROTOCOL_DATA | payload=(1) 15
-20:56:43.970 DBG  [Interface.cpp:113   ] >> FrameBytes: len=6 bytes=[01 04 00 41 15 AF ]
-20:56:43.973 DBG  [Interface.cpp:320   ] << Recv: bytesLen=11 bytes=[01 09 01 41 0A 06 00 01 20 01 9A ]
-20:56:43.973 DBG  [Interface.cpp:323   ] << Recv frame [RES] cmdId=0x41 ZW_API_GET_NODE_INFO_PROTOCOL_DATA | payload=(6) 0A 06 00 01 20 01
-20:56:43.973 DVC [Z_Wave.h:202        ] << [RES] cmdId=0x41 ZW_API_GET_NODE_INFO_PROTOCOL_DATA | payload=(6) 0A 06 00 01 20 01
-20:56:43.974 DBG  [Z_Wave.h:223        ] << route=interviewManager [RES] cmdId=0x41 ZW_API_GET_NODE_INFO_PROTOCOL_DATA | payload=(6) 0A 06 00 01 20 01
-20:56:43.974 DBG  [InterviewManager.h:68] HandleFrame called for node 21: [RES] cmdId=0x41 ZW_API_GET_NODE_INFO_PROTOCOL_DATA | payload=(6) 0A 06 00 01 20 01
-20:56:43.974 DVC [InterviewManager.cpp:69] << ZW_API_GET_NODE_INFO_PROTOCOL_DATA: node=21 listening=false routing=false speed=1 proto=2 basic=0x01 generic=0x20 specific=0x01 opt=0x06 speedExt=0x00 (payloadLen=6)
-20:56:43.986 DVC [Z_Wave.h:365        ] ----------------------------------- Interview pending. Node: 21 Not listening
-20:56:43.986 DVC [Z_Wave.h:371        ] ----------------------------------- Interview started. Node: 22
-20:56:43.987 DVC [InterviewManager.cpp:20] >> ZW_API_GET_NODE_INFO_PROTOCOL_DATA: node=22
-20:56:44.034 DBG  [Interface.cpp:112   ] >> Send: attempt=1 frame=[REQ] cmdId=0x41 ZW_API_GET_NODE_INFO_PROTOCOL_DATA | payload=(1) 16
-20:56:44.034 DBG  [Interface.cpp:113   ] >> FrameBytes: len=6 bytes=[01 04 00 41 16 AC ]
-20:56:44.036 DBG  [Interface.cpp:320   ] << Recv: bytesLen=11 bytes=[01 09 01 41 0A 06 00 01 20 01 9A ]
-20:56:44.037 DBG  [Interface.cpp:323   ] << Recv frame [RES] cmdId=0x41 ZW_API_GET_NODE_INFO_PROTOCOL_DATA | payload=(6) 0A 06 00 01 20 01
-20:56:44.037 DVC [Z_Wave.h:202        ] << [RES] cmdId=0x41 ZW_API_GET_NODE_INFO_PROTOCOL_DATA | payload=(6) 0A 06 00 01 20 01
-20:56:44.037 DBG  [Z_Wave.h:223        ] << route=interviewManager [RES] cmdId=0x41 ZW_API_GET_NODE_INFO_PROTOCOL_DATA | payload=(6) 0A 06 00 01 20 01
-20:56:44.038 DBG  [InterviewManager.h:68] HandleFrame called for node 22: [RES] cmdId=0x41 ZW_API_GET_NODE_INFO_PROTOCOL_DATA | payload=(6) 0A 06 00 01 20 01
-20:56:44.038 DVC [InterviewManager.cpp:69] << ZW_API_GET_NODE_INFO_PROTOCOL_DATA: node=22 listening=false routing=false speed=1 proto=2 basic=0x01 generic=0x20 specific=0x01 opt=0x06 speedExt=0x00 (payloadLen=6)
-20:56:44.050 DVC [Z_Wave.h:365        ] ----------------------------------- Interview pending. Node: 22 Not listening
-20:56:44.050 DVC [Z_Wave.h:371        ] ----------------------------------- Interview started. Node: 23
-20:56:44.050 DVC [InterviewManager.cpp:20] >> ZW_API_GET_NODE_INFO_PROTOCOL_DATA: node=23
-20:56:44.112 DBG  [Interface.cpp:112   ] >> Send: attempt=1 frame=[REQ] cmdId=0x41 ZW_API_GET_NODE_INFO_PROTOCOL_DATA | payload=(1) 17
-20:56:44.114 DBG  [Interface.cpp:113   ] >> FrameBytes: len=6 bytes=[01 04 00 41 17 AD ]
-20:56:44.116 DBG  [Interface.cpp:320   ] << Recv: bytesLen=11 bytes=[01 09 01 41 0A 06 00 01 20 01 9A ]
-20:56:44.117 DBG  [Interface.cpp:323   ] << Recv frame [RES] cmdId=0x41 ZW_API_GET_NODE_INFO_PROTOCOL_DATA | payload=(6) 0A 06 00 01 20 01
-20:56:44.117 DVC [Z_Wave.h:202        ] << [RES] cmdId=0x41 ZW_API_GET_NODE_INFO_PROTOCOL_DATA | payload=(6) 0A 06 00 01 20 01
-20:56:44.117 DBG  [Z_Wave.h:223        ] << route=interviewManager [RES] cmdId=0x41 ZW_API_GET_NODE_INFO_PROTOCOL_DATA | payload=(6) 0A 06 00 01 20 01
-20:56:44.117 DBG  [InterviewManager.h:68] HandleFrame called for node 23: [RES] cmdId=0x41 ZW_API_GET_NODE_INFO_PROTOCOL_DATA | payload=(6) 0A 06 00 01 20 01
-20:56:44.117 DVC [InterviewManager.cpp:69] << ZW_API_GET_NODE_INFO_PROTOCOL_DATA: node=23 listening=false routing=false speed=1 proto=2 basic=0x01 generic=0x20 specific=0x01 opt=0x06 speedExt=0x00 (payloadLen=6)
-20:56:44.174 DVC [Z_Wave.h:365        ] ----------------------------------- Interview pending. Node: 23 Not listening
-20:56:44.174 DVC [Z_Wave.h:371        ] ----------------------------------- Interview started. Node: 24
-20:56:44.174 DVC [InterviewManager.cpp:20] >> ZW_API_GET_NODE_INFO_PROTOCOL_DATA: node=24
-20:56:44.190 DBG  [Interface.cpp:112   ] >> Send: attempt=1 frame=[REQ] cmdId=0x41 ZW_API_GET_NODE_INFO_PROTOCOL_DATA | payload=(1) 18
-20:56:44.190 DBG  [Interface.cpp:113   ] >> FrameBytes: len=6 bytes=[01 04 00 41 18 A2 ]
-20:56:44.193 DBG  [Interface.cpp:320   ] << Recv: bytesLen=11 bytes=[01 09 01 41 0A 06 00 01 20 01 9A ]
-20:56:44.193 DBG  [Interface.cpp:323   ] << Recv frame [RES] cmdId=0x41 ZW_API_GET_NODE_INFO_PROTOCOL_DATA | payload=(6) 0A 06 00 01 20 01
-20:56:44.193 DVC [Z_Wave.h:202        ] << [RES] cmdId=0x41 ZW_API_GET_NODE_INFO_PROTOCOL_DATA | payload=(6) 0A 06 00 01 20 01
-20:56:44.193 DBG  [Z_Wave.h:223        ] << route=interviewManager [RES] cmdId=0x41 ZW_API_GET_NODE_INFO_PROTOCOL_DATA | payload=(6) 0A 06 00 01 20 01
-20:56:44.193 DBG  [InterviewManager.h:68] HandleFrame called for node 24: [RES] cmdId=0x41 ZW_API_GET_NODE_INFO_PROTOCOL_DATA | payload=(6) 0A 06 00 01 20 01
-20:56:44.193 DVC [InterviewManager.cpp:69] << ZW_API_GET_NODE_INFO_PROTOCOL_DATA: node=24 listening=false routing=false speed=1 proto=2 basic=0x01 generic=0x20 specific=0x01 opt=0x06 speedExt=0x00 (payloadLen=6)
-20:56:44.237 DVC [Z_Wave.h:365        ] ----------------------------------- Interview pending. Node: 24 Not listening
-20:56:44.238 DVC [Z_Wave.h:371        ] ----------------------------------- Interview started. Node: 25
-20:56:44.238 DVC [InterviewManager.cpp:20] >> ZW_API_GET_NODE_INFO_PROTOCOL_DATA: node=25
-20:56:44.268 DBG  [Interface.cpp:112   ] >> Send: attempt=1 frame=[REQ] cmdId=0x41 ZW_API_GET_NODE_INFO_PROTOCOL_DATA | payload=(1) 19
-20:56:44.268 DBG  [Interface.cpp:113   ] >> FrameBytes: len=6 bytes=[01 04 00 41 19 A3 ]
-20:56:44.271 DBG  [Interface.cpp:320   ] << Recv: bytesLen=11 bytes=[01 09 01 41 0A 06 00 01 20 01 9A ]
-20:56:44.271 DBG  [Interface.cpp:323   ] << Recv frame [RES] cmdId=0x41 ZW_API_GET_NODE_INFO_PROTOCOL_DATA | payload=(6) 0A 06 00 01 20 01
-20:56:44.271 DVC [Z_Wave.h:202        ] << [RES] cmdId=0x41 ZW_API_GET_NODE_INFO_PROTOCOL_DATA | payload=(6) 0A 06 00 01 20 01
-20:56:44.271 DBG  [Z_Wave.h:223        ] << route=interviewManager [RES] cmdId=0x41 ZW_API_GET_NODE_INFO_PROTOCOL_DATA | payload=(6) 0A 06 00 01 20 01
-20:56:44.272 DBG  [InterviewManager.h:68] HandleFrame called for node 25: [RES] cmdId=0x41 ZW_API_GET_NODE_INFO_PROTOCOL_DATA | payload=(6) 0A 06 00 01 20 01
-20:56:44.272 DVC [InterviewManager.cpp:69] << ZW_API_GET_NODE_INFO_PROTOCOL_DATA: node=25 listening=false routing=false speed=1 proto=2 basic=0x01 generic=0x20 specific=0x01 opt=0x06 speedExt=0x00 (payloadLen=6)
-20:56:44.308 DVC [Z_Wave.h:365        ] ----------------------------------- Interview pending. Node: 25 Not listening
-20:56:44.308 DVC [Z_Wave.h:371        ] ----------------------------------- Interview started. Node: 26
-20:56:44.308 DVC [InterviewManager.cpp:20] >> ZW_API_GET_NODE_INFO_PROTOCOL_DATA: node=26
-20:56:44.332 DBG  [Interface.cpp:112   ] >> Send: attempt=1 frame=[REQ] cmdId=0x41 ZW_API_GET_NODE_INFO_PROTOCOL_DATA | payload=(1) 1A
-20:56:44.332 DBG  [Interface.cpp:113   ] >> FrameBytes: len=6 bytes=[01 04 00 41 1A A0 ]
-20:56:44.335 DBG  [Interface.cpp:320   ] << Recv: bytesLen=11 bytes=[01 09 01 41 C9 0C 00 04 10 01 66 ]
-20:56:44.335 DBG  [Interface.cpp:323   ] << Recv frame [RES] cmdId=0x41 ZW_API_GET_NODE_INFO_PROTOCOL_DATA | payload=(6) C9 0C 00 04 10 01
-20:56:44.335 DVC [Z_Wave.h:202        ] << [RES] cmdId=0x41 ZW_API_GET_NODE_INFO_PROTOCOL_DATA | payload=(6) C9 0C 00 04 10 01
-20:56:44.336 DBG  [Z_Wave.h:223        ] << route=interviewManager [RES] cmdId=0x41 ZW_API_GET_NODE_INFO_PROTOCOL_DATA | payload=(6) C9 0C 00 04 10 01
-20:56:44.336 DBG  [InterviewManager.h:68] HandleFrame called for node 26: [RES] cmdId=0x41 ZW_API_GET_NODE_INFO_PROTOCOL_DATA | payload=(6) C9 0C 00 04 10 01
-20:56:44.336 DVC [InterviewManager.cpp:69] << ZW_API_GET_NODE_INFO_PROTOCOL_DATA: node=26 listening=true routing=true speed=1 proto=1 basic=0x04 generic=0x10 specific=0x01 opt=0x0C speedExt=0x00 (payloadLen=6)
-20:56:44.336 DVC [InterviewManager.cpp:111] >> ZW_API_REQUEST_NODE_INFORMATION: node=26
-20:56:44.410 DBG  [Interface.cpp:112   ] >> Send: attempt=1 frame=[REQ] cmdId=0x60 ZW_API_REQUEST_NODE_INFORMATION | payload=(1) 1A
-20:56:44.410 DBG  [Interface.cpp:113   ] >> FrameBytes: len=6 bytes=[01 04 00 60 1A 81 ]
-20:56:44.415 DBG  [Interface.cpp:320   ] << Recv: bytesLen=6 bytes=[01 04 01 60 01 9B ]
-20:56:44.415 DBG  [Interface.cpp:323   ] << Recv frame [RES] cmdId=0x60 ZW_API_REQUEST_NODE_INFORMATION | payload=(1) 01
-20:56:44.415 DVC [Z_Wave.h:202        ] << [RES] cmdId=0x60 ZW_API_REQUEST_NODE_INFORMATION | payload=(1) 01
-20:56:44.416 DBG  [Z_Wave.h:223        ] << route=interviewManager [RES] cmdId=0x60 ZW_API_REQUEST_NODE_INFORMATION | payload=(1) 01
-20:56:44.416 DBG  [InterviewManager.h:68] HandleFrame called for node 26: [RES] cmdId=0x60 ZW_API_REQUEST_NODE_INFORMATION | payload=(1) 01
-20:56:44.491 DBG  [Interface.cpp:320   ] << Recv: bytesLen=19 bytes=[01 11 00 49 84 1A 0B 04 10 01 72 86 70 85 25 28 27 75 79 ]
-20:56:44.492 DBG  [Interface.cpp:323   ] << Recv frame [REQ] cmdId=0x49 ZW_API_APPLICATION_UPDATE | payload=(14) 84 1A 0B 04 10 01 72 86 70 85 25 28 27 75 | event=UPDATE_STATE_NODE_ADDED
-20:56:44.492 DVC [Z_Wave.h:202        ] << [REQ] cmdId=0x49 ZW_API_APPLICATION_UPDATE | payload=(14) 84 1A 0B 04 10 01 72 86 70 85 25 28 27 75 | event=UPDATE_STATE_NODE_ADDED
-20:56:44.493 DBG  [Z_Wave.h:223        ] << route=interviewManager [REQ] cmdId=0x49 ZW_API_APPLICATION_UPDATE | payload=(14) 84 1A 0B 04 10 01 72 86 70 85 25 28 27 75 | event=UPDATE_STATE_NODE_ADDED
-20:56:44.493 DBG  [InterviewManager.h:68] HandleFrame called for node 26: [REQ] cmdId=0x49 ZW_API_APPLICATION_UPDATE | payload=(14) 84 1A 0B 04 10 01 72 86 70 85 25 28 27 75 | event=UPDATE_STATE_NODE_ADDED
-20:56:44.493 DBG  [InterviewManager.h:129] << ZW_API_APPLICATION_UPDATE: unexpected event=0x84 payloadLen=14
-20:56:49.362 DVC [Z_Wave.h:405        ] Job timeout: 1 attempt 163
-20:56:49.362 ERR  [Z_Wave.h:381        ] Job failed: 1
+09:30:58.060 DBG  [Z_Wave_TCP.cpp:117  ] Hello ZWave World! Im a ZWaveCore app that can connect to a ZWave network.
+09:30:58.063 DBG  [Z_Wave_TCP.cpp:118  ] And connect to you with a TCP connection.
+09:30:58.100 ITF [Interface.cpp:16    ] OpenPort ok: port='COM3'
+09:30:58.107 DVC [InitializeManager.cpp:15] >> GetInitData: cmdId=0x02
+09:30:58.178 DBG  [Interface.cpp:112   ] >> Send: attempt=1 frame=[REQ] cmdId=0x02 FUNC_ID_GET_INIT_DATA | payload=(0)
+09:30:58.178 DBG  [Interface.cpp:113   ] >> FrameBytes: len=5 bytes=[01 03 00 02 FE ]
+09:30:58.227 DBG  [Interface.cpp:320   ] << Recv: bytesLen=39 bytes=[01 25 01 02 05 08 1D 01 00 F0 03 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 03 01 39 ]
+09:30:58.227 DBG  [Interface.cpp:323   ] << Recv frame [RES] cmdId=0x02 FUNC_ID_GET_INIT_DATA | payload=(34) 05 08 1D 01 00 F0 03 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 03 01
+09:30:58.228 DVC [Z_Wave.h:202        ] << [RES] cmdId=0x02 FUNC_ID_GET_INIT_DATA | payload=(34) 05 08 1D 01 00 F0 03 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 03 01
+09:30:58.228 DBG  [Z_Wave.h:212        ] << route=initializeManager [RES] cmdId=0x02 FUNC_ID_GET_INIT_DATA | payload=(34) 05 08 1D 01 00 F0 03 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 03 01
+09:30:58.228 DVC [InitializeManager.cpp:63] << GetInitData ApiVersion=5 Caps=8 NodeListLen=29 ChipType=ZW030x ChipVer=1 
+09:30:58.228 DVC [InitializeManager.cpp:69] << GetInitData: parsed nodeIds=7 (first=1, last=26)
+09:30:58.229 DVC [InitializeManager.cpp:173] >> GetCapabilities: cmdId=0x07
+09:30:58.303 DBG  [Interface.cpp:112   ] >> Send: attempt=1 frame=[REQ] cmdId=0x07 FUNC_ID_GET_CAPABILITIES | payload=(0)
+09:30:58.303 DBG  [Interface.cpp:113   ] >> FrameBytes: len=5 bytes=[01 03 00 07 FB ]
+09:30:58.308 DBG  [Interface.cpp:320   ] << Recv: bytesLen=45 bytes=[01 2B 01 07 03 07 00 86 00 02 00 01 FE 80 FE 88 0F 00 00 00 FB 97 7F 82 07 00 00 80 00 80 00 00 00 00 00 00 00 00 00 00 00 00 00 00 C2 ]
+09:30:58.309 DBG  [Interface.cpp:323   ] << Recv frame [RES] cmdId=0x07 FUNC_ID_GET_CAPABILITIES | payload=(40) 03 07 00 86 00 02 00 01 FE 80 FE 88 0F 00 00 00 FB 97 7F 82 07 00 00 80 00 80 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+09:30:58.309 DVC [Z_Wave.h:202        ] << [RES] cmdId=0x07 FUNC_ID_GET_CAPABILITIES | payload=(40) 03 07 00 86 00 02 00 01 FE 80 FE 88 0F 00 00 00 FB 97 7F 82 07 00 00 80 00 80 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+09:30:58.310 DBG  [Z_Wave.h:212        ] << route=initializeManager [RES] cmdId=0x07 FUNC_ID_GET_CAPABILITIES | payload=(40) 03 07 00 86 00 02 00 01 FE 80 FE 88 0F 00 00 00 FB 97 7F 82 07 00 00 80 00 80 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+09:30:58.310 DVC [InitializeManager.cpp:213] << GetCapabilities: appVer=3.7 mfg=0x0086 prodType=0x0002 prodId=0x0001 cmdCount=47 cmdList=[2 3 4 5 6 7 8 16 18 19 20 21 22 23 24 28 32 33 34 35 36 65 66 68 69 70 71 72 73 74 75 77 80 81 82 83 84 85 86 87 90 96 97 98 99 128 144 ] (payloadLen=40)
+09:30:58.311 DVC [InitializeManager.cpp:80] >> GetControllerCapabilities: cmdId=0x05
+09:30:58.381 DBG  [Interface.cpp:112   ] >> Send: attempt=1 frame=[REQ] cmdId=0x05 FUNC_ID_GET_CONTROLLER_CAPABILITIES | payload=(0)
+09:30:58.381 DBG  [Interface.cpp:113   ] >> FrameBytes: len=5 bytes=[01 03 00 05 F9 ]
+09:30:58.383 DBG  [Interface.cpp:320   ] << Recv: bytesLen=6 bytes=[01 04 01 05 1C E3 ]
+09:30:58.383 DBG  [Interface.cpp:323   ] << Recv frame [RES] cmdId=0x05 FUNC_ID_GET_CONTROLLER_CAPABILITIES | payload=(1) 1C
+09:30:58.383 DVC [Z_Wave.h:202        ] << [RES] cmdId=0x05 FUNC_ID_GET_CONTROLLER_CAPABILITIES | payload=(1) 1C
+09:30:58.383 DBG  [Z_Wave.h:212        ] << route=initializeManager [RES] cmdId=0x05 FUNC_ID_GET_CONTROLLER_CAPABILITIES | payload=(1) 1C
+09:30:58.383 DVC [InitializeManager.cpp:99] << GetControllerCapabilities: caps=0x1C secondary=false otherNet=false sisPresent=true sucEnabled=true noNodesIncluded=false (payloadLen=1)
+09:30:58.383 DVC [InitializeManager.cpp:233] >> GetNetworkIdsFromMemory: cmdId=0x20
+09:30:58.443 DBG  [Interface.cpp:112   ] >> Send: attempt=1 frame=[REQ] cmdId=0x20 ZW_API_GET_NETWORK_IDS_FROM_MEMORY | payload=(0)
+09:30:58.443 DBG  [Interface.cpp:113   ] >> FrameBytes: len=5 bytes=[01 03 00 20 DC ]
+09:30:58.446 DBG  [Interface.cpp:320   ] << Recv: bytesLen=10 bytes=[01 08 01 20 01 4C E4 51 01 2F ]
+09:30:58.446 DBG  [Interface.cpp:323   ] << Recv frame [RES] cmdId=0x20 ZW_API_GET_NETWORK_IDS_FROM_MEMORY | payload=(5) 01 4C E4 51 01
+09:30:58.446 DVC [Z_Wave.h:202        ] << [RES] cmdId=0x20 ZW_API_GET_NETWORK_IDS_FROM_MEMORY | payload=(5) 01 4C E4 51 01
+09:30:58.447 DBG  [Z_Wave.h:212        ] << route=initializeManager [RES] cmdId=0x20 ZW_API_GET_NETWORK_IDS_FROM_MEMORY | payload=(5) 01 4C E4 51 01
+09:30:58.447 DVC [InitializeManager.cpp:255] << GetNetworkIdsFromMemory: homeId=0x014CE451 nodeId=1 (payloadLen=5)
+09:30:58.447 DVC [InitializeManager.cpp:267] >> GetLibraryVersion: cmdId=0x15
+09:30:58.521 DBG  [Interface.cpp:112   ] >> Send: attempt=1 frame=[REQ] cmdId=0x15 FUNC_ID_GET_LIBRARY_VERSION | payload=(0)
+09:30:58.521 DBG  [Interface.cpp:113   ] >> FrameBytes: len=5 bytes=[01 03 00 15 E9 ]
+09:30:58.524 DBG  [Interface.cpp:320   ] << Recv: bytesLen=18 bytes=[01 10 01 15 5A 2D 57 61 76 65 20 32 2E 37 38 00 01 9B ]
+09:30:58.524 DBG  [Interface.cpp:323   ] << Recv frame [RES] cmdId=0x15 FUNC_ID_GET_LIBRARY_VERSION | payload=(13) 5A 2D 57 61 76 65 20 32 2E 37 38 00 01
+09:30:58.525 DVC [Z_Wave.h:202        ] << [RES] cmdId=0x15 FUNC_ID_GET_LIBRARY_VERSION | payload=(13) 5A 2D 57 61 76 65 20 32 2E 37 38 00 01
+09:30:58.525 DBG  [Z_Wave.h:212        ] << route=initializeManager [RES] cmdId=0x15 FUNC_ID_GET_LIBRARY_VERSION | payload=(13) 5A 2D 57 61 76 65 20 32 2E 37 38 00 01
+09:30:58.525 DVC [InitializeManager.cpp:306] << GetLibraryVersion: verStr='Z-Wave 2.78' libType=0x01 protoParsed=2.78 (payloadLen=13)
+09:30:58.536 DVC [Z_Wave.h:353        ] ----------------------------------- Initialization done.
+09:30:58.539 DVC [Z_Wave.h:371        ] ----------------------------------- Interview started. Node: 21
+09:30:58.540 DVC [InterviewManager.cpp:20] >> ZW_API_GET_NODE_INFO_PROTOCOL_DATA: node=21
+09:30:58.598 DBG  [Interface.cpp:112   ] >> Send: attempt=1 frame=[REQ] cmdId=0x41 ZW_API_GET_NODE_INFO_PROTOCOL_DATA | payload=(1) 15
+09:30:58.598 DBG  [Interface.cpp:113   ] >> FrameBytes: len=6 bytes=[01 04 00 41 15 AF ]
+09:30:58.601 DBG  [Interface.cpp:320   ] << Recv: bytesLen=11 bytes=[01 09 01 41 0A 06 00 01 20 01 9A ]
+09:30:58.601 DBG  [Interface.cpp:323   ] << Recv frame [RES] cmdId=0x41 ZW_API_GET_NODE_INFO_PROTOCOL_DATA | payload=(6) 0A 06 00 01 20 01
+09:30:58.601 DVC [Z_Wave.h:202        ] << [RES] cmdId=0x41 ZW_API_GET_NODE_INFO_PROTOCOL_DATA | payload=(6) 0A 06 00 01 20 01
+09:30:58.602 DBG  [Z_Wave.h:223        ] << route=interviewManager [RES] cmdId=0x41 ZW_API_GET_NODE_INFO_PROTOCOL_DATA | payload=(6) 0A 06 00 01 20 01
+09:30:58.602 DBG  [InterviewManager.h:68] HandleFrame called for node 21: [RES] cmdId=0x41 ZW_API_GET_NODE_INFO_PROTOCOL_DATA | payload=(6) 0A 06 00 01 20 01
+09:30:58.602 DVC [InterviewManager.cpp:69] << ZW_API_GET_NODE_INFO_PROTOCOL_DATA: node=21 listening=false routing=false speed=1 proto=2 basic=0x01 generic=0x20 specific=0x01 opt=0x06 speedExt=0x00 (payloadLen=6)
+09:30:58.660 DVC [Z_Wave.h:365        ] ----------------------------------- Interview pending. Node: 21 Not listening
+09:30:58.660 DVC [Z_Wave.h:371        ] ----------------------------------- Interview started. Node: 22
+09:30:58.660 DVC [InterviewManager.cpp:20] >> ZW_API_GET_NODE_INFO_PROTOCOL_DATA: node=22
+09:30:58.676 DBG  [Interface.cpp:112   ] >> Send: attempt=1 frame=[REQ] cmdId=0x41 ZW_API_GET_NODE_INFO_PROTOCOL_DATA | payload=(1) 16
+09:30:58.676 DBG  [Interface.cpp:113   ] >> FrameBytes: len=6 bytes=[01 04 00 41 16 AC ]
+09:30:58.679 DBG  [Interface.cpp:320   ] << Recv: bytesLen=11 bytes=[01 09 01 41 0A 06 00 01 20 01 9A ]
+09:30:58.679 DBG  [Interface.cpp:323   ] << Recv frame [RES] cmdId=0x41 ZW_API_GET_NODE_INFO_PROTOCOL_DATA | payload=(6) 0A 06 00 01 20 01
+09:30:58.679 DVC [Z_Wave.h:202        ] << [RES] cmdId=0x41 ZW_API_GET_NODE_INFO_PROTOCOL_DATA | payload=(6) 0A 06 00 01 20 01
+09:30:58.680 DBG  [Z_Wave.h:223        ] << route=interviewManager [RES] cmdId=0x41 ZW_API_GET_NODE_INFO_PROTOCOL_DATA | payload=(6) 0A 06 00 01 20 01
+09:30:58.680 DBG  [InterviewManager.h:68] HandleFrame called for node 22: [RES] cmdId=0x41 ZW_API_GET_NODE_INFO_PROTOCOL_DATA | payload=(6) 0A 06 00 01 20 01
+09:30:58.680 DVC [InterviewManager.cpp:69] << ZW_API_GET_NODE_INFO_PROTOCOL_DATA: node=22 listening=false routing=false speed=1 proto=2 basic=0x01 generic=0x20 specific=0x01 opt=0x06 speedExt=0x00 (payloadLen=6)
+09:30:58.723 DVC [Z_Wave.h:365        ] ----------------------------------- Interview pending. Node: 22 Not listening
+09:30:58.723 DVC [Z_Wave.h:371        ] ----------------------------------- Interview started. Node: 23
+09:30:58.723 DVC [InterviewManager.cpp:20] >> ZW_API_GET_NODE_INFO_PROTOCOL_DATA: node=23
+09:30:58.755 DBG  [Interface.cpp:112   ] >> Send: attempt=1 frame=[REQ] cmdId=0x41 ZW_API_GET_NODE_INFO_PROTOCOL_DATA | payload=(1) 17
+09:30:58.755 DBG  [Interface.cpp:113   ] >> FrameBytes: len=6 bytes=[01 04 00 41 17 AD ]
+09:30:58.758 DBG  [Interface.cpp:320   ] << Recv: bytesLen=11 bytes=[01 09 01 41 0A 06 00 01 20 01 9A ]
+09:30:58.758 DBG  [Interface.cpp:323   ] << Recv frame [RES] cmdId=0x41 ZW_API_GET_NODE_INFO_PROTOCOL_DATA | payload=(6) 0A 06 00 01 20 01
+09:30:58.758 DVC [Z_Wave.h:202        ] << [RES] cmdId=0x41 ZW_API_GET_NODE_INFO_PROTOCOL_DATA | payload=(6) 0A 06 00 01 20 01
+09:30:58.758 DBG  [Z_Wave.h:223        ] << route=interviewManager [RES] cmdId=0x41 ZW_API_GET_NODE_INFO_PROTOCOL_DATA | payload=(6) 0A 06 00 01 20 01
+09:30:58.759 DBG  [InterviewManager.h:68] HandleFrame called for node 23: [RES] cmdId=0x41 ZW_API_GET_NODE_INFO_PROTOCOL_DATA | payload=(6) 0A 06 00 01 20 01
+09:30:58.759 DVC [InterviewManager.cpp:69] << ZW_API_GET_NODE_INFO_PROTOCOL_DATA: node=23 listening=false routing=false speed=1 proto=2 basic=0x01 generic=0x20 specific=0x01 opt=0x06 speedExt=0x00 (payloadLen=6)
+09:30:58.786 DVC [Z_Wave.h:365        ] ----------------------------------- Interview pending. Node: 23 Not listening
+09:30:58.787 DVC [Z_Wave.h:371        ] ----------------------------------- Interview started. Node: 24
+09:30:58.787 DVC [InterviewManager.cpp:20] >> ZW_API_GET_NODE_INFO_PROTOCOL_DATA: node=24
+09:30:58.833 DBG  [Interface.cpp:112   ] >> Send: attempt=1 frame=[REQ] cmdId=0x41 ZW_API_GET_NODE_INFO_PROTOCOL_DATA | payload=(1) 18
+09:30:58.833 DBG  [Interface.cpp:113   ] >> FrameBytes: len=6 bytes=[01 04 00 41 18 A2 ]
+09:30:58.836 DBG  [Interface.cpp:320   ] << Recv: bytesLen=11 bytes=[01 09 01 41 0A 06 00 01 20 01 9A ]
+09:30:58.836 DBG  [Interface.cpp:323   ] << Recv frame [RES] cmdId=0x41 ZW_API_GET_NODE_INFO_PROTOCOL_DATA | payload=(6) 0A 06 00 01 20 01
+09:30:58.836 DVC [Z_Wave.h:202        ] << [RES] cmdId=0x41 ZW_API_GET_NODE_INFO_PROTOCOL_DATA | payload=(6) 0A 06 00 01 20 01
+09:30:58.836 DBG  [Z_Wave.h:223        ] << route=interviewManager [RES] cmdId=0x41 ZW_API_GET_NODE_INFO_PROTOCOL_DATA | payload=(6) 0A 06 00 01 20 01
+09:30:58.836 DBG  [InterviewManager.h:68] HandleFrame called for node 24: [RES] cmdId=0x41 ZW_API_GET_NODE_INFO_PROTOCOL_DATA | payload=(6) 0A 06 00 01 20 01
+09:30:58.837 DVC [InterviewManager.cpp:69] << ZW_API_GET_NODE_INFO_PROTOCOL_DATA: node=24 listening=false routing=false speed=1 proto=2 basic=0x01 generic=0x20 specific=0x01 opt=0x06 speedExt=0x00 (payloadLen=6)
+09:30:58.849 DVC [Z_Wave.h:365        ] ----------------------------------- Interview pending. Node: 24 Not listening
+09:30:58.849 DVC [Z_Wave.h:371        ] ----------------------------------- Interview started. Node: 25
+09:30:58.850 DVC [InterviewManager.cpp:20] >> ZW_API_GET_NODE_INFO_PROTOCOL_DATA: node=25
+09:30:58.912 DBG  [Interface.cpp:112   ] >> Send: attempt=1 frame=[REQ] cmdId=0x41 ZW_API_GET_NODE_INFO_PROTOCOL_DATA | payload=(1) 19
+09:30:58.912 DBG  [Interface.cpp:113   ] >> FrameBytes: len=6 bytes=[01 04 00 41 19 A3 ]
+09:30:58.915 DBG  [Interface.cpp:320   ] << Recv: bytesLen=11 bytes=[01 09 01 41 0A 06 00 01 20 01 9A ]
+09:30:58.915 DBG  [Interface.cpp:323   ] << Recv frame [RES] cmdId=0x41 ZW_API_GET_NODE_INFO_PROTOCOL_DATA | payload=(6) 0A 06 00 01 20 01
+09:30:58.915 DVC [Z_Wave.h:202        ] << [RES] cmdId=0x41 ZW_API_GET_NODE_INFO_PROTOCOL_DATA | payload=(6) 0A 06 00 01 20 01
+09:30:58.915 DBG  [Z_Wave.h:223        ] << route=interviewManager [RES] cmdId=0x41 ZW_API_GET_NODE_INFO_PROTOCOL_DATA | payload=(6) 0A 06 00 01 20 01
+09:30:58.915 DBG  [InterviewManager.h:68] HandleFrame called for node 25: [RES] cmdId=0x41 ZW_API_GET_NODE_INFO_PROTOCOL_DATA | payload=(6) 0A 06 00 01 20 01
+09:30:58.916 DVC [InterviewManager.cpp:69] << ZW_API_GET_NODE_INFO_PROTOCOL_DATA: node=25 listening=false routing=false speed=1 proto=2 basic=0x01 generic=0x20 specific=0x01 opt=0x06 speedExt=0x00 (payloadLen=6)
+09:30:58.975 DVC [Z_Wave.h:365        ] ----------------------------------- Interview pending. Node: 25 Not listening
+09:30:58.975 DVC [Z_Wave.h:371        ] ----------------------------------- Interview started. Node: 26
+09:30:58.976 DVC [InterviewManager.cpp:20] >> ZW_API_GET_NODE_INFO_PROTOCOL_DATA: node=26
+09:30:58.991 DBG  [Interface.cpp:112   ] >> Send: attempt=1 frame=[REQ] cmdId=0x41 ZW_API_GET_NODE_INFO_PROTOCOL_DATA | payload=(1) 1A
+09:30:58.991 DBG  [Interface.cpp:113   ] >> FrameBytes: len=6 bytes=[01 04 00 41 1A A0 ]
+09:30:58.994 DBG  [Interface.cpp:320   ] << Recv: bytesLen=11 bytes=[01 09 01 41 C9 0C 00 04 10 01 66 ]
+09:30:58.994 DBG  [Interface.cpp:323   ] << Recv frame [RES] cmdId=0x41 ZW_API_GET_NODE_INFO_PROTOCOL_DATA | payload=(6) C9 0C 00 04 10 01
+09:30:58.994 DVC [Z_Wave.h:202        ] << [RES] cmdId=0x41 ZW_API_GET_NODE_INFO_PROTOCOL_DATA | payload=(6) C9 0C 00 04 10 01
+09:30:58.994 DBG  [Z_Wave.h:223        ] << route=interviewManager [RES] cmdId=0x41 ZW_API_GET_NODE_INFO_PROTOCOL_DATA | payload=(6) C9 0C 00 04 10 01
+09:30:58.994 DBG  [InterviewManager.h:68] HandleFrame called for node 26: [RES] cmdId=0x41 ZW_API_GET_NODE_INFO_PROTOCOL_DATA | payload=(6) C9 0C 00 04 10 01
+09:30:58.995 DVC [InterviewManager.cpp:69] << ZW_API_GET_NODE_INFO_PROTOCOL_DATA: node=26 listening=true routing=true speed=1 proto=1 basic=0x04 generic=0x10 specific=0x01 opt=0x0C speedExt=0x00 (payloadLen=6)
+09:30:58.995 DVC [InterviewManager.cpp:111] >> ZW_API_REQUEST_NODE_INFORMATION: node=26
+09:30:59.070 DBG  [Interface.cpp:112   ] >> Send: attempt=1 frame=[REQ] cmdId=0x60 ZW_API_REQUEST_NODE_INFORMATION | payload=(1) 1A
+09:30:59.070 DBG  [Interface.cpp:113   ] >> FrameBytes: len=6 bytes=[01 04 00 60 1A 81 ]
+09:30:59.074 DBG  [Interface.cpp:320   ] << Recv: bytesLen=6 bytes=[01 04 01 60 01 9B ]
+09:30:59.074 DBG  [Interface.cpp:323   ] << Recv frame [RES] cmdId=0x60 ZW_API_REQUEST_NODE_INFORMATION | payload=(1) 01
+09:30:59.074 DVC [Z_Wave.h:202        ] << [RES] cmdId=0x60 ZW_API_REQUEST_NODE_INFORMATION | payload=(1) 01
+09:30:59.074 DBG  [Z_Wave.h:223        ] << route=interviewManager [RES] cmdId=0x60 ZW_API_REQUEST_NODE_INFORMATION | payload=(1) 01
+09:30:59.075 DBG  [InterviewManager.h:68] HandleFrame called for node 26: [RES] cmdId=0x60 ZW_API_REQUEST_NODE_INFORMATION | payload=(1) 01
+09:30:59.150 DBG  [Interface.cpp:320   ] << Recv: bytesLen=19 bytes=[01 11 00 49 84 1A 0B 04 10 01 72 86 70 85 25 28 27 75 79 ]
+09:30:59.151 DBG  [Interface.cpp:323   ] << Recv frame [REQ] cmdId=0x49 ZW_API_APPLICATION_UPDATE | payload=(14) 84 1A 0B 04 10 01 72 86 70 85 25 28 27 75 | event=UPDATE_STATE_NODE_ADDED
+09:30:59.151 DVC [Z_Wave.h:202        ] << [REQ] cmdId=0x49 ZW_API_APPLICATION_UPDATE | payload=(14) 84 1A 0B 04 10 01 72 86 70 85 25 28 27 75 | event=UPDATE_STATE_NODE_ADDED
+09:30:59.151 DBG  [Z_Wave.h:223        ] << route=interviewManager [REQ] cmdId=0x49 ZW_API_APPLICATION_UPDATE | payload=(14) 84 1A 0B 04 10 01 72 86 70 85 25 28 27 75 | event=UPDATE_STATE_NODE_ADDED
+09:30:59.151 DBG  [InterviewManager.h:68] HandleFrame called for node 26: [REQ] cmdId=0x49 ZW_API_APPLICATION_UPDATE | payload=(14) 84 1A 0B 04 10 01 72 86 70 85 25 28 27 75 | event=UPDATE_STATE_NODE_ADDED
+09:30:59.151 DBG  [InterviewManager.h:129] << ZW_API_APPLICATION_UPDATE: unexpected event=0x84 payloadLen=14
+09:31:04.032 DVC [Z_Wave.h:405        ] Job timeout: 1 attempt 163
+09:31:04.033 ERR  [Z_Wave.h:381        ] Job failed: 1

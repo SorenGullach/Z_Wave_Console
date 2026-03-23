@@ -29,6 +29,7 @@ public sealed class MainViewModel : ViewModelBase, IDisposable
         Logging = new LoggingViewModel(dispatcher, SetStatusMessage);
         ModuleInfo = new ModuleInfoViewModel(dispatcher, SetStatusMessage);
         NodeList = new NodeListViewModel(dispatcher, SetStatusMessage);
+        NodeInfo = new NodeInfoViewModel(dispatcher, SetStatusMessage); 
 
         Connection = new ConnectionViewModel(tcpService, dispatcher, SetStatusMessage, () => StatusMessage, Logging.Clear, ModuleInfo.Clear);
     }
@@ -42,10 +43,9 @@ public sealed class MainViewModel : ViewModelBase, IDisposable
     public ConnectionViewModel Connection { get; }
 
     public LoggingViewModel Logging { get; }
-
     public ModuleInfoViewModel ModuleInfo { get; }
-    
     public NodeListViewModel NodeList { get; }
+    public NodeInfoViewModel NodeInfo { get; }
 
     private void TcpService_ConnectionClosed(object? sender, EventArgs e)
     {
@@ -58,6 +58,7 @@ public sealed class MainViewModel : ViewModelBase, IDisposable
         Logging.HandleLine(line, Connection.RefreshLogsAsync);
         ModuleInfo.HandleLine(line, Connection.RefreshModuleInfoAsync);
         NodeList.HandleLine(line, Connection.RefreshNodeListAsync);
+        NodeInfo.HandleLine(line, Connection.RefreshNodeInfoAsync);
     }
 
     public void Dispose()

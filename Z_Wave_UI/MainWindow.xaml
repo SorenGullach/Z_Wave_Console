@@ -4,7 +4,10 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:helpers="clr-namespace:Z_Wave_UI.Helpers"
-        xmlns:local="clr-namespace:Z_Wave_UI" xmlns:viewmodels="clr-namespace:Z_Wave_UI.ViewModels" d:DataContext="{d:DesignInstance Type=viewmodels:MainViewModel}"
+        xmlns:local="clr-namespace:Z_Wave_UI"
+        xmlns:viewmodels="clr-namespace:Z_Wave_UI.ViewModels"
+        xmlns:models="clr-namespace:Z_Wave_UI.Models"
+        d:DataContext="{d:DesignInstance Type=viewmodels:MainViewModel}"
         mc:Ignorable="d"
         Title="Z‑Wave Controller"
         Background="#F5F7FA"
@@ -242,7 +245,7 @@
                             </HierarchicalDataTemplate>
 
                             <!-- Node Template -->
-                            <DataTemplate DataType="{x:Type viewmodels:NodeListInfo}">
+                            <DataTemplate DataType="{x:Type models:NodeListInfo}">
                                 <StackPanel Orientation="Horizontal">
                                     <TextBlock Text="{Binding NodeId}" FontWeight="Bold" />
                                     <TextBlock Text=" (" Foreground="Gray"/>

@@ -1,3 +1,4 @@
+using System.Text.Json;
 using System.Windows.Threading;
 
 using Z_Wave_UI.Commands;
@@ -26,17 +27,17 @@ public sealed class ConnectionViewModel : ViewModelBase
     public ConnectionViewModel(
         ZWaveTcpClientService tcpService,
         Dispatcher dispatcher,
-        Action<string> setStatusMessage,
-        Func<string> getStatusMessage,
-        Action clearLogs,
-        Action clearModuleInfo)
+        Action<string> setstatusmessage,
+        Func<string> getstatusmessage,
+        Action clearlogs,
+        Action clearmoduleinfo)
     {
         this.tcpService = tcpService;
         this.dispatcher = dispatcher;
-        this.setStatusMessage = setStatusMessage;
-        this.getStatusMessage = getStatusMessage;
-        this.clearLogs = clearLogs;
-        this.clearModuleInfo = clearModuleInfo;
+        this.setStatusMessage = setstatusmessage;
+        this.getStatusMessage = getstatusmessage;
+        this.clearLogs = clearlogs;
+        this.clearModuleInfo = clearmoduleinfo;
 
         connectCommand = new AsyncRelayCommand(ConnectAsync, () => !IsConnected);
         disconnectCommand = new AsyncRelayCommand(DisconnectAsync, () => IsConnected);
@@ -124,14 +125,21 @@ public sealed class ConnectionViewModel : ViewModelBase
         });
     }
 
-    public async Task RefreshLogsAsync()
+    public async Task RefreshLogsAsync(int count=200)
     {
         if (!IsConnected)
             return;
 
         try
         {
-            await tcpService.SendLineAsync("{\"type\":\"get_logs\",\"count\":200}", CancellationToken.None).ConfigureAwait(false);
+            var payload = new
+            {
+                type = "get_logs",
+                count = count
+            };
+
+            var json = JsonSerializer.Serialize(payload);
+            await tcpService.SendLineAsync(json, CancellationToken.None).ConfigureAwait(false);
         }
         catch (Exception ex)
         {
@@ -146,7 +154,13 @@ public sealed class ConnectionViewModel : ViewModelBase
 
         try
         {
-            await tcpService.SendLineAsync("{\"type\":\"get_controller_info\"}", CancellationToken.None).ConfigureAwait(false);
+            var payload = new
+            {
+                type = "get_controller_info",
+            };
+
+            var json = JsonSerializer.Serialize(payload);
+            await tcpService.SendLineAsync(json, CancellationToken.None).ConfigureAwait(false);
         }
         catch (Exception ex)
         {
@@ -161,7 +175,35 @@ public sealed class ConnectionViewModel : ViewModelBase
 
         try
         {
-            await tcpService.SendLineAsync("{\"type\":\"list_nodes\"}", CancellationToken.None).ConfigureAwait(false);
+            var payload = new
+            {
+                type = "list_nodes",
+            };
+
+            var json = JsonSerializer.Serialize(payload);
+            await tcpService.SendLineAsync(json, CancellationToken.None).ConfigureAwait(false);
+        }
+        catch (Exception ex)
+        {
+            SetStatusMessage(ex.Message);
+        }
+    }
+
+    public async Task RefreshNodeInfoAsync(int nodeid)
+    {
+        if (!IsConnected)
+            return;
+
+        try
+        {
+            var payload = new
+            {
+                type = "get_node",
+                node_id = nodeid
+            };
+
+            var json = JsonSerializer.Serialize(payload);
+            await tcpService.SendLineAsync(json, CancellationToken.None).ConfigureAwait(false);
         }
         catch (Exception ex)
         {

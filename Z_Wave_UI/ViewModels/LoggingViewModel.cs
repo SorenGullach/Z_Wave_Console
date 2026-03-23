@@ -48,7 +48,7 @@ public sealed class LoggingViewModel : ViewModelBase
             _ = dispatcher.InvokeAsync(ClearCore);
     }
 
-    public void HandleLine(string line, Func<Task> refreshlogs)
+    internal void HandleLine(string line, Func<int, Task> refreshLogsAsync)
     {
         try
         {
@@ -111,7 +111,7 @@ public sealed class LoggingViewModel : ViewModelBase
 
             if (string.Equals(type, "log_changed", StringComparison.OrdinalIgnoreCase))
             {
-                _ = refreshlogs();
+                _ = refreshLogsAsync(200);
                 return;
             }
         }

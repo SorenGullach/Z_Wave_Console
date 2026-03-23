@@ -35,8 +35,8 @@ public:
 
 	// ===================== Members =====================
 	const node_t NodeId;
-	std::string Floor;
-	std::string Room;
+	std::string Floor = "Floor";
+	std::string Room = "Room";
 
 	// ---------- Protocol DVC ----------
 	struct ProtocolInfo

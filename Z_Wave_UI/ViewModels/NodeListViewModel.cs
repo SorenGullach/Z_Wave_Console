@@ -4,24 +4,8 @@ using System.Windows.Threading;
 using Z_Wave_UI.Models;
 using static Z_Wave_UI.ViewModels.NodeListViewModel;
 
-namespace Z_Wave_UI.ViewModels
+namespace Z_Wave_UI.Models
 {
-    public class FloorGroup
-    {
-        public string Name { get; }
-        public ObservableCollection<RoomGroup> Rooms { get; } = new();
-
-        public FloorGroup(string name) => Name = name;
-    }
-
-    public class RoomGroup
-    {
-        public string Name { get; }
-        public ObservableCollection<NodeListInfo> Nodes { get; } = new();
-
-        public RoomGroup(string name) => Name = name;
-    }
-
     public class NodeListInfo
     {
         public int NodeId { get; }
@@ -39,6 +23,25 @@ namespace Z_Wave_UI.ViewModels
             InterviewState = interviewState;
         }
     }
+}
+
+namespace Z_Wave_UI.ViewModels
+{
+    public class FloorGroup
+    {
+        public string Name { get; }
+        public ObservableCollection<RoomGroup> Rooms { get; } = new();
+
+        public FloorGroup(string name) => Name = name;
+    }
+
+    public class RoomGroup
+    {
+        public string Name { get; }
+        public ObservableCollection<Z_Wave_UI.Models.NodeListInfo> Nodes { get; } = new();
+
+        public RoomGroup(string name) => Name = name;
+    }
 
     public class NodeListViewModel : ViewModelBase
     {
@@ -53,7 +56,7 @@ namespace Z_Wave_UI.ViewModels
             this.setStatusMessage = setStatusMessage;
         }
 
-        public void HandleLine(string line, Func<Task> refreshNodeListInfo)
+        public void HandleLine(string line, Func<Task> RefreshNodeListAsync)
         {
             try
             {
@@ -79,7 +82,7 @@ namespace Z_Wave_UI.ViewModels
 
                 if (string.Equals(type, "node_list_changed", StringComparison.OrdinalIgnoreCase))
                 {
-                    _ = refreshNodeListInfo();
+                    _ = RefreshNodeListAsync();
                     return;
                 }
             }
@@ -89,13 +92,13 @@ namespace Z_Wave_UI.ViewModels
             }
         }
 
-        private static List<NodeListInfo>? ParseNodeListInfo(JsonElement root)
+        private static List<Z_Wave_UI.Models.NodeListInfo>? ParseNodeListInfo(JsonElement root)
         {
             if (!root.TryGetProperty("nodes", out var nodesElement) ||
                 nodesElement.ValueKind != JsonValueKind.Array)
                 return null;
 
-            var list = new List<NodeListInfo>();
+            var list = new List<Z_Wave_UI.Models.NodeListInfo>();
 
             foreach (var nodeElement in nodesElement.EnumerateArray())
             {
@@ -105,13 +108,13 @@ namespace Z_Wave_UI.ViewModels
                 var state = nodeElement.GetProperty("state").GetString() ?? "Unknown";
                 var interviewState = nodeElement.GetProperty("interviewState").GetString() ?? "Unknown";
 
-                list.Add(new NodeListInfo(nodeId, floor, room, state, interviewState));
+                list.Add(new Z_Wave_UI.Models.NodeListInfo(nodeId, floor, room, state, interviewState));
             }
 
             return list;
         }
 
-        private void ApplyNodeListInfo(List<NodeListInfo> list)
+        private void ApplyNodeListInfo(List<Z_Wave_UI.Models.NodeListInfo> list)
         {
             Tree.Clear();
 
