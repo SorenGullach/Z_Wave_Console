@@ -61,6 +61,7 @@ public:
 	{
 		DebugLockGuard lock(stateMutex);
 		protocolInfo = DVC;
+		NotifyUI(UINotify::NodeChanged, NodeId);
 	}
 	bool IsListening() const
 	{
@@ -82,6 +83,7 @@ public:
 	{
 		DebugLockGuard lock(stateMutex);
 		wakeUpInfo = wakeup;
+		NotifyUI(UINotify::NodeChanged, NodeId);
 	}
 	WakeUpInfo GetWakeUpInfo() const
 	{
@@ -115,9 +117,7 @@ public:
 		uint8_t paramNumber = 0;          // Parameter number (1..255)
 		uint8_t size = 0;                 // Size in bytes (1..4)
 		int32_t value = 0;                // Signed big-endian interpreted value
-		std::vector<uint8_t> raw;         // Raw value bytes (size bytes)
 		bool valid = false;               // True when a REPORT has been received
-		bool isDead = false;              // True when a REPORT has been received
 	};
 	std::array<ConfigurationInfo, 255> configurationInfo{};
 
@@ -185,6 +185,11 @@ public:
 		auto& cc = ccs[static_cast<uint8_t>(ccId)];
 		return cc.supported ? &cc : nullptr;
 	}
+	const CommandClassTag* GetCC(eCommandClass ccId) const
+	{
+		const auto& cc = ccs[static_cast<uint8_t>(ccId)];
+		return cc.supported ? &cc : nullptr;
+	}
 	bool HasCC(eCommandClass ccId) const
 	{
 		return ccs[static_cast<uint8_t>(ccId)].supported;
@@ -221,7 +226,16 @@ public:
 	// ===================== Constructors =====================
 	ZW_NodeInfo(node_t nodeid)
 		: NodeId{ nodeid }, device(*this)
-	{}
+	{
+		int i = 0;
+		for (auto& ci : configurationInfo)
+		{
+			ci.paramNumber = i++;
+			ci.size = 1;
+			ci.value = 0;
+			ci.valid = false;
+		}
+	}
 	ZW_NodeInfo(const ZW_NodeInfo&) = delete;
 	ZW_NodeInfo& operator=(const ZW_NodeInfo&) = delete;
 	ZW_NodeInfo(ZW_NodeInfo&&) noexcept = default;
@@ -232,6 +246,7 @@ public:
 	{
 		DebugLockGuard lock(stateMutex);
 		interviewState = state;
+		NotifyUI(UINotify::NodeChanged, NodeId);
 	}
 	eInterviewState GetInterviewState() const
 	{
@@ -247,11 +262,13 @@ public:
 	{
 		DebugLockGuard lock(stateMutex);
 		nodeState = eNodeState::Awake;
+		NotifyUI(UINotify::NodeChanged, NodeId);
 	}
 	virtual void Sleeping()
 	{
 		DebugLockGuard lock(stateMutex);
 		nodeState = eNodeState::Sleepy;
+		NotifyUI(UINotify::NodeChanged, NodeId);
 	}
 
 	// ---------- NIF/CC Handler ----------
@@ -283,6 +300,7 @@ public:
 		if (HasCC(eCommandClass::ASSOCIATION)) device.AddHandler<ZW_CC_Association>();
 		if (HasCC(eCommandClass::MULTI_CHANNEL_ASSOCIATION)) device.AddHandler<ZW_CC_MultiChannelAssociation>();
 		if (HasCC(eCommandClass::WAKE_UP)) device.AddHandler<ZW_CC_WakeUp>();
+		NotifyUI(UINotify::NodeChanged, NodeId);
 	}
 
 	// ---------- CC Dispatch ----------
@@ -302,12 +320,12 @@ public:
 				cmdId = ZW_CmdId(cmdParams[2]);
 				innerParams.assign(cmdParams.begin() + 3, cmdParams.end());
 				Log.AddL(eLogTypes::DVC, MakeTag(),
-						"Encapsulated command class: 0x{:02X} {} (to endpoint {})",
-						(uint8_t)cmdClass, CommandClassToString(cmdClass), destiationEndpoint);
+						 "Encapsulated command class: 0x{:02X} {} (to endpoint {})",
+						 (uint8_t)cmdClass, CommandClassToString(cmdClass), destiationEndpoint);
 			}
 			else
 			{
-				Log.AddL(eLogTypes::ERR, MakeTag(),"Malformed multi-channel encapsulated command");
+				Log.AddL(eLogTypes::ERR, MakeTag(), "Malformed multi-channel encapsulated command");
 			}
 		}
 		auto handler = device.GetHandler(cmdClass);
@@ -380,7 +398,7 @@ public:
 	void Stop()
 	{
 		running.store(false);
-		stateCondition.notify_one();
+		//		stateCondition.notify_one();
 		if (worker.joinable())
 			worker.join();
 	}
@@ -389,16 +407,23 @@ public:
 	{
 		{
 			DebugLockGuard lock(stateMutex);
-			nodeState = eNodeState::Awake;
+			if (nodeState != eNodeState::Awake)
+			{
+				nodeState = eNodeState::Awake;
+				NotifyUI(UINotify::NodeChanged, NodeId);
+			}
 		}
-		stateCondition.notify_one();
+		//		stateCondition.notify_one();
 	}
 
 	void Sleeping() override
 	{
 		DebugLockGuard lock(stateMutex);
-		if (!protocolInfo.isListening)
+		if (!protocolInfo.isListening && nodeState != eNodeState::Sleepy)
+		{
 			nodeState = eNodeState::Sleepy;
+			NotifyUI(UINotify::NodeChanged, NodeId);
+		}
 	}
 
 
@@ -425,7 +450,7 @@ public:
 		uint8_t group;
 		node_t nodeId;
 		uint8_t endpoint;
-		
+
 		uint32_t value;
 		eConfigSize cfgSize = eConfigSize::OneByte;
 	};
@@ -448,11 +473,11 @@ private:
 	EnqueueFn enqueue;
 	std::thread worker;
 	std::atomic<bool> running{ false };
-	std::condition_variable stateCondition;
+	//	std::condition_variable stateCondition;
 
 	std::vector<Job> jobQueue;
 
-	enum class eIsDeadStates { Idle, Checking  };
+	enum class eIsDeadStates { Idle, Checking };
 	struct IsDeadState
 	{
 		eIsDeadStates isDeadState = eIsDeadStates::Idle;
@@ -536,7 +561,7 @@ private:
 			{
 				if (std::chrono::steady_clock::now() - deadIdleSince >= std::chrono::seconds(10))
 				{
-//					ProcessIsDead();
+					//					ProcessIsDead();
 					deadIdleSince = std::chrono::steady_clock::now();
 				}
 
@@ -599,7 +624,7 @@ private:
 			doneOrError = ExecuteMultiChannelAssociationInterviewJob();
 			break;
 		case eJobs::CONFIGURATION_INTERVIEW:
-			doneOrError = ExecuteConfigurationInterviewJob();
+			doneOrError = ExecuteConfigurationInterviewJob(job.group);
 			break;
 		case eJobs::BIND_COMMAND:
 			doneOrError = ExecuteBindCommandJob(job.group, job.nodeId);
@@ -638,7 +663,7 @@ private:
 	bool ExecuteBatteryCommandJob();
 	bool ExecuteAssociationInterviewJob();
 	bool ExecuteMultiChannelAssociationInterviewJob();
-	bool ExecuteConfigurationInterviewJob();
+	bool ExecuteConfigurationInterviewJob(uint8_t groupId);
 	bool ExecuteBindCommandJob(uint8_t groupId, node_t nodeid);
 	bool ExecuteUnBindCommandJob(uint8_t groupId, node_t nodeid);
 	bool ExecuteMultiChannelUnBindCommandJob(uint8_t groupId, node_t nodeid, uint8_t endpoint);

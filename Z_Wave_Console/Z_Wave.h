@@ -26,7 +26,7 @@ public:
 
 	~Z_Wave()
 	{
-		void ClosePort();
+		ClosePort();
 	}
 	bool OpenPort(const std::string& portname)
 	{
@@ -109,12 +109,13 @@ public:
 		node->EnqueueJob(job);
 	}
 
-	void ConfigurationInterview(node_t nodeid)
+	void ConfigurationInterview(node_t nodeid, uint8_t group)
 	{
 		ZW_Node* node = nodes.Get(nodeid);
 		if (!node) return;
 		ZW_Node::Job job;
 		job.job = ZW_Node::eJobs::CONFIGURATION_INTERVIEW;
+		job.group = group;
 		node->EnqueueJob(job);
 	}
 
@@ -182,7 +183,7 @@ public:
 //		AssociationInterview(nodeid);
 	}
 
-	void Configure(node_t nodeid, uint8_t param, uint32_t value)
+	void Configure(node_t nodeid, uint8_t param, uint32_t value, uint8_t size)
 	{
 		ZW_Node* node = nodes.Get(nodeid);
 		if (!node) return;
@@ -190,16 +191,16 @@ public:
 		job.job = ZW_Node::eJobs::CONFIGURATION_COMMAND;
 		job.group = param;
 		job.value = value;
-		job.cfgSize = ZW_Node::eConfigSize::OneByte;
+		job.cfgSize = (ZW_Node::eConfigSize)size;
 		node->EnqueueJob(job);
-//		ConfigurationInterview(nodeid);
+		ConfigurationInterview(nodeid, param);
 	}
 
 protected:
 
 	bool OnFrameReceived(const ZW_APIFrame& frame) override
 	{
-		Log.AddL(eLogTypes::DVC, MakeTag(), "<< {}", frame.Info());
+		Log.AddL(eLogTypes::RTU, MakeTag(), "<< {}", frame.Info());
 		switch (frame.APICmd.CmdId)
 		{
 		case eCommandIds::FUNC_ID_GET_INIT_DATA:
@@ -215,7 +216,8 @@ protected:
 		case eCommandIds::ZW_API_APPLICATION_UPDATE:
 			{
 				ApplicationUpdateEvent event = static_cast<ApplicationUpdateEvent>(frame.payload[0]);
-				if (event == ApplicationUpdateEvent::UPDATE_STATE_NODE_INFO_RECEIVED)
+				if (event == ApplicationUpdateEvent::UPDATE_STATE_NODE_INFO_RECEIVED 
+					|| event == ApplicationUpdateEvent::UPDATE_STATE_NODE_ADDED)
 					EnqueueJob(eJobs::INTERVIEW, node_t{ frame.payload[1] });
 			}
 		case eCommandIds::ZW_API_GET_NODE_INFO_PROTOCOL_DATA:
@@ -226,9 +228,9 @@ protected:
 		case eCommandIds::ZW_API_CONTROLLER_SEND_DATA:
 			//SendDataManager.HandleTransmitResult(frame.payload);
 			if (frame.Type() == APIFrame::eFrameTypes::RES)
-				Log.AddL(eLogTypes::DBG, MakeTag(), "<< route=sendData type=RES txStatus=0x{:02X} len={}", frame.payload[0], frame.payload.size());
+				Log.AddL(eLogTypes::RTU, MakeTag(), "<< route=sendData type=RES txStatus=0x{:02X} len={}", frame.payload[0], frame.payload.size());
 			if (frame.Type() == APIFrame::eFrameTypes::REQ)
-				Log.AddL(eLogTypes::DBG, MakeTag(), "<< route=sendData type=REQ sessionId={} txStatus=0x{:02X} len={}", frame.payload[0], frame.payload[1], frame.payload.size());
+				Log.AddL(eLogTypes::RTU, MakeTag(), "<< route=sendData type=REQ sessionId={} txStatus=0x{:02X} len={}", frame.payload[0], frame.payload[1], frame.payload.size());
 			return true;
 
 		case eCommandIds::ZW_API_APPLICATION_COMMAND_HANDLER:

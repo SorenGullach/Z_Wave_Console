@@ -28,6 +28,7 @@ ZW_Node* ZW_Nodes::GetOrCreate(node_t nodeid, EnqueueFn enqueue)
     auto n = std::make_unique<ZW_Node>(nodeid, enqueue);
     auto* raw = n.get();
     nodes.emplace(nodeid, std::move(n));
+	NotifyUI(UINotify::NodeListChanged, nodeid);
     return raw;
 }
 

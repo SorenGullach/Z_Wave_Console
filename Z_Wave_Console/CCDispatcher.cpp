@@ -40,10 +40,10 @@ void ZW_CCDispatcher::HandleCCFrame(const APIFrame::PayLoad& payload)
 	const bool hasTrailingMeta = payload.size() > cmdEnd;
 	const uint8_t rssi = hasTrailingMeta ? payload.back() : 0;
 	if (hasTrailingMeta)
-		Log.AddL(eLogTypes::DBG, MakeTag(), "<< ZW_API_APPLICATION_COMMAND_HANDLER: fromNode={} rxStatus=0x{:02X} payloadLen={} cmdLen={} rssi=0x{:02X}",
+		Log.AddL(eLogTypes::RTU, MakeTag(), "<< ZW_API_APPLICATION_COMMAND_HANDLER: fromNode={} rxStatus=0x{:02X} payloadLen={} cmdLen={} rssi=0x{:02X}",
 				 nodeId, rxStatus, payload.size(), cmdLen, rssi);
 	else
-		Log.AddL(eLogTypes::DBG, MakeTag(), "<< ZW_API_APPLICATION_COMMAND_HANDLER: fromNode={} rxStatus=0x{:02X} payloadLen={} cmdLen={}",
+		Log.AddL(eLogTypes::RTU, MakeTag(), "<< ZW_API_APPLICATION_COMMAND_HANDLER: fromNode={} rxStatus=0x{:02X} payloadLen={} cmdLen={}",
 				 nodeId, rxStatus, payload.size(), cmdLen);
 
 	if (payload.size() < cmdEnd)
@@ -59,7 +59,7 @@ void ZW_CCDispatcher::HandleCCFrame(const APIFrame::PayLoad& payload)
 	const eCommandClass cmdClass = static_cast<eCommandClass>(cmd[0]);
 	const ZW_CmdId cmdId(cmd[1]);
 	const ZW_ByteVector cmdParams(cmd.begin() + 2, cmd.end());
-	Log.AddL(eLogTypes::DBG, MakeTag(), "CC frame: fromNode={} cc=0x{:02X} cmd=0x{:02X} paramsLen={}",
+	Log.AddL(eLogTypes::RTU, MakeTag(), "CC frame: fromNode={} cc=0x{:02X} cmd=0x{:02X} paramsLen={}",
 			 nodeId, (uint8_t)cmdClass, (int)cmdId.value, cmdParams.size());
 
 	switch ((static_cast<uint16_t>(cmdClass) << 8) | cmdId.value)

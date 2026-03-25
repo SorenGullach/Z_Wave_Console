@@ -28,10 +28,10 @@ protected:
 		std::string type;
 		if (!JsonUtils::TryExtractString(message, "type", type))
 			return JsonUtils::MakeError("Invalid JSON or missing type", message);
-		
+
 		if (type == "ping")
 			return R"({"type":"pong"})";
-		
+
 		if (type == "get_controller_info")
 			return JSONConversions::ToJSON(ZW.GetModule());
 
@@ -40,19 +40,30 @@ protected:
 
 		if (type == "get_logs")
 		{
-			int count = 200;
+			int count = ZW_Logging::maxEntries;
 			JsonUtils::TryExtractInt(message, "count", count);
 			if (count < 0)
-				count = 0;
+				count = 10;
 			return JSONConversions::ToJSON(Log.GetLogEntrys(count));
 		}
-		
+
 		if (type == "get_node")
 		{
 			int id = 0;
-			JsonUtils::TryExtractInt(message, "nodeId", id);
+			JsonUtils::TryExtractInt(message, "node_id", id);
 			return JSONConversions::ToJSON((node_t)id, ZW.GetNodes());
 		}
+
+		if (type == "set_config")
+		{
+			int id = 0, value = 0, param = 0, size = 0;
+			JsonUtils::TryExtractInt(message, "node_id", id);
+			JsonUtils::TryExtractInt(message, "param", param);
+			JsonUtils::TryExtractInt(message, "value", value);
+			JsonUtils::TryExtractInt(message, "size", size);
+			ZW.Configure((node_t)id, param, value, size);
+		}
+
 		/*
 		if (type == "soft_reset")
 		{
@@ -78,7 +89,10 @@ void NotifyUI(const UINotify notify, node_t nodeId)
 		break;
 
 	case UINotify::ControllerChanged:
-		server.SendToClient("{\"type\":\"controller_changed\"}");
+		server.SendToClient(
+			JSONConversions::ToJSON(ZW.GetModule())
+		);
+		//		server.SendToClient("{\"type\":\"controller_changed\"}");
 		break;
 
 	case UINotify::NodeListChanged:
@@ -92,12 +106,11 @@ void NotifyUI(const UINotify notify, node_t nodeId)
 			);
 		break;
 
-	case UINotify::NodeStateChanged:
+	case UINotify::NodeConfigChanged:
 		if (nodeId.value > 1 && nodeId.value < 232)
 			server.SendToClient(
-				"{\"type\":\"node_state_changed\",\"nodeId\":" + std::to_string(nodeId.value) + "}"
+				JSONConversions::ToJSONCfg(nodeId, ZW.GetNodes())
 			);
-		break;
 	}
 }
 

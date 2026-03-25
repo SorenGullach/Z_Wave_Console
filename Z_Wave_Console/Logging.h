@@ -162,10 +162,10 @@ public:
 		AddInternal(lt, tag, msg);
 	}
 
+	static constexpr size_t maxEntries = 2000;
 private:
 	mutable std::mutex LockMutex;
 
-	static constexpr size_t maxEntries = 100;
 	std::deque<LogEntry> log;
 	std::ofstream logFile;
 

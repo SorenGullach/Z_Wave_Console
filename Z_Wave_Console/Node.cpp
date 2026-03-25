@@ -1,5 +1,3 @@
-
-
 #include "Node.h"
 
 std::string ZW_NodeInfo::NodeStateString() const
@@ -230,10 +228,7 @@ std::string ZW_NodeInfo::ToString(int width) const
 			s << "P" << unsigned(c.paramNumber)
 				<< "(s=" << unsigned(c.size)
 				<< ",v=" << c.value
-				<< ",b=[";
-			for (auto b : c.raw)
-				s << "0x" << std::hex << unsigned(b) << " ";
-			s << std::dec << "]) ";
+				<< ") ";
 
 			if (c.paramNumber >= 9) break;
 		}
@@ -473,7 +468,7 @@ void ZW_Node::ProcessIsDead()
 
 	auto& cfg = configurationInfo[1];
 
-	if (!WaitUntil(std::chrono::seconds(5), [&]() { return cfg.isDead; }))
+	if (!WaitUntil(std::chrono::seconds(5), [&]() { return cfg.valid; }))
 	{
 		frame.Make(eCommandIds::ZW_API_IS_NODE_FAILED, { NodeId });
 		enqueue(frame);
@@ -773,47 +768,46 @@ bool ZW_Node::ExecuteMultiChannelAssociationInterviewJob()
 	return true;
 }
 
-bool ZW_Node::ExecuteConfigurationInterviewJob()
+bool ZW_Node::ExecuteConfigurationInterviewJob(uint8_t group)
 {
 	if (!HasCC(eCommandClass::CONFIGURATION))
 	{
-		Log.AddL(eLogTypes::DVC, MakeTag(), "Node does not support CONFIGURATION CC node {}", NodeId);
+		Log.AddL(eLogTypes::ERR, MakeTag(), "Node does not support CONFIGURATION CC node {}", NodeId);
 		return true;
 	}
 
 	auto* cfgHandler = device.GetHandler(eCommandClass::CONFIGURATION);
 	if (!cfgHandler)
 	{
-		Log.AddL(eLogTypes::DVC, MakeTag(), "No handler for CONFIGURATION CC node {}", NodeId);
+		Log.AddL(eLogTypes::ERR, MakeTag(), "No handler for CONFIGURATION CC node {}", NodeId);
 		return true;
 	}
 
-	constexpr uint8_t maxParams = 10; //255;
-	for (uint16_t param = 0; param < maxParams; param++)
+	for (size_t param = group; param < configurationInfo.size() && param <= group + 1; ++param)
 	{
-		if (param >= configurationInfo.size())
-			break;
-
 		auto& cfg = configurationInfo[param];
-		cfg = {};
+		cfg.valid = false;
 
 		ZW_APIFrame frame;
 		cfgHandler->MakeFrame(frame, ZW_CC_Configuration::eConfigurationCommand::CONFIGURATION_GET, { static_cast<uint8_t>(param) });
 
-		Log.AddL(eLogTypes::DVC, MakeTag(), ">> CONFIGURATION_GET: node {} param {}", NodeId, param);
+		if (param % 10 == 0) 
+			Log.AddL(eLogTypes::DVC, MakeTag(), ">> CONFIGURATION_GET: node {} param {}", NodeId, param);
 
 		enqueue(frame);
 
 		// Wait for report
-		bool ok = WaitUntil(std::chrono::seconds(2), [&]() { return cfg.valid; });
+		bool ok = WaitUntil(std::chrono::seconds(1), [&]() { return cfg.valid; });
 
 		if (!ok)
 		{
-			Log.AddL(eLogTypes::DVC, MakeTag(), "No CONFIGURATION_REPORT for param {} on node {} — stopping interview", param, NodeId);
+			Log.AddL(eLogTypes::ERR, MakeTag(), "No CONFIGURATION_REPORT for param {} on node {} — stopping interview", cfg.paramNumber, NodeId);
+			NotifyUI(UINotify::NodeConfigChanged, NodeId);
 			return false;
 		}
 
-		Log.AddL(eLogTypes::DVC, MakeTag(), "<< CONFIGURATION_REPORT: node {} param {} size {} value {}",
+		if (param % 10 == 0)
+			Log.AddL(eLogTypes::DVC, MakeTag(), "<< CONFIGURATION_REPORT: node {} param {} size {} value {}",
 				 NodeId,
 				 cfg.paramNumber,
 				 cfg.size,
@@ -821,5 +815,6 @@ bool ZW_Node::ExecuteConfigurationInterviewJob()
 	}
 
 	Log.AddL(eLogTypes::DVC, MakeTag(), "Configuration interview completed for node {}", NodeId);
+	NotifyUI(UINotify::NodeConfigChanged, NodeId);
 	return true;
 }

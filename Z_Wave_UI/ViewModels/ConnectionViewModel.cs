@@ -27,21 +27,21 @@ public sealed class ConnectionViewModel : ViewModelBase
     public ConnectionViewModel(
         ZWaveTcpClientService tcpService,
         Dispatcher dispatcher,
-        Action<string> setstatusmessage,
-        Func<string> getstatusmessage,
-        Action clearlogs,
-        Action clearmoduleinfo)
+        Action<string> setStatusMessage,
+        Func<string> getStatusMessage,
+        Action clearLogs,
+        Action clearModuleInfo)
     {
         this.tcpService = tcpService;
         this.dispatcher = dispatcher;
-        this.setStatusMessage = setstatusmessage;
-        this.getStatusMessage = getstatusmessage;
-        this.clearLogs = clearlogs;
-        this.clearModuleInfo = clearmoduleinfo;
+        this.setStatusMessage = setStatusMessage;
+        this.getStatusMessage = getStatusMessage;
+        this.clearLogs = clearLogs;
+        this.clearModuleInfo = clearModuleInfo;
 
-        connectCommand = new AsyncRelayCommand(ConnectAsync, () => !IsConnected);
-        disconnectCommand = new AsyncRelayCommand(DisconnectAsync, () => IsConnected);
-        refreshLogsCommand = new AsyncRelayCommand(RefreshLogsAsync, () => IsConnected);
+        connectCommand = new AsyncRelayCommand(() => ConnectAsync(), () => !IsConnected);
+        disconnectCommand = new AsyncRelayCommand(() => DisconnectAsync(), () => IsConnected);
+        refreshLogsCommand = new AsyncRelayCommand(() => RefreshLogsAsync(100), () => IsConnected);
 
         LoadSettings();
     }
@@ -189,7 +189,7 @@ public sealed class ConnectionViewModel : ViewModelBase
         }
     }
 
-    public async Task RefreshNodeInfoAsync(int nodeid)
+    public async Task RefreshNodeInfoAsync(int nodeId)
     {
         if (!IsConnected)
             return;
@@ -199,7 +199,32 @@ public sealed class ConnectionViewModel : ViewModelBase
             var payload = new
             {
                 type = "get_node",
-                node_id = nodeid
+                node_id = nodeId
+            };
+
+            var json = JsonSerializer.Serialize(payload);
+            await tcpService.SendLineAsync(json, CancellationToken.None).ConfigureAwait(false);
+        }
+        catch (Exception ex)
+        {
+            SetStatusMessage(ex.Message);
+        }
+    }
+
+    public async Task UpdateConfigAsync(int nodeid, int param, int value, int size)
+    {
+        if (!IsConnected)
+            return;
+
+        try
+        {
+            var payload = new
+            {
+                type = "set_config",
+                node_id = nodeid,
+                param,
+                value,
+                size
             };
 
             var json = JsonSerializer.Serialize(payload);

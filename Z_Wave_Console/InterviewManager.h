@@ -44,6 +44,7 @@ public:
 			job.job = ZW_Node::eJobs::MULTI_CHANNEL_ASSOCIATION_INTERVIEW;
 			node->EnqueueJob(job);
 			job.job = ZW_Node::eJobs::CONFIGURATION_INTERVIEW;
+			job.group = 0;
 			node->EnqueueJob(job);
 			break;
 		}
@@ -111,6 +112,7 @@ public:
 
 		switch (event)
 		{
+		case ApplicationUpdateEvent::UPDATE_STATE_NODE_ADDED:
 		case ApplicationUpdateEvent::UPDATE_STATE_NODE_INFO_RECEIVED:
 			DecodeNodeInfo(p);
 			break;

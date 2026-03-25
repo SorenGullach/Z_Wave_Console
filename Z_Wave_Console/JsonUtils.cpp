@@ -143,8 +143,14 @@ bool JsonUtils::TryExtractInt(std::string_view json, std::string_view key, int& 
 	return true;
 }
 
+
 std::string JsonUtils::MakeError(std::string_view message, std::string_view cmd)
 {
 	return std::string("{\"type\":\"error\",\"message\":\"") + Escape(message) +
+		"\",\"cmd\":\"" + Escape(cmd) + "\"}";
+}
+std::string JsonUtils::MakeOk(std::string_view message, std::string_view cmd)
+{
+	return std::string("{\"type\":\"ok\",\"message\":\"") + Escape(message) +
 		"\",\"cmd\":\"" + Escape(cmd) + "\"}";
 }

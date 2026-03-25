@@ -83,7 +83,22 @@ inline std::string CommandClassToString(eCommandClass cc)
 	case eCommandClass::FIRMWARE_UPDATE_MD: return "FIRMWARE_UPDATE_MD";
 	case eCommandClass::DEVICE_RESET_LOCALLY: return "DEVICE_RESET_LOCALLY";
 	case eCommandClass::NOTIFICATION: return "NOTIFICATION";
-	}
+    case eCommandClass::BATTERY: return "BATTERY";                     // 0x50
+//    case eCommandClass::CLIMATE_CONTROL_SCHEDULE: return "CLIMATE_CONTROL_SCHEDULE"; // 0x46
+//    case eCommandClass::CRC_16_ENCAP: return "CRC_16_ENCAP";           // 0x56
+    case eCommandClass::DOOR_LOCK: return "DOOR_LOCK";                 // 0x62
+    case eCommandClass::MULTI_CHANNEL: return "MULTI_CHANNEL";         // 0x60
+    case eCommandClass::MULTI_CHANNEL_ASSOCIATION: return "MULTI_CHANNEL_ASSOCIATION"; // 0x8E
+//    case eCommandClass::SECURITY: return "SECURITY";                   // 0x98
+    case eCommandClass::SECURITY_2: return "SECURITY_2";               // 0x9F
+    case eCommandClass::SUPERVISION: return "SUPERVISION";             // 0x6C
+    case eCommandClass::TRANSPORT_SERVICE: return "TRANSPORT_SERVICE"; // 0x55
+    case eCommandClass::VERSION: return "VERSION";                     // 0x86
+    case eCommandClass::WAKE_UP: return "WAKE_UP";                     // 0x84
+//    case eCommandClass::Z_WAVE_PLUS_INFO: return "Z_WAVE_PLUS_INFO";   // 0x5E
+//    case eCommandClass::MARK: return "MARK";                           // 0xEF
+    }
 
 	return "UNKNOWN";
 }
+

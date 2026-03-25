@@ -3,7 +3,11 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:local="clr-namespace:Z_Wave_UI"
              StartupUri="MainWindow.xaml">
+
     <Application.Resources>
-         
+        <Style x:Key="DebugBinding" TargetType="{x:Type FrameworkElement}">
+            <Setter Property="PresentationTraceSources.TraceLevel" Value="High"/>
+        </Style>
     </Application.Resources>
+
 </Application>

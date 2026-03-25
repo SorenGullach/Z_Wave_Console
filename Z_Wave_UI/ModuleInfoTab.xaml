@@ -1,0 +1,231 @@
+﻿<UserControl x:Class="Z_Wave_UI.ModuleInfoTab"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:Z_Wave_UI"
+             mc:Ignorable="d" 
+             d:DesignHeight="450" d:DesignWidth="800">
+
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="Dictionary1.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </UserControl.Resources>
+
+    <Grid Margin="6">
+        <ScrollViewer VerticalScrollBarVisibility="Auto">
+            <Grid Margin="12">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+
+                <!-- STATUS -->
+                <GroupBox Header="Status" Grid.Row="0" Grid.Column="0">
+                    <StackPanel>
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="Initialization:" Width="120"/>
+                            <TextBlock Text="{Binding InitializationState}" 
+                                               Foreground="#4A90E2" FontWeight="Bold"/>
+                        </StackPanel>
+                    </StackPanel>
+                </GroupBox>
+
+                <!-- API -->
+                <GroupBox Header="API" Grid.Row="0" Grid.Column="1">
+                    <StackPanel>
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="Version:" Width="120"/>
+                            <TextBlock Text="{Binding ApiVersion}"/>
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="Capabilities:" Width="120"/>
+                            <TextBlock Text="{Binding ApiCapabilities}" Margin="0,0,3,0"/>
+                            <TextBlock Text="{Binding ApiCapabilitiesDescription}" 
+                                               Foreground="#6B7A89"/>
+                        </StackPanel>
+                    </StackPanel>
+                </GroupBox>
+
+                <!-- NETWORK -->
+                <GroupBox Header="Network" Grid.Row="1" Grid.Column="0">
+                    <StackPanel>
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="HomeId:" Width="120"/>
+                            <TextBlock Text="{Binding HomeIdHex}" FontWeight="Bold"/>
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="NodeId:" Width="120"/>
+                            <TextBlock Text="{Binding NodeId}"/>
+                        </StackPanel>
+                    </StackPanel>
+                </GroupBox>
+
+                <!-- LIBRARY -->
+                <GroupBox Header="Library / App" Grid.Row="1" Grid.Column="1">
+                    <StackPanel>
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="Library Version:" Width="120"/>
+                            <TextBlock Text="{Binding LibraryVersion}"/>
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="Library Type:" Width="120"/>
+                            <TextBlock Text="{Binding LibraryType}" Margin="0,0,3,0"/>
+                            <TextBlock Text="{Binding LibraryTypeName}" Foreground="#6B7A89"/>
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="App Version:" Width="120"/>
+                            <TextBlock Text="{Binding AppVersion}"/>
+                        </StackPanel>
+                    </StackPanel>
+                </GroupBox>
+
+                <!-- NODE IDS -->
+                <GroupBox Header="Node Ids" Grid.Row="2" Grid.Column="0">
+                    <ItemsControl ItemsSource="{Binding NodeIds}">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <WrapPanel/>
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Border Style="{StaticResource TagStyle}">
+                                    <TextBlock Text="{Binding}"/>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </GroupBox>
+
+                <!-- API COMMANDS -->
+                <GroupBox Header="API Commands" Grid.Row="2" Grid.Column="1">
+                    <ItemsControl ItemsSource="{Binding ApiCommands}">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <WrapPanel/>
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Border Style="{StaticResource TagStyle}">
+                                    <TextBlock Text="{Binding StringFormat=0x{0:X2}}"/>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </GroupBox>
+
+                <!-- CONTROLLER FLAGS -->
+                <GroupBox Header="Controller Flags" Grid.Row="3" Grid.Column="0">
+                    <ItemsControl ItemsSource="{Binding ControllerFlags}">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <WrapPanel/>
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Border Style="{StaticResource TagStyle}">
+                                    <TextBlock Text="{Binding}"/>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </GroupBox>
+
+                <!-- RIGHT COLUMN: CHIP / PROTOCOL / MANUFACTURER -->
+                <StackPanel Grid.Row="3" Grid.Column="1">
+
+                    <GroupBox Header="Chip">
+                        <StackPanel>
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="Type:" Width="60"/>
+                                <TextBlock>
+                                    <TextBlock.Text>
+                                        <MultiBinding StringFormat="{}{0} {1}">
+                                            <Binding Path="ChipType"/>
+                                            <Binding Path="ChipName"/>
+                                        </MultiBinding>
+                                    </TextBlock.Text>
+                                </TextBlock>
+                            </StackPanel>
+
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="Version:" Width="60"/>
+                                <TextBlock Text="{Binding ChipVersion}"/>
+                            </StackPanel>
+                        </StackPanel>
+                    </GroupBox>
+
+                    <GroupBox Header="Protocol Version">
+                        <StackPanel>
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="Type:" Width="60"/>
+                                <TextBlock Text="{Binding ProtocolType}"/>
+                            </StackPanel>
+
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="Version:" Width="60"/>
+                                <TextBlock Text="{Binding ProtocolVersion}"/>
+                            </StackPanel>
+                        </StackPanel>
+                    </GroupBox>
+
+                    <GroupBox Header="Manufacturer">
+                        <StackPanel>
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="Id:" Width="100"/>
+                                <TextBlock>
+                                    <TextBlock.Text>
+                                        <MultiBinding StringFormat="{}{0} {1}">
+                                            <Binding Path="ManufacturerId"/>
+                                            <Binding Path="ManufacturerName"/>
+                                        </MultiBinding>
+                                    </TextBlock.Text>
+                                </TextBlock>
+                            </StackPanel>
+
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="Product Type:" Width="100"/>
+                                <TextBlock>
+                                    <TextBlock.Text>
+                                        <MultiBinding StringFormat="{}{0} {1}">
+                                            <Binding Path="ProductType"/>
+                                            <Binding Path="ProductTypeName"/>
+                                        </MultiBinding>
+                                    </TextBlock.Text>
+                                </TextBlock>
+                            </StackPanel>
+
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="Product Id:" Width="100"/>
+                                <TextBlock>
+                                    <TextBlock.Text>
+                                        <MultiBinding StringFormat="{}{0} {1}">
+                                            <Binding Path="ProductId"/>
+                                            <Binding Path="ProductIdName"/>
+                                        </MultiBinding>
+                                    </TextBlock.Text>
+                                </TextBlock>
+                            </StackPanel>
+                        </StackPanel>
+                    </GroupBox>
+
+                </StackPanel>
+
+            </Grid>
+        </ScrollViewer>
+
+    </Grid>
+</UserControl>

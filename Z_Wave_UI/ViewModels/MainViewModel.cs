@@ -29,15 +29,27 @@ public sealed class MainViewModel : ViewModelBase, IDisposable
         Logging = new LoggingViewModel(dispatcher, SetStatusMessage);
         ModuleInfo = new ModuleInfoViewModel(dispatcher, SetStatusMessage);
         NodeList = new NodeListViewModel(dispatcher, SetStatusMessage);
-        NodeInfo = new NodeInfoViewModel(dispatcher, SetStatusMessage); 
 
-        Connection = new ConnectionViewModel(tcpService, dispatcher, SetStatusMessage, () => StatusMessage, Logging.Clear, ModuleInfo.Clear);
+        Connection = new ConnectionViewModel(
+            tcpService,
+            dispatcher,
+            SetStatusMessage,
+            () => StatusMessage,
+            Logging.Clear,
+            ModuleInfo.Clear);
+
+        NodeInfo = new NodeInfoViewModel(dispatcher, SetStatusMessage, Connection.UpdateConfigAsync);
     }
 
     public string StatusMessage
     {
         get => statusMessage;
         private set => SetProperty(ref statusMessage, value);
+    }
+
+    public string test
+    {
+        get { return "Hello from MainViewModel"; }
     }
 
     public ConnectionViewModel Connection { get; }

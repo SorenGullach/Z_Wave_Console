@@ -45,6 +45,11 @@ namespace Z_Wave_UI.ViewModels
 
     public class NodeListViewModel : ViewModelBase
     {
+        public string test
+        {
+            get { return "Hello from NodeListViewModel"; }
+        }
+
         private readonly Dispatcher dispatcher;
         private readonly Action<string> setStatusMessage;
 
@@ -85,6 +90,12 @@ namespace Z_Wave_UI.ViewModels
                     _ = RefreshNodeListAsync();
                     return;
                 }
+
+                if (string.Equals(type, "node_changed", StringComparison.OrdinalIgnoreCase))
+                {
+                    _ = RefreshNodeListAsync();
+                    return;
+                }
             }
             catch
             {
@@ -116,31 +127,84 @@ namespace Z_Wave_UI.ViewModels
 
         private void ApplyNodeListInfo(List<Z_Wave_UI.Models.NodeListInfo> list)
         {
-            Tree.Clear();
-
             var floors = list
                 .GroupBy(n => n.Floor)
-                .OrderBy(g => g.Key);
+                .OrderBy(g => g.Key)
+                .ToList();
+
+            var floorByName = Tree.ToDictionary(f => f.Name, StringComparer.OrdinalIgnoreCase);
+            var incomingFloorNames = new HashSet<string>(floors.Select(f => f.Key), StringComparer.OrdinalIgnoreCase);
 
             foreach (var floorGroup in floors)
             {
-                var floor = new FloorGroup(floorGroup.Key);
+                if (!floorByName.TryGetValue(floorGroup.Key, out var floor))
+                {
+                    floor = new FloorGroup(floorGroup.Key);
+                    Tree.Add(floor);
+                    floorByName[floorGroup.Key] = floor;
+                }
 
                 var rooms = floorGroup
                     .GroupBy(n => n.Room)
-                    .OrderBy(g => g.Key);
+                    .OrderBy(g => g.Key)
+                    .ToList();
+
+                var roomByName = floor.Rooms.ToDictionary(r => r.Name, StringComparer.OrdinalIgnoreCase);
+                var incomingRoomNames = new HashSet<string>(rooms.Select(r => r.Key), StringComparer.OrdinalIgnoreCase);
 
                 foreach (var roomGroup in rooms)
                 {
-                    var room = new RoomGroup(roomGroup.Key);
+                    if (!roomByName.TryGetValue(roomGroup.Key, out var room))
+                    {
+                        room = new RoomGroup(roomGroup.Key);
+                        floor.Rooms.Add(room);
+                        roomByName[roomGroup.Key] = room;
+                    }
 
-                    foreach (var node in roomGroup.OrderBy(n => n.NodeId))
-                        room.Nodes.Add(node);
+                    var orderedNodes = roomGroup
+                        .OrderBy(n => n.NodeId)
+                        .ToList();
 
-                    floor.Rooms.Add(room);
+                    var existingById = room.Nodes.ToDictionary(n => n.NodeId);
+                    var incomingIds = new HashSet<int>(orderedNodes.Select(n => n.NodeId));
+
+                    for (int i = room.Nodes.Count - 1; i >= 0; i--)
+                    {
+                        if (!incomingIds.Contains(room.Nodes[i].NodeId))
+                            room.Nodes.RemoveAt(i);
+                    }
+
+                    foreach (var node in orderedNodes)
+                    {
+                        if (!existingById.TryGetValue(node.NodeId, out var existingNode))
+                        {
+                            room.Nodes.Add(node);
+                            continue;
+                        }
+
+                        if (!string.Equals(existingNode.Floor, node.Floor, StringComparison.Ordinal) ||
+                            !string.Equals(existingNode.Room, node.Room, StringComparison.Ordinal) ||
+                            !string.Equals(existingNode.State, node.State, StringComparison.Ordinal) ||
+                            !string.Equals(existingNode.InterviewState, node.InterviewState, StringComparison.Ordinal))
+                        {
+                            var index = room.Nodes.IndexOf(existingNode);
+                            if (index >= 0)
+                                room.Nodes[index] = node;
+                        }
+                    }
                 }
 
-                Tree.Add(floor);
+                for (int i = floor.Rooms.Count - 1; i >= 0; i--)
+                {
+                    if (!incomingRoomNames.Contains(floor.Rooms[i].Name))
+                        floor.Rooms.RemoveAt(i);
+                }
+            }
+
+            for (int i = Tree.Count - 1; i >= 0; i--)
+            {
+                if (!incomingFloorNames.Contains(Tree[i].Name))
+                    Tree.RemoveAt(i);
             }
         }
     }

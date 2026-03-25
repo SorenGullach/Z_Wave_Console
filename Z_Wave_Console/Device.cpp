@@ -513,9 +513,10 @@ void ZW_CC_Configuration::MakeFrame(ZW_APIFrame& frame, ZW_CmdId cmdid, const ZW
 	case (uint8_t)eConfigurationCommand::CONFIGURATION_GET:
 		{
 			// params[0] = parameter number
-			Log.AddL(eLogTypes::DVC, MakeTag(),
-					 ">> CONFIGURATION_GET: node {} param={}",
-					 node.NodeId, params[0]);
+			if (params[0] % 10 == 0)
+				Log.AddL(eLogTypes::DVC, MakeTag(),
+						 ">> CONFIGURATION_GET: node {} param={}",
+						 node.NodeId, params[0]);
 
 			frame.MakeSendData(
 				node.NodeId,
@@ -614,9 +615,7 @@ void ZW_CC_Configuration::HandleReport(const ZW_CmdId cmdid, const uint8_t desti
 		cfg.paramNumber = paramNumber;
 		cfg.size = size;
 		cfg.value = value;
-		cfg.raw.assign(params.begin() + 2, params.begin() + 2 + size);
 		cfg.valid = true;
-		cfg.isDead = true;
 	}
 	else
 	{
@@ -626,9 +625,10 @@ void ZW_CC_Configuration::HandleReport(const ZW_CmdId cmdid, const uint8_t desti
 		return;
 	}
 
-	Log.AddL(eLogTypes::DVC, MakeTag(),
-			 "<< CONFIGURATION_REPORT: node={} param={} size={} value={}",
-			 node.NodeId, paramNumber, size, value);
+	if (paramNumber % 10 == 0)
+		Log.AddL(eLogTypes::DVC, MakeTag(),
+				 "<< CONFIGURATION_REPORT: node={} param={} size={} value={}",
+				 node.NodeId, paramNumber, size, value);
 }
 
 //
