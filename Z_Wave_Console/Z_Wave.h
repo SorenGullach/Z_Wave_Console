@@ -109,13 +109,14 @@ public:
 		node->EnqueueJob(job);
 	}
 
-	void ConfigurationInterview(node_t nodeid, uint8_t group)
+	void ConfigurationInterview(node_t nodeid, uint8_t param)
 	{
 		ZW_Node* node = nodes.Get(nodeid);
 		if (!node) return;
 		ZW_Node::Job job;
 		job.job = ZW_Node::eJobs::CONFIGURATION_INTERVIEW;
-		job.group = group;
+		job.group = param; // config value to get
+		job.value = 1; // num config to get
 		node->EnqueueJob(job);
 	}
 
@@ -187,12 +188,15 @@ public:
 	{
 		ZW_Node* node = nodes.Get(nodeid);
 		if (!node) return;
-		ZW_Node::Job job;
-		job.job = ZW_Node::eJobs::CONFIGURATION_COMMAND;
-		job.group = param;
-		job.value = value;
-		job.cfgSize = (ZW_Node::eConfigSize)size;
-		node->EnqueueJob(job);
+		if (node->configurationInfo[param].valid) // only set if we have a valid value
+		{
+			ZW_Node::Job job;
+			job.job = ZW_Node::eJobs::CONFIGURATION_COMMAND;
+			job.group = param;
+			job.value = value;
+			job.cfgSize = (ZW_Node::eConfigSize)size;
+			node->EnqueueJob(job);
+		}
 		ConfigurationInterview(nodeid, param);
 	}
 
@@ -309,7 +313,7 @@ private:
 	std::chrono::steady_clock::time_point jobStartTime{};
 	int jobAttempts = 0;
 	static constexpr int kMaxJobAttempts = 5;
-	static constexpr auto kJobTimeout = std::chrono::seconds(5);
+	static constexpr auto kJobTimeout = std::chrono::seconds(20);
 
 	void EnqueueJob(eJobs job, node_t nodeid = (node_t)0)
 	{
@@ -380,7 +384,7 @@ private:
 
 	void HandleJobError(const Job& job)
 	{
-		Log.AddL(eLogTypes::ERR, MakeTag(), "Job failed: {}", static_cast<int>(job.job));
+		Log.AddL(eLogTypes::ERR, MakeTag(), "ZWave Job failed: {}", static_cast<int>(job.job));
 		// Reset state so it can restart.
 		if (job.job == eJobs::INITIALIZE)
 		{
@@ -397,14 +401,14 @@ private:
 			if (TryPeekJob(job))
 			{
 				// Track timing/attempts per-front-job.
-				if (jobAttempts++ == 0)
+				if (jobAttempts == 0)
 					jobStartTime = std::chrono::steady_clock::now();
 
 				const auto now = std::chrono::steady_clock::now();
 				if (now - jobStartTime > kJobTimeout)
 				{
-//					jobAttempts++;
-					Log.AddL(eLogTypes::DVC, MakeTag(), "Job timeout: {} attempt {}", static_cast<int>(job.job), jobAttempts);
+					jobAttempts++;
+					Log.AddL(eLogTypes::DVC, MakeTag(), "ZWave Job timeout: {} attempt {}", static_cast<int>(job.job), jobAttempts);
 					jobStartTime = now;
 					if (jobAttempts >= kMaxJobAttempts)
 					{
@@ -412,7 +416,7 @@ private:
 						PopJob();
 						jobAttempts = 0;
 					}
-					std::this_thread::sleep_for(std::chrono::milliseconds(250));
+					std::this_thread::sleep_for(std::chrono::duration_cast<std::chrono::milliseconds>(kJobTimeout) / kMaxJobAttempts);
 					continue;
 				}
 
@@ -423,11 +427,11 @@ private:
 					jobAttempts = 0;
 					break;
 				case eJobResult::Pending:
-					jobAttempts++;
-					std::this_thread::sleep_for(std::chrono::milliseconds(50));
+//					jobAttempts++;
+					std::this_thread::sleep_for(std::chrono::duration_cast<std::chrono::milliseconds>(kJobTimeout) / (kMaxJobAttempts*10));
 					break;
 				case eJobResult::Error:
-					jobAttempts++;
+	//				jobAttempts++;
 					if (jobAttempts >= kMaxJobAttempts)
 					{
 						HandleJobError(job);

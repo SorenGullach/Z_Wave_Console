@@ -513,10 +513,9 @@ void ZW_CC_Configuration::MakeFrame(ZW_APIFrame& frame, ZW_CmdId cmdid, const ZW
 	case (uint8_t)eConfigurationCommand::CONFIGURATION_GET:
 		{
 			// params[0] = parameter number
-			if (params[0] % 10 == 0)
-				Log.AddL(eLogTypes::DVC, MakeTag(),
-						 ">> CONFIGURATION_GET: node {} param={}",
-						 node.NodeId, params[0]);
+			Log.AddL(eLogTypes::DVC, MakeTag(),
+					 ">> CONFIGURATION_GET: node {} param={}",
+					 node.NodeId, params[0]);
 
 			frame.MakeSendData(
 				node.NodeId,

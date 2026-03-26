@@ -624,7 +624,7 @@ private:
 			doneOrError = ExecuteMultiChannelAssociationInterviewJob();
 			break;
 		case eJobs::CONFIGURATION_INTERVIEW:
-			doneOrError = ExecuteConfigurationInterviewJob(job.group);
+			doneOrError = ExecuteConfigurationInterviewJob(job.group, (uint8_t)(job.value&0xFF));
 			break;
 		case eJobs::BIND_COMMAND:
 			doneOrError = ExecuteBindCommandJob(job.group, job.nodeId);
@@ -663,7 +663,7 @@ private:
 	bool ExecuteBatteryCommandJob();
 	bool ExecuteAssociationInterviewJob();
 	bool ExecuteMultiChannelAssociationInterviewJob();
-	bool ExecuteConfigurationInterviewJob(uint8_t groupId);
+	bool ExecuteConfigurationInterviewJob(uint8_t startparam, uint8_t numParams);
 	bool ExecuteBindCommandJob(uint8_t groupId, node_t nodeid);
 	bool ExecuteUnBindCommandJob(uint8_t groupId, node_t nodeid);
 	bool ExecuteMultiChannelUnBindCommandJob(uint8_t groupId, node_t nodeid, uint8_t endpoint);

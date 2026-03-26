@@ -768,7 +768,7 @@ bool ZW_Node::ExecuteMultiChannelAssociationInterviewJob()
 	return true;
 }
 
-bool ZW_Node::ExecuteConfigurationInterviewJob(uint8_t group)
+bool ZW_Node::ExecuteConfigurationInterviewJob(uint8_t startparam, uint8_t numParams)
 {
 	if (!HasCC(eCommandClass::CONFIGURATION))
 	{
@@ -783,7 +783,7 @@ bool ZW_Node::ExecuteConfigurationInterviewJob(uint8_t group)
 		return true;
 	}
 
-	for (size_t param = group; param < configurationInfo.size() && param <= group + 1; ++param)
+	for (size_t param = startparam; param < configurationInfo.size() && param < numParams + startparam; ++param)
 	{
 		auto& cfg = configurationInfo[param];
 		cfg.valid = false;
@@ -791,13 +791,12 @@ bool ZW_Node::ExecuteConfigurationInterviewJob(uint8_t group)
 		ZW_APIFrame frame;
 		cfgHandler->MakeFrame(frame, ZW_CC_Configuration::eConfigurationCommand::CONFIGURATION_GET, { static_cast<uint8_t>(param) });
 
-		if (param % 10 == 0) 
-			Log.AddL(eLogTypes::DVC, MakeTag(), ">> CONFIGURATION_GET: node {} param {}", NodeId, param);
+		Log.AddL(eLogTypes::DVC, MakeTag(), ">> CONFIGURATION_GET: node {} param {}", NodeId, param);
 
 		enqueue(frame);
 
 		// Wait for report
-		bool ok = WaitUntil(std::chrono::seconds(1), [&]() { return cfg.valid; });
+		bool ok = WaitUntil(std::chrono::seconds(3), [&]() { return cfg.valid; });
 
 		if (!ok)
 		{
@@ -806,8 +805,7 @@ bool ZW_Node::ExecuteConfigurationInterviewJob(uint8_t group)
 			return false;
 		}
 
-		if (param % 10 == 0)
-			Log.AddL(eLogTypes::DVC, MakeTag(), "<< CONFIGURATION_REPORT: node {} param {} size {} value {}",
+		Log.AddL(eLogTypes::DVC, MakeTag(), "<< CONFIGURATION_REPORT: node {} param {} size {} value {}",
 				 NodeId,
 				 cfg.paramNumber,
 				 cfg.size,

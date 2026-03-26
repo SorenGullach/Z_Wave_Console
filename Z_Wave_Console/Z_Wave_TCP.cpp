@@ -42,8 +42,7 @@ protected:
 		{
 			int count = ZW_Logging::maxEntries;
 			JsonUtils::TryExtractInt(message, "count", count);
-			if (count < 0)
-				count = 10;
+			if (count < 0)	count = 10;
 			return JSONConversions::ToJSON(Log.GetLogEntrys(count));
 		}
 
@@ -62,6 +61,7 @@ protected:
 			JsonUtils::TryExtractInt(message, "value", value);
 			JsonUtils::TryExtractInt(message, "size", size);
 			ZW.Configure((node_t)id, param, value, size);
+			return JsonUtils::MakeOk("", message);
 		}
 
 		/*
@@ -85,32 +85,33 @@ void NotifyUI(const UINotify notify, node_t nodeId)
 	switch (notify)
 	{
 	case UINotify::LogChanged:
-		server.SendToClient("{\"type\":\"log_changed\"}");
+		server.SendToClient(
+			"{\"type\":\"log_changed\"}"
+		);
 		break;
 
 	case UINotify::ControllerChanged:
 		server.SendToClient(
-			JSONConversions::ToJSON(ZW.GetModule())
+			"{\"type\":\"controller_changed\"}"
 		);
-		//		server.SendToClient("{\"type\":\"controller_changed\"}");
 		break;
 
 	case UINotify::NodeListChanged:
-		server.SendToClient("{\"type\":\"node_list_changed\"}");
+		server.SendToClient(
+			"{\"type\":\"node_list_changed\"}"
+		);
 		break;
 
 	case UINotify::NodeChanged:
-		if (nodeId.value > 1 && nodeId.value < 232)
-			server.SendToClient(
-				"{\"type\":\"node_changed\",\"nodeId\":" + std::to_string(nodeId.value) + "}"
-			);
+		server.SendToClient(
+			"{\"type\":\"node_changed\",\"nodeId\":" + std::to_string(nodeId.value) + "}"
+		);
 		break;
 
 	case UINotify::NodeConfigChanged:
-		if (nodeId.value > 1 && nodeId.value < 232)
-			server.SendToClient(
-				JSONConversions::ToJSONCfg(nodeId, ZW.GetNodes())
-			);
+		server.SendToClient(
+			"{\"type\":\"node_changed\",\"nodeId\":" + std::to_string(nodeId.value) + "}"
+		);
 	}
 }
 

@@ -187,8 +187,8 @@ private:
 			log.push_back({ nowTime, lt, tag, msg });
 			while (log.size() > maxEntries)
 				log.pop_front();
-			NotifyUI(UINotify::LogChanged);
 		}
+		NotifyUI(UINotify::LogChanged);
 
 		if (logFile.is_open())
 		{

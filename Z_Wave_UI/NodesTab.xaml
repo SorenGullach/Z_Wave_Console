@@ -292,15 +292,15 @@
 
                 <!-- CONFIGURATION -->
                 <GroupBox Header="Configuration Parameters" Grid.Row="2" Grid.Column="1">
-                    <ScrollViewer VerticalScrollBarVisibility="Auto" Height="500">
+                    <ScrollViewer VerticalScrollBarVisibility="Auto" Height="200">
                         <ItemsControl ItemsSource="{Binding Configuration}">
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate>
                                     <Grid Margin="4">
                                         <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="120"/>
-                                            <ColumnDefinition Width="120"/>
-                                            <ColumnDefinition Width="120"/>
+                                            <ColumnDefinition Width="100"/>
+                                            <ColumnDefinition Width="70"/>
+                                            <ColumnDefinition Width="70"/>
                                             <ColumnDefinition Width="100"/>
                                         </Grid.ColumnDefinitions>
 
@@ -313,7 +313,7 @@
                                         <TextBox Grid.Column="1"
                                                  Margin="4,0"
                                                  VerticalAlignment="Center"
-                                                 Text="{Binding Value, UpdateSourceTrigger=PropertyChanged}"
+                                                 Text="{Binding HexValue, Mode=TwoWay, UpdateSourceTrigger=LostFocus}"
                                                  IsEnabled="{Binding Valid}"
                                                  Style="{StaticResource HexTextBox}"/>
 

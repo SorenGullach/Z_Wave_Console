@@ -42,50 +42,6 @@ namespace JSONConversions
 		return j.dump();
 	}
 
-	inline std::string ToJSONCfg(const node_t nodeid, const ZW_Nodes& ns)
-	{
-		const ZW_Node* node = ns.Get(nodeid);
-		json j;
-
-		if (!node)
-		{
-			j["type"] = "node_info";
-			j["error"] = "Node not found";
-			return j.dump();
-		}
-
-		j["type"] = "node_info";
-		j["nodeId"] = node->NodeId.value;
-
-		// Floor / Room (UI helpers)
-		j["floor"] = node->Floor.empty() ? "Unknown" : node->Floor;
-		j["room"] = node->Room.empty() ? "Unknown" : node->Room;
-
-		// State
-		j["state"] = node->NodeStateString();
-		j["interviewState"] = node->InterviewStateString();
-
-		// Configuration parameters
-		{
-			json cfg = json::array();
-			for (const auto& c : node->configurationInfo)
-			{
-				//if (!c.valid) continue;
-
-				cfg.push_back({
-					{"param", c.paramNumber},
-					{"size", c.size},
-					{"value", c.value},
-					{"valid", c.valid}
-							  });
-			}
-			j["configuration"] = cfg;
-		}
-
-		return j.dump();
-
-	}
-
 	inline std::string ToJSON(const node_t nodeid, const ZW_Nodes& ns)
 	{
 		const ZW_Node* node = ns.Get(nodeid);

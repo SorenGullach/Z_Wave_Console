@@ -1,3 +1,5 @@
+using System.ComponentModel;
+using System.Globalization;
 using System.Text.Json;
 using System.Windows.Input;
 using System.Windows.Threading;
@@ -121,12 +123,62 @@ namespace Z_Wave_UI.Models
         public int Endpoint { get; set; }
     }
 
-    public class ConfigurationParameter
+    public class ConfigurationParameter : INotifyPropertyChanged
     {
         public int Param { get; set; }
         public int Size { get; set; }
-        public int Value { get; set; }
+        private int value;
+        public int Value
+        {
+            get => value;
+            set
+            {
+                if (this.value == value)
+                    return;
+
+                this.value = value;
+                OnPropertyChanged(nameof(Value));
+                OnPropertyChanged(nameof(HexValue));
+            }
+        }
+
+        public string HexValue
+        {
+            get
+            {
+                var width = Size switch
+                {
+                    1 => 2,
+                    2 => 4,
+                    4 => 8,
+                    _ => 0
+                };
+
+                var rawValue = unchecked((uint)Value);
+                return width > 0 ? $"0x{rawValue.ToString($"X{width}", CultureInfo.InvariantCulture)}" : $"0x{rawValue:X}";
+            }
+            set
+            {
+                var text = value.Trim();
+                if (string.IsNullOrEmpty(text))
+                    return;
+
+                if (text.StartsWith("0x", StringComparison.OrdinalIgnoreCase))
+                    text = text[2..];
+
+                if (uint.TryParse(text, NumberStyles.HexNumber, CultureInfo.InvariantCulture, out var parsedValue))
+                    Value = unchecked((int)parsedValue);
+            }
+        }
+
         public bool Valid { get; set; }
+
+        public event PropertyChangedEventHandler? PropertyChanged;
+
+        private void OnPropertyChanged(string propertyName)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
     }
 }
 

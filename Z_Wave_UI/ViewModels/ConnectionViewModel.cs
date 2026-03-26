@@ -125,7 +125,7 @@ public sealed class ConnectionViewModel : ViewModelBase
         });
     }
 
-    public async Task RefreshLogsAsync(int count=200)
+    public async Task RefreshLogsAsync(int count=10000)
     {
         if (!IsConnected)
             return;
