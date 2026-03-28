@@ -44,6 +44,8 @@
                 <local:LoggingTab/>
             </TabItem>
         </TabControl>
+        
+        <!-- Connect line -->
         <Border Grid.Row="1" Padding="8" BorderBrush="#DDDDDD" BorderThickness="0,0,0,1" DataContext="{Binding Connection}">
             <DockPanel LastChildFill="False">
                 <StackPanel Orientation="Horizontal" DockPanel.Dock="Left">
@@ -80,6 +82,8 @@
                 </StackPanel>
             </DockPanel>
         </Border>
+        
+        <!-- Status line -->
         <Border Grid.Row="2" Padding="8" BorderBrush="#DDDDDD" BorderThickness="0,0,0,1" >
             <TextBlock 
 				   Text="{Binding StatusMessage}"

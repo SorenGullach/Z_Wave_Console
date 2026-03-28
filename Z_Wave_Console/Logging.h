@@ -100,11 +100,13 @@ public:
 		std::vector<LogEntry> result;
 		{
 			auto _lock = Lock();
-			result.reserve(log.size());
-			for (const auto& entry : log)
+			const size_t count = std::min(last, log.size());
+			result.reserve(count);
+			auto startIt = log.end() - static_cast<std::ptrdiff_t>(count);
+			for (; startIt != log.end(); ++startIt)
 			{
-				if ((CurrentLogTypes & static_cast<uint16_t>(entry.lt)) != 0)
-					result.push_back(entry);
+//				if ((CurrentLogTypes & static_cast<uint16_t>(startIt.lt)) != 0)
+				result.push_back(*startIt);
 			}
 		}
 		return result;

@@ -66,37 +66,37 @@ inline std::string CommandClassToString(eCommandClass cc)
 {
 	switch (cc)
 	{
-	case eCommandClass::BASIC: return "BASIC";
-	case eCommandClass::NO_OPERATION: return "NO_OPERATION";
-	case eCommandClass::SWITCH_BINARY: return "SWITCH_BINARY";
-	case eCommandClass::SWITCH_MULTILEVEL: return "SWITCH_MULTILEVEL";
-	case eCommandClass::SENSOR_BINARY: return "SENSOR_BINARY";
-	case eCommandClass::SENSOR_MULTILEVEL: return "SENSOR_MULTILEVEL";
-	case eCommandClass::METER: return "METER";
-	case eCommandClass::COLOR_SWITCH: return "COLOR_SWITCH";
-	case eCommandClass::ASSOCIATION: return "ASSOCIATION";
-	case eCommandClass::ASSOCIATION_GRP_INFO: return "ASSOCIATION_GRP_INFO";
-	case eCommandClass::CONFIGURATION: return "CONFIGURATION";
-	case eCommandClass::MANUFACTURER_SPECIFIC: return "MANUFACTURER_SPECIFIC";
-	case eCommandClass::POWERLEVEL: return "POWERLEVEL";
-	case eCommandClass::PROTECTION: return "PROTECTION";
-	case eCommandClass::FIRMWARE_UPDATE_MD: return "FIRMWARE_UPDATE_MD";
-	case eCommandClass::DEVICE_RESET_LOCALLY: return "DEVICE_RESET_LOCALLY";
-	case eCommandClass::NOTIFICATION: return "NOTIFICATION";
-    case eCommandClass::BATTERY: return "BATTERY";                     // 0x50
+	case eCommandClass::BASIC: return "BASIC";                                  // 0x20
+	case eCommandClass::NO_OPERATION: return "NO_OPERATION";                    // 0x00
+	case eCommandClass::SWITCH_BINARY: return "SWITCH_BINARY";                  // 0x25
+	case eCommandClass::SWITCH_MULTILEVEL: return "SWITCH_MULTILEVEL";          // 0x26
+	case eCommandClass::SENSOR_BINARY: return "SENSOR_BINARY";                  // 0x30
+	case eCommandClass::SENSOR_MULTILEVEL: return "SENSOR_MULTILEVEL";          // 0x31
+	case eCommandClass::METER: return "METER";                                  // 0x32
+	case eCommandClass::COLOR_SWITCH: return "COLOR_SWITCH";                    // 0x33
+	case eCommandClass::ASSOCIATION: return "ASSOCIATION";                      // 0x85
+	case eCommandClass::ASSOCIATION_GRP_INFO: return "ASSOCIATION_GRP_INFO";    // 0x59
+	case eCommandClass::CONFIGURATION: return "CONFIGURATION";                  // 0x70
+	case eCommandClass::MANUFACTURER_SPECIFIC: return "MANUFACTURER_SPECIFIC";  // 0x72
+	case eCommandClass::POWERLEVEL: return "POWERLEVEL";                        // 0x73
+	case eCommandClass::PROTECTION: return "PROTECTION";                        // 0x75
+	case eCommandClass::FIRMWARE_UPDATE_MD: return "FIRMWARE_UPDATE_MD";        // 0x7A
+	case eCommandClass::DEVICE_RESET_LOCALLY: return "DEVICE_RESET_LOCALLY";    // 0x5A
+	case eCommandClass::NOTIFICATION: return "NOTIFICATION";                    // 0x71
+    case eCommandClass::BATTERY: return "BATTERY";                              // 0x50
 //    case eCommandClass::CLIMATE_CONTROL_SCHEDULE: return "CLIMATE_CONTROL_SCHEDULE"; // 0x46
-//    case eCommandClass::CRC_16_ENCAP: return "CRC_16_ENCAP";           // 0x56
-    case eCommandClass::DOOR_LOCK: return "DOOR_LOCK";                 // 0x62
-    case eCommandClass::MULTI_CHANNEL: return "MULTI_CHANNEL";         // 0x60
+//    case eCommandClass::CRC_16_ENCAP: return "CRC_16_ENCAP";                  // 0x56
+    case eCommandClass::DOOR_LOCK: return "DOOR_LOCK";                          // 0x62
+    case eCommandClass::MULTI_CHANNEL: return "MULTI_CHANNEL";                  // 0x60
     case eCommandClass::MULTI_CHANNEL_ASSOCIATION: return "MULTI_CHANNEL_ASSOCIATION"; // 0x8E
-//    case eCommandClass::SECURITY: return "SECURITY";                   // 0x98
-    case eCommandClass::SECURITY_2: return "SECURITY_2";               // 0x9F
-    case eCommandClass::SUPERVISION: return "SUPERVISION";             // 0x6C
-    case eCommandClass::TRANSPORT_SERVICE: return "TRANSPORT_SERVICE"; // 0x55
-    case eCommandClass::VERSION: return "VERSION";                     // 0x86
-    case eCommandClass::WAKE_UP: return "WAKE_UP";                     // 0x84
-//    case eCommandClass::Z_WAVE_PLUS_INFO: return "Z_WAVE_PLUS_INFO";   // 0x5E
-//    case eCommandClass::MARK: return "MARK";                           // 0xEF
+//    case eCommandClass::SECURITY: return "SECURITY";                          // 0x98
+    case eCommandClass::SECURITY_2: return "SECURITY_2";                        // 0x9F
+    case eCommandClass::SUPERVISION: return "SUPERVISION";                      // 0x6C
+    case eCommandClass::TRANSPORT_SERVICE: return "TRANSPORT_SERVICE";          // 0x55
+    case eCommandClass::VERSION: return "VERSION";                              // 0x86
+    case eCommandClass::WAKE_UP: return "WAKE_UP";                              // 0x84
+//    case eCommandClass::Z_WAVE_PLUS_INFO: return "Z_WAVE_PLUS_INFO";          // 0x5E
+//    case eCommandClass::MARK: return "MARK";                                  // 0xEF
     }
 
 	return "UNKNOWN";

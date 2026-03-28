@@ -13,14 +13,16 @@ namespace Z_Wave_UI.Models
         public string Room { get; }
         public string State { get; }
         public string InterviewState { get; }
+        public bool NeedsUpdate { get; }
 
-        public NodeListInfo(int nodeId, string floor, string room, string state, string interviewState)
+        public NodeListInfo(int nodeId, string floor, string room, string state, string interviewState, bool needsUpdate)
         {
             NodeId = nodeId;
             Floor = floor;
             Room = room;
             State = state;
             InterviewState = interviewState;
+            NeedsUpdate = needsUpdate;
         }
     }
 }
@@ -118,8 +120,9 @@ namespace Z_Wave_UI.ViewModels
                 var room = nodeElement.GetProperty("room").GetString() ?? "Unknown";
                 var state = nodeElement.GetProperty("state").GetString() ?? "Unknown";
                 var interviewState = nodeElement.GetProperty("interviewState").GetString() ?? "Unknown";
+                var needsUpdate = nodeElement.GetProperty("needsUpdate").GetBoolean();
 
-                list.Add(new Z_Wave_UI.Models.NodeListInfo(nodeId, floor, room, state, interviewState));
+                list.Add(new Z_Wave_UI.Models.NodeListInfo(nodeId, floor, room, state, interviewState, needsUpdate));
             }
 
             return list;
@@ -185,7 +188,8 @@ namespace Z_Wave_UI.ViewModels
                         if (!string.Equals(existingNode.Floor, node.Floor, StringComparison.Ordinal) ||
                             !string.Equals(existingNode.Room, node.Room, StringComparison.Ordinal) ||
                             !string.Equals(existingNode.State, node.State, StringComparison.Ordinal) ||
-                            !string.Equals(existingNode.InterviewState, node.InterviewState, StringComparison.Ordinal))
+                            !string.Equals(existingNode.InterviewState, node.InterviewState, StringComparison.Ordinal) ||
+                            existingNode.NeedsUpdate != node.NeedsUpdate)
                         {
                             var index = room.Nodes.IndexOf(existingNode);
                             if (index >= 0)

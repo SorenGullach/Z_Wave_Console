@@ -64,6 +64,45 @@ protected:
 			return JsonUtils::MakeOk("", message);
 		}
 
+		if (type == "mc_bind")
+		{
+			int id = 0, groupId = 0, targetNodeId = 0, targetEndpoint = 0;
+			JsonUtils::TryExtractInt(message, "node_id", id);
+			JsonUtils::TryExtractInt(message, "group_id", groupId);
+			JsonUtils::TryExtractInt(message, "target_node_id", targetNodeId);
+			JsonUtils::TryExtractInt(message, "target_endpoint", targetEndpoint);
+			ZW.MCBind((node_t)id, static_cast<uint8_t>(groupId), (node_t)targetNodeId, static_cast<uint8_t>(targetEndpoint));
+			return JsonUtils::MakeOk("", message);
+		}
+
+		if (type == "mc_unbind")
+		{
+			int id = 0, groupId = 0, targetNodeId = 0, targetEndpoint = 0;
+			JsonUtils::TryExtractInt(message, "node_id", id);
+			JsonUtils::TryExtractInt(message, "group_id", groupId);
+			JsonUtils::TryExtractInt(message, "target_node_id", targetNodeId);
+			JsonUtils::TryExtractInt(message, "target_endpoint", targetEndpoint);
+			ZW.MCUnbind((node_t)id, static_cast<uint8_t>(groupId), (node_t)targetNodeId, static_cast<uint8_t>(targetEndpoint));
+			return JsonUtils::MakeOk("", message);
+		}
+
+		if (type == "read_associations")
+		{
+			int id = 0;
+			JsonUtils::TryExtractInt(message, "node_id", id);
+			ZW.AssociationInterview((node_t)id);
+			return JsonUtils::MakeOk("", message);
+		}
+
+		if (type == "read_configuration")
+		{
+			int id = 0, groupId = 0;
+			JsonUtils::TryExtractInt(message, "node_id", id);
+			JsonUtils::TryExtractInt(message, "group_id", groupId);
+			ZW.ConfigurationInterview((node_t)id, static_cast<uint8_t>(groupId));
+			return JsonUtils::MakeOk("", message);
+		}
+
 		/*
 		if (type == "soft_reset")
 		{
@@ -107,11 +146,6 @@ void NotifyUI(const UINotify notify, node_t nodeId)
 			"{\"type\":\"node_changed\",\"nodeId\":" + std::to_string(nodeId.value) + "}"
 		);
 		break;
-
-	case UINotify::NodeConfigChanged:
-		server.SendToClient(
-			"{\"type\":\"node_changed\",\"nodeId\":" + std::to_string(nodeId.value) + "}"
-		);
 	}
 }
 

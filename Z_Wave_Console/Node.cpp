@@ -253,6 +253,7 @@ std::string ZW_NodeInfo::ToString(int width) const
 		WrapAndPrint(out, s.str());
 	}
 
+	/* Not used we only use ----- Multi Channel Endpoints (0x60) -----
 	// ----- Association (0x85) -----
 	{
 		std::ostringstream s;
@@ -266,7 +267,7 @@ std::string ZW_NodeInfo::ToString(int width) const
 		}
 		WrapAndPrint(out, s.str());
 	}
-
+	*/
 	// ----- Multi Channel Association (0x8E) -----
 	{
 		std::ostringstream s;
@@ -652,6 +653,8 @@ bool ZW_Node::ExecuteConfigurationCommandJob(uint8_t paramNumber, eConfigSize si
 	handler->MakeFrame(frame, ZW_CmdId(ZW_CC_Configuration::eConfigurationCommand::CONFIGURATION_SET), params);
 	enqueue(frame);
 
+	ExecuteConfigurationInterviewJob(paramNumber, 1);
+
 	return true;
 }
 
@@ -670,55 +673,40 @@ bool ZW_Node::ExecuteAssociationInterviewJob()
 	}
 
 	ZW_APIFrame frame;
-	if (associationGroups.size() == 0) // only ask first time
+	//if (associationGroups.size() == 0) // only ask first time
+	if (multiChannelAssociationGroups.size() == 0) // only ask first time
 	{
 		handler->MakeFrame(frame, ZW_CC_Association::eAssociationCommand::ASSOCIATION_GROUPINGS_GET, {});
 		Log.AddL(eLogTypes::DVC, MakeTag(), ">> ASSOCIATION_GROUPINGS_GET: node {}", NodeId);
 		enqueue(frame);
 
-		if (!WaitUntil(std::chrono::seconds(5), [&]() { return associationGroups.size() > 0; }))
+		//if (!WaitUntil(std::chrono::seconds(5), [&]() { return associationGroups.size() > 0; }))
+		if (!WaitUntil(std::chrono::seconds(5), [&]() { return multiChannelAssociationGroups.size() > 0; }))
 		{
 			Log.AddL(eLogTypes::ERR, MakeTag(), "Association groupings timeout: node {}", NodeId);
 			return false;
 		}
 	}
 
-	for (size_t i = 0; i < associationGroups.size(); i++)
+//	for (size_t i = 0; i < associationGroups.size(); i++)
+	for (size_t i = 0; i < multiChannelAssociationGroups.size(); i++)
 	{
-		uint8_t groupId = associationGroups[i].groupId;
-		associationGroups[i].hasLastReport = false;
+		//uint8_t groupId = associationGroups[i].groupId;
+		uint8_t groupId = multiChannelAssociationGroups[i].groupId;
+		//associationGroups[i].hasLastReport = false;
+		multiChannelAssociationGroups[i].hasLastReport = false;
 		handler->MakeFrame(frame, ZW_CC_Association::eAssociationCommand::ASSOCIATION_GET, { groupId });
 		Log.AddL(eLogTypes::DVC, MakeTag(), ">> ASSOCIATION_GET: node {} group {}", NodeId, groupId);
 		enqueue(frame);
 
-		if (!WaitUntil(std::chrono::seconds(5), [&]() { return associationGroups[i].hasLastReport; }))
+		//if (!WaitUntil(std::chrono::seconds(5), [&]() { return associationGroups[i].hasLastReport; }))
+		if (!WaitUntil(std::chrono::seconds(5), [&]() { return multiChannelAssociationGroups[i].hasLastReport; }))
 		{
 			Log.AddL(eLogTypes::ERR, MakeTag(), "Association get timeout: node {} group {}", NodeId, groupId);
 			return false;
 		}
 	}
-	/*
-	if (!associationGroups.empty())
-	{
-		bool found = false;
-		uint8_t controllerId = 1;
-		for (auto DVC : associationGroups[0].nodeList)
-		{
-			if (DVC == controllerId)
-			{
-				found = true;
-				break;
-			}
-		}
-		if (!found)
-		{
-			associationHandler->MakeFrame(frame, ZW_CC_Association::eAssociationCommand::ASSOCIATION_SET, { 1, controllerId });
-			Log.AddL(eLogTypes::DVC, MakeTag(), ">> ASSOCIATION_SET: node {} group 1 + controllerId", NodeId);
-			enqueue(frame);
-			return true;
-		}
-	}
-	*/
+	NotifyUI(UINotify::NodeChanged, NodeId);
 	return true;
 }
 
@@ -765,6 +753,7 @@ bool ZW_Node::ExecuteMultiChannelAssociationInterviewJob()
 			return false;
 		}
 	}
+	NotifyUI(UINotify::NodeChanged, NodeId);
 	return true;
 }
 
@@ -801,7 +790,6 @@ bool ZW_Node::ExecuteConfigurationInterviewJob(uint8_t startparam, uint8_t numPa
 		if (!ok)
 		{
 			Log.AddL(eLogTypes::ERR, MakeTag(), "No CONFIGURATION_REPORT for param {} on node {} — stopping interview", cfg.paramNumber, NodeId);
-			NotifyUI(UINotify::NodeConfigChanged, NodeId);
 			return false;
 		}
 
@@ -813,6 +801,6 @@ bool ZW_Node::ExecuteConfigurationInterviewJob(uint8_t startparam, uint8_t numPa
 	}
 
 	Log.AddL(eLogTypes::DVC, MakeTag(), "Configuration interview completed for node {}", NodeId);
-	NotifyUI(UINotify::NodeConfigChanged, NodeId);
+	NotifyUI(UINotify::NodeChanged, NodeId);
 	return true;
 }

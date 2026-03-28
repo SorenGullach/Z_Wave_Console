@@ -29,11 +29,16 @@ namespace Z_Wave_UI
 
         private async void TreeView_SelectedItemChanged(object sender, RoutedPropertyChangedEventArgs<object> e)
         {
-            if (e.NewValue is not NodeListInfo selectedNode)
-                return;
-
             if (DataContext is not MainViewModel mainViewModel)
                 return;
+
+            if (e.NewValue is not NodeListInfo selectedNode)
+            {
+                mainViewModel.NodeInfo.SetSelectedNode(null);
+                return;
+            }
+
+            mainViewModel.NodeInfo.SetSelectedNode(selectedNode.NodeId);
 
             await mainViewModel.Connection.RefreshNodeInfoAsync(selectedNode.NodeId);
         }

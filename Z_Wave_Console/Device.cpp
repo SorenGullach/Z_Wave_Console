@@ -754,14 +754,18 @@ void ZW_CC_Association::HandleReport(const ZW_CmdId cmdid, const uint8_t destina
 				return;
 
 			// Ensure vector size
-			if (node.associationGroups.size() < groupId)
-				node.associationGroups.resize(groupId);
+//			if (node.associationGroups.size() < groupId)
+	//			node.associationGroups.resize(groupId);
+			if (node.multiChannelAssociationGroups.size() < groupId)
+				node.multiChannelAssociationGroups.resize(groupId);
 
-			auto& g = node.associationGroups[groupId - 1];
+			//auto& g = node.associationGroups[groupId - 1];
+			auto& g = node.multiChannelAssociationGroups[groupId - 1];
 
 			// If this is the first report for this group, clear old data
 			if (!g.hasLastReport)
-				for (auto& m : g.nodeList) m.valid = false;
+				//for (auto& m : g.nodeList) m.valid = false;
+				for (auto& m : g.members) m.valid = false;
 
 			g.groupId = groupId;
 			g.maxNodes = maxNodes;
@@ -769,8 +773,12 @@ void ZW_CC_Association::HandleReport(const ZW_CmdId cmdid, const uint8_t destina
 			// Parse node list
 			for (size_t i = 3; i < params.size(); i++)
 			{
-				g.nodeList[params[i]].valid = true;
-				g.nodeList[params[i]].nodeId = (node_t)params[i];
+				uint8_t nodeId = params[i];
+//				g.nodeList[nodeId].valid = true;
+	//			g.nodeList[nodeId].nodeId = (node_t)nodeId;
+				g.members[nodeId].nodeId = (node_t)nodeId;
+				g.members[nodeId].endpointId = 0;
+				g.members[nodeId].valid = true;
 			}
 
 			g.hasLastReport = (reportsToFollow == 0);
@@ -787,11 +795,17 @@ void ZW_CC_Association::HandleReport(const ZW_CmdId cmdid, const uint8_t destina
 				return;
 
 			uint8_t groupCount = params[0];
-			node.associationGroups.clear();
-			node.associationGroups.resize(groupCount);
+			node.multiChannelAssociationGroups.clear();
+			node.multiChannelAssociationGroups.resize(groupCount);
+//			node.associationGroups.clear();
+	//		node.associationGroups.resize(groupCount);
 
-			for (uint8_t i = 0; i < groupCount; i++)
-				node.associationGroups[i].groupId = i + 1;
+			for (uint8_t g = 0; g < groupCount; g++)
+			{
+				//	node.associationGroups[i].groupId = g + 1;
+				node.multiChannelAssociationGroups[g].groupId = g + 1;
+				node.multiChannelAssociationGroups[g].hasLastReport = false;
+			}
 
 			break;
 		}

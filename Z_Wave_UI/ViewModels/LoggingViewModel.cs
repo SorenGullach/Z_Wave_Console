@@ -111,7 +111,7 @@ public sealed class LoggingViewModel : ViewModelBase
 
             if (string.Equals(type, "log_changed", StringComparison.OrdinalIgnoreCase))
             {
-                _ = refreshLogsAsync(10000);
+                _ = refreshLogsAsync(200);
                 return;
             }
         }

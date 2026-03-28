@@ -73,7 +73,7 @@ public:
 			{
 				ZW_Node* node = nodes.GetOrCreate(module.NodeIds[i], [this](const ZW_APIFrame& f) { Enqueue(f); });
 				if (node)
-					node->SetInterviewState(ZW_Node::eInterviewState::NotInterviewed); 
+					node->SetInterviewState(ZW_Node::eInterviewState::NotInterviewed);
 				EnqueueJob(eJobs::INTERVIEW, module.NodeIds[i]);
 			}
 		}
@@ -92,7 +92,7 @@ public:
 	void RequestBattery(node_t nodeid)
 	{
 		ZW_Node* node = nodes.Get(nodeid);
-		if(!node) return;
+		if (!node) return;
 		ZW_Node::Job job;
 		job.job = ZW_Node::eJobs::BATTERY_GET;
 		node->EnqueueJob(job);
@@ -120,6 +120,17 @@ public:
 		node->EnqueueJob(job);
 	}
 
+	void ConfigurationInterviewAll(node_t nodeid)
+	{
+		ZW_Node* node = nodes.Get(nodeid);
+		if (!node) return;
+		ZW_Node::Job job;
+		job.job = ZW_Node::eJobs::CONFIGURATION_INTERVIEW;
+		job.group = 1;
+		job.value = 255;
+		node->EnqueueJob(job);
+	}
+
 	void IsDead(node_t nodeid)
 	{
 		ZW_APIFrame frame;
@@ -131,7 +142,7 @@ public:
 	void Remove(node_t nodeid)
 	{
 		ZW_APIFrame frame;
-		frame.Make(eCommandIds::ZW_API_REMOVE_FAILED_NODE, {nodeid.value, 0x0A});
+		frame.Make(eCommandIds::ZW_API_REMOVE_FAILED_NODE, { nodeid.value, 0x0A });
 		Enqueue(frame);
 		StartInitialization();
 	}
@@ -145,7 +156,7 @@ public:
 		job.group = groupid;
 		job.nodeId = targetnodeid;
 		node->EnqueueJob(job);
-//		AssociationInterview(nodeid);
+		AssociationInterview(nodeid);
 	}
 
 	void Unbind(node_t nodeid, uint8_t groupid, node_t targetnodeid)
@@ -157,31 +168,47 @@ public:
 		job.group = groupid;
 		job.nodeId = targetnodeid;
 		node->EnqueueJob(job);
-//		AssociationInterview(nodeid);
+		AssociationInterview(nodeid);
 	}
 	void MCBind(node_t nodeid, uint8_t groupid, node_t targetNodeid, uint8_t targetEndpoint)
 	{
 		ZW_Node* node = nodes.Get(nodeid);
 		if (!node) return;
-		ZW_Node::Job job;
-		job.job = ZW_Node::eJobs::MULTI_CHANNEL_BIND_COMMAND;
-		job.group = groupid;
-		job.nodeId = targetNodeid;
-		job.endpoint = targetEndpoint;
-		node->EnqueueJob(job);
-		//		AssociationInterview(nodeid);
+		if (node->HasCC(eCommandClass::MULTI_CHANNEL_ASSOCIATION))
+		{
+			ZW_Node::Job job;
+			job.job = ZW_Node::eJobs::MULTI_CHANNEL_BIND_COMMAND;
+			job.group = groupid;
+			job.nodeId = targetNodeid;
+			job.endpoint = targetEndpoint;
+			node->EnqueueJob(job);
+		}
+		else
+			if (targetEndpoint == 0 && node->HasCC(eCommandClass::ASSOCIATION))
+				Bind(nodeid, groupid, targetNodeid);
+			else
+				return;
+		AssociationInterview(nodeid);
 	}
 	void MCUnbind(node_t nodeid, uint8_t groupid, node_t targetNodeid, uint8_t targetEndpoint)
 	{
 		ZW_Node* node = nodes.Get(nodeid);
 		if (!node) return;
-		ZW_Node::Job job;
-		job.job = ZW_Node::eJobs::MULTI_CHANNEL_UNBIND_COMMAND;
-		job.group = groupid;
-		job.nodeId = targetNodeid;
-		job.endpoint = targetEndpoint;
-		node->EnqueueJob(job);
-//		AssociationInterview(nodeid);
+		if (node->HasCC(eCommandClass::MULTI_CHANNEL_ASSOCIATION))
+		{
+			ZW_Node::Job job;
+			job.job = ZW_Node::eJobs::MULTI_CHANNEL_UNBIND_COMMAND;
+			job.group = groupid;
+			job.nodeId = targetNodeid;
+			job.endpoint = targetEndpoint;
+			node->EnqueueJob(job);
+		}
+		else
+			if (targetEndpoint == 0 && node->HasCC(eCommandClass::ASSOCIATION))
+				Unbind(nodeid, groupid, targetNodeid);
+			else
+				return;
+		AssociationInterview(nodeid);
 	}
 
 	void Configure(node_t nodeid, uint8_t param, uint32_t value, uint8_t size)
@@ -197,7 +224,7 @@ public:
 			job.cfgSize = (ZW_Node::eConfigSize)size;
 			node->EnqueueJob(job);
 		}
-		ConfigurationInterview(nodeid, param);
+//		ConfigurationInterview(nodeid, param);
 	}
 
 protected:
@@ -220,7 +247,7 @@ protected:
 		case eCommandIds::ZW_API_APPLICATION_UPDATE:
 			{
 				ApplicationUpdateEvent event = static_cast<ApplicationUpdateEvent>(frame.payload[0]);
-				if (event == ApplicationUpdateEvent::UPDATE_STATE_NODE_INFO_RECEIVED 
+				if (event == ApplicationUpdateEvent::UPDATE_STATE_NODE_INFO_RECEIVED
 					|| event == ApplicationUpdateEvent::UPDATE_STATE_NODE_ADDED)
 					EnqueueJob(eJobs::INTERVIEW, node_t{ frame.payload[1] });
 			}
@@ -427,11 +454,11 @@ private:
 					jobAttempts = 0;
 					break;
 				case eJobResult::Pending:
-//					jobAttempts++;
-					std::this_thread::sleep_for(std::chrono::duration_cast<std::chrono::milliseconds>(kJobTimeout) / (kMaxJobAttempts*10));
+					//					jobAttempts++;
+					std::this_thread::sleep_for(std::chrono::duration_cast<std::chrono::milliseconds>(kJobTimeout) / (kMaxJobAttempts * 10));
 					break;
 				case eJobResult::Error:
-	//				jobAttempts++;
+					//				jobAttempts++;
 					if (jobAttempts >= kMaxJobAttempts)
 					{
 						HandleJobError(job);

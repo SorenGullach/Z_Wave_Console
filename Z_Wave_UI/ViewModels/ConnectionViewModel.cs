@@ -1,4 +1,5 @@
 using System.Text.Json;
+using System.Text.RegularExpressions;
 using System.Windows.Threading;
 
 using Z_Wave_UI.Commands;
@@ -225,6 +226,101 @@ public sealed class ConnectionViewModel : ViewModelBase
                 param,
                 value,
                 size
+            };
+
+            var json = JsonSerializer.Serialize(payload);
+            await tcpService.SendLineAsync(json, CancellationToken.None).ConfigureAwait(false);
+        }
+        catch (Exception ex)
+        {
+            SetStatusMessage(ex.Message);
+        }
+    }
+
+    public async Task AddMultiChannelAssociationAsync(int nodeid, int groupid, int targetnodeid, int targetendpoint)
+    {
+        if (!IsConnected)
+            return;
+
+        try
+        {
+            var payload = new
+            {
+                type = "mc_bind",
+                node_id = nodeid,
+                group_id = groupid,
+                target_node_id = targetnodeid,
+                target_endpoint = targetendpoint
+            };
+
+            var json = JsonSerializer.Serialize(payload);
+            await tcpService.SendLineAsync(json, CancellationToken.None).ConfigureAwait(false);
+        }
+        catch (Exception ex)
+        {
+            SetStatusMessage(ex.Message);
+        }
+    }
+
+    public async Task RemoveMultiChannelAssociationAsync(int nodeid, int groupid, int targetnodeid, int targetendpoint)
+    {
+        if (!IsConnected)
+            return;
+
+        try
+        {
+            var payload = new
+            {
+                type = "mc_unbind",
+                node_id = nodeid,
+                group_id = groupid,
+                target_node_id = targetnodeid,
+                target_endpoint = targetendpoint
+            };
+
+            var json = JsonSerializer.Serialize(payload);
+            await tcpService.SendLineAsync(json, CancellationToken.None).ConfigureAwait(false);
+        }
+        catch (Exception ex)
+        {
+            SetStatusMessage(ex.Message);
+        }
+    }
+
+    public async Task UpdateMultiChannelAssociationAsync(int nodeid)
+    {
+        if (!IsConnected)
+            return;
+
+        try
+        {
+            var payload = new
+            {
+                type = "read_associations",
+                node_id = nodeid
+            };
+
+            var json = JsonSerializer.Serialize(payload);
+            await tcpService.SendLineAsync(json, CancellationToken.None).ConfigureAwait(false);
+        }
+        catch (Exception ex)
+        {
+            SetStatusMessage(ex.Message);
+        }
+    }
+
+    public async Task UpdateConfigurationAsync(int nodeid, int groupid)
+    {
+        if (!IsConnected)
+            return;
+
+        try
+        {
+            var payload = new
+            {
+                type = "read_configuration",
+                node_id = nodeid,
+                group_id = groupid
             };
 
             var json = JsonSerializer.Serialize(payload);

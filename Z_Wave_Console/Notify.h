@@ -7,7 +7,6 @@ enum class UINotify
     ControllerChanged,
     NodeListChanged,
     NodeChanged,
-    NodeConfigChanged,
 };
 
 extern void NotifyUI(const UINotify notify, node_t nodeId=(node_t)0);

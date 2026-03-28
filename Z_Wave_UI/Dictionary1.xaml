@@ -6,12 +6,19 @@
     <Color x:Key="AccentCyanColor">#00BCD4</Color>
     <Color x:Key="AccentOrangeColor">#FF9800</Color>
 
-    <!-- Node State Colors -->
-    <SolidColorBrush x:Key="NodeInterviewPendingBrush" Color="#E53935"/>    <!-- Red -->
-    <SolidColorBrush x:Key="NodeAwakeBrush" Color="#4CAF50"/>    <!-- Green -->
-    <SolidColorBrush x:Key="NodeSleepyBrush" Color="#FFC107"/>    <!-- Amber -->
-    <SolidColorBrush x:Key="NodeDeadBrush" Color="#E53935"/>    <!-- Red -->
-    <SolidColorBrush x:Key="NodeDefaultBrush" Color="#263238"/>    <!-- Dark text -->
+    <!-- NeedsUpdate: Strong amber/orange background, readable with black text -->
+    <SolidColorBrush x:Key="NodeNeedsUpdateBrush" Color="#FFB300"/>    <!-- Bright Amber -->
+    <!-- Interview Pending: Strong red background, readable with white text -->
+    <SolidColorBrush x:Key="NodeInterviewPendingBrush" Color="#D32F2F"/>    <!-- Deep Red -->
+    <!-- Awake: Green text (foreground only) -->
+    <SolidColorBrush x:Key="NodeAwakeBrush" Color="#43A047"/>   <!-- Medium Green -->
+    <!-- Sleepy: Amber text (foreground only) -->
+    <SolidColorBrush x:Key="NodeSleepyBrush" Color="#FFB300"/>    <!-- Bright Amber -->
+    <!-- Dead: Strong red text (foreground only) -->
+    <SolidColorBrush x:Key="NodeDeadBrush" Color="#C62828"/>    <!-- Dark Red -->
+    <!-- Default text color -->
+    <SolidColorBrush x:Key="NodeDefaultBrush" Color="#263238"/>    <!-- Blue‑Gray -->
+
 
     <!-- Brushes (use these for BorderBrush / Foreground / Background setters) -->
     <SolidColorBrush x:Key="AccentBlueBrush" Color="{StaticResource AccentBlueColor}" />

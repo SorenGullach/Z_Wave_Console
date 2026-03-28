@@ -120,7 +120,9 @@ public:
 		bool valid = false;               // True when a REPORT has been received
 	};
 	std::array<ConfigurationInfo, 255> configurationInfo{};
-
+	
+	/* we remove the 0x85 association and map it into 0x8E, as nodes that support 0x8E also support 0x85
+	* multi channel EP nodeId 1,0 is the same as 0x85 nodeId 1
 	// ---------- Association DVC (CC 0x85) ----------
 	struct AssociationGroupNode
 	{
@@ -135,7 +137,7 @@ public:
 		bool hasLastReport = false;
 	};
 	std::vector<AssociationGroup> associationGroups;
-
+	*/
 	// ---------- Multi Channel Endpoints (CC 0x60) ----------
 	struct EndpointInfo
 	{
@@ -464,10 +466,17 @@ public:
 
 		DebugLockGuard lock(stateMutex);
 		jobQueue.push_back(job);
+		NotifyUI(UINotify::NodeListChanged, NodeId);
 		Log.AddL(eLogTypes::DVC, MakeTag(), "EnqueueJob: num={}", jobQueue.size());
 	}
 
 	bool HandleNodeFailed(uint8_t status);
+
+	bool NeedsUpdate() const
+	{
+		DebugLockGuard lock(stateMutex);
+		return nodeState == eNodeState::Sleepy && (interviewState != eInterviewState::InterviewDone || jobQueue.size() > 0);
+	}
 
 private:
 	EnqueueFn enqueue;
@@ -534,6 +543,7 @@ private:
 		DebugLockGuard lock(stateMutex);
 		if (!jobQueue.empty())
 			jobQueue.erase(jobQueue.begin());
+		NotifyUI(UINotify::NodeListChanged, NodeId);
 		Log.AddL(eLogTypes::DVC, MakeTag(), "Job erased queue size: {}", jobQueue.size());
 	}
 

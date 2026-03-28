@@ -35,6 +35,7 @@ namespace JSONConversions
 			n["room"] = node->Room.empty() ? "Unknown" : node->Room;
 			n["state"] = node->NodeStateString();
 			n["interviewState"] = node->InterviewStateString();
+			n["needsUpdate"] = node->NeedsUpdate();
 
 			j["nodes"].push_back(n);
 		}
@@ -165,6 +166,7 @@ namespace JSONConversions
 			};
 		}
 
+		/*
 		// Association Groups
 		{
 			json groups = json::array();
@@ -186,6 +188,7 @@ namespace JSONConversions
 			}
 			j["associationGroups"] = groups;
 		}
+		*/
 
 		// Multi-channel association groups
 		{
@@ -299,5 +302,4 @@ namespace JSONConversions
 
 		return j.dump();
 	}
-
 }

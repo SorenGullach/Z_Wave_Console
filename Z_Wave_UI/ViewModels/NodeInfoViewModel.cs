@@ -189,6 +189,14 @@ namespace Z_Wave_UI.ViewModels
         private readonly Dispatcher dispatcher;
         private readonly Action<string> setStatusMessage;
         private readonly Func<int, int, int, int, Task> updateConfigAsync;
+        private readonly Func<int, int, int, int, Task> addMultiChannelAssociationAsync;
+        private readonly Func<int, int, int, int, Task> removeMultiChannelAssociationAsync;
+        private readonly Func<int, Task> updateMultiChannelAssociationAsync;
+        private readonly Func<int, int, Task> updateConfigurationAsync;
+        private int? selectedNodeId;
+        private string newAssocGroup = string.Empty;
+        private string newAssocNode = string.Empty;
+        private string newAssocEndpoint = string.Empty;
 
         private NodeInfo? node;
         public NodeInfo? Node
@@ -198,32 +206,193 @@ namespace Z_Wave_UI.ViewModels
             {
                 node = value;
                 OnPropertyChanged();
-                updateConfigCommand.RaiseCanExecuteChanged();
+                RaiseCommandStates();
             }
         }
 
         private readonly AsyncRelayCommand nodeSelectedCommand;
         private readonly RelayCommand<ConfigurationParameter> updateConfigCommand;
+        private readonly RelayCommand addMultiChannelAssociationCommand;
+        private readonly RelayCommand removeMultiChannelAssociationCommand;
+        private readonly RelayCommand updateMultiChannelAssociationCommand;
+        private readonly RelayCommand<ConfigurationParameter> updateConfigurationCommand;
 
         public ICommand UpdateConfigCommand => updateConfigCommand;
+        public ICommand AddMultiChannelAssociationCommand => addMultiChannelAssociationCommand;
+        public ICommand RemoveMultiChannelAssociationCommand => removeMultiChannelAssociationCommand;
+        public ICommand UpdateMultiChannelAssociationCommand => updateMultiChannelAssociationCommand;
+        public ICommand UpdateConfigurationCommand => updateConfigurationCommand;
+
+        public string NewAssocGroup
+        {
+            get => newAssocGroup;
+            set
+            {
+                if (SetProperty(ref newAssocGroup, value))
+                    RaiseCommandStates();
+            }
+        }
+
+        public string NewAssocNode
+        {
+            get => newAssocNode;
+            set
+            {
+                if (SetProperty(ref newAssocNode, value))
+                    RaiseCommandStates();
+            }
+        }
+
+        public string NewAssocEndpoint
+        {
+            get => newAssocEndpoint;
+            set
+            {
+                if (SetProperty(ref newAssocEndpoint, value))
+                    RaiseCommandStates();
+            }
+        }
 
         public NodeInfoViewModel(
             Dispatcher dispatcher,
             Action<string> setStatusMessage,
-            Func<int, int, int, int, Task> updateconfigasync)
+            Func<int, int, int, int, Task> updateconfigasync,
+            Func<int, int, int, int, Task> addmultichannelassociationasync,
+            Func<int, int, int, int, Task> removemultichannelassociationasync,
+            Func<int, Task> updatemultichannelassociationasync,
+            Func<int, int, Task> updateconfigurationasync)
         {
             this.dispatcher = dispatcher;
             this.setStatusMessage = setStatusMessage;
             updateConfigAsync = updateconfigasync;
+            addMultiChannelAssociationAsync = addmultichannelassociationasync;
+            removeMultiChannelAssociationAsync = removemultichannelassociationasync;
+            updateMultiChannelAssociationAsync = updatemultichannelassociationasync;
+            updateConfigurationAsync = updateconfigurationasync;
             nodeSelectedCommand = new AsyncRelayCommand(() => Task.CompletedTask, () => Node is not null);
             updateConfigCommand = new RelayCommand<ConfigurationParameter>(
                 ExecuteUpdateConfig,
+                param => Node is not null && param is not null);
+            addMultiChannelAssociationCommand = new RelayCommand(
+                ExecuteAddMultiChannelAssociation,
+                CanExecuteMultiChannelAssociationCommand);
+            removeMultiChannelAssociationCommand = new RelayCommand(
+                ExecuteRemoveMultiChannelAssociation,
+                CanExecuteMultiChannelAssociationCommand);
+            updateMultiChannelAssociationCommand = new RelayCommand(
+                ExecuteUpdateMultiChannelAssociation,
+                () => Node is not null);
+            updateConfigurationCommand = new RelayCommand<ConfigurationParameter>(
+                ExecuteUpdateConfiguration,
                 param => Node is not null && param is not null);
         }
 
         private void ExecuteUpdateConfig(ConfigurationParameter? param)
         {
             _ = UpdateConfigAsync(param);
+        }
+
+        public void SetSelectedNode(int? nodeid)
+        {
+            if (selectedNodeId == nodeid)
+                return;
+
+            selectedNodeId = nodeid;
+
+            if (nodeid is null)
+               Node = null;
+
+            RaiseCommandStates();
+        }
+
+        private bool CanExecuteMultiChannelAssociationCommand()
+        {
+            return Node is not null &&
+                   int.TryParse(NewAssocGroup, out _) &&
+                   int.TryParse(NewAssocNode, out _) &&
+                   int.TryParse(NewAssocEndpoint, out _);
+        }
+
+        private void ExecuteAddMultiChannelAssociation()
+        {
+            _ = UpdateMultiChannelAssociationAsync(addMultiChannelAssociationAsync, "created");
+        }
+
+        private void ExecuteRemoveMultiChannelAssociation()
+        {
+            _ = UpdateMultiChannelAssociationAsync(removeMultiChannelAssociationAsync, "removed");
+        }
+
+        private void ExecuteUpdateMultiChannelAssociation()
+        {
+            _ = RefreshMultiChannelAssociationsAsync();
+        }
+
+        private void ExecuteUpdateConfiguration(ConfigurationParameter? param)
+        {
+            _ = RefreshConfigurationAsync(param);
+        }
+
+        private async Task RefreshMultiChannelAssociationsAsync()
+        {
+            if (Node is null)
+                return;
+
+            try
+            {
+                await updateMultiChannelAssociationAsync(Node.NodeId);
+                setStatusMessage($"Node {Node.NodeId} associations update requested");
+            }
+            catch (Exception ex)
+            {
+                setStatusMessage(ex.Message);
+            }
+        }
+
+        private async Task RefreshConfigurationAsync(ConfigurationParameter? param)
+        {
+            if (Node is null || param is null)
+                return;
+
+            try
+            {
+                await updateConfigurationAsync(Node.NodeId, param.Param);
+                setStatusMessage($"Node {Node.NodeId} configuration update requested");
+            }
+            catch (Exception ex)
+            {
+                setStatusMessage(ex.Message);
+            }
+        }
+
+        private async Task UpdateMultiChannelAssociationAsync(
+            Func<int, int, int, int, Task> updateassociationasync,
+            string action)
+        {
+            if (Node is null ||
+                !int.TryParse(NewAssocGroup, out var groupId) ||
+                !int.TryParse(NewAssocNode, out var targetNodeId) ||
+                !int.TryParse(NewAssocEndpoint, out var targetEndpoint))
+                return;
+
+            try
+            {
+                await updateassociationasync(Node.NodeId, groupId, targetNodeId, targetEndpoint);
+                setStatusMessage($"Node {Node.NodeId} association {action}");
+            }
+            catch (Exception ex)
+            {
+                setStatusMessage(ex.Message);
+            }
+        }
+
+        private void RaiseCommandStates()
+        {
+            updateConfigCommand.RaiseCanExecuteChanged();
+            addMultiChannelAssociationCommand.RaiseCanExecuteChanged();
+            removeMultiChannelAssociationCommand.RaiseCanExecuteChanged();
+            updateMultiChannelAssociationCommand.RaiseCanExecuteChanged();
+            updateConfigurationCommand.RaiseCanExecuteChanged();
         }
 
         private async Task UpdateConfigAsync(ConfigurationParameter? param)
@@ -255,7 +424,7 @@ namespace Z_Wave_UI.ViewModels
                 if (string.Equals(type, "node_info", StringComparison.OrdinalIgnoreCase))
                 {
                     var ni = ParseNodeInfo(doc.RootElement);
-                    if (ni is null)
+                    if (ni is null || selectedNodeId != ni.NodeId)
                         return;
 
                     _ = dispatcher.InvokeAsync(() =>
@@ -272,7 +441,8 @@ namespace Z_Wave_UI.ViewModels
                     if (doc.RootElement.TryGetProperty("nodeId", out var idProp))
                     {
                         int nodeId = idProp.GetInt32();
-                        _ = refreshNodeInfoAsync(nodeId);
+                        if (selectedNodeId == nodeId)
+                            _ = refreshNodeInfoAsync(nodeId);
                     }
                     return;
                 }

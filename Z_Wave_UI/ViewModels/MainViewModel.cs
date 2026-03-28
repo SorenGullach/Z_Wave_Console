@@ -38,7 +38,14 @@ public sealed class MainViewModel : ViewModelBase, IDisposable
             Logging.Clear,
             ModuleInfo.Clear);
 
-        NodeInfo = new NodeInfoViewModel(dispatcher, SetStatusMessage, Connection.UpdateConfigAsync);
+        NodeInfo = new NodeInfoViewModel(
+            dispatcher,
+            SetStatusMessage,
+            Connection.UpdateConfigAsync,
+            Connection.AddMultiChannelAssociationAsync,
+            Connection.RemoveMultiChannelAssociationAsync,
+            Connection.UpdateMultiChannelAssociationAsync,
+            Connection.UpdateConfigurationAsync);
     }
 
     public string StatusMessage

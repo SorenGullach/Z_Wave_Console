@@ -41,29 +41,32 @@
                 <DataTemplate DataType="{x:Type models:NodeListInfo}">
                     <StackPanel Orientation="Horizontal" Margin="0,3,0,0">
                         <TextBlock x:Name="NodeIdText"
-                   Text="{Binding NodeId}"
-                   FontWeight="Bold"
-                   Margin="0,0,6,0"/>
+                                   Margin="0,0,6,0"
+                                   FontWeight="Bold"
+                                   Text="{Binding NodeId}"/>
 
                         <TextBlock x:Name="StateText"
-                   Text="{Binding State}"
-                   Margin="0,0,6,0"/>
+                                   Margin="0,0,6,0"
+                                   Text="{Binding State}"/>
 
                         <TextBlock x:Name="InterviewText"
-                   Text="{Binding InterviewState}"
-                   Foreground="Gray"/>
+                                   Foreground="Gray"
+                                   Text="{Binding InterviewState}"/>
                     </StackPanel>
 
                     <DataTemplate.Triggers>
 
                         <!-- DEAD always wins -->
                         <DataTrigger Binding="{Binding State}" Value="Dead">
-                            <Setter TargetName="NodeIdText" Property="Foreground"
-                    Value="{StaticResource NodeDeadBrush}"/>
-                            <Setter TargetName="StateText" Property="Foreground"
-                    Value="{StaticResource NodeDeadBrush}"/>
-                            <Setter TargetName="InterviewText" Property="Foreground"
-                    Value="{StaticResource NodeDeadBrush}"/>
+                            <Setter TargetName="NodeIdText"
+                                    Property="Foreground"
+                                    Value="{StaticResource NodeDeadBrush}"/>
+                            <Setter TargetName="StateText"
+                                    Property="Foreground"
+                                    Value="{StaticResource NodeDeadBrush}"/>
+                            <Setter TargetName="InterviewText"
+                                    Property="Foreground"
+                                    Value="{StaticResource NodeDeadBrush}"/>
                         </DataTrigger>
 
                         <!-- INTERVIEW NOT DONE (red) -->
@@ -72,46 +75,80 @@
                         </DataTrigger>
 
                         <DataTrigger Binding="{Binding InterviewState}" Value="{x:Null}">
-                            <Setter TargetName="NodeIdText" Property="Foreground"
-                    Value="{StaticResource NodeInterviewPendingBrush}"/>
-                            <Setter TargetName="StateText" Property="Foreground"
-                    Value="{StaticResource NodeInterviewPendingBrush}"/>
-                            <Setter TargetName="InterviewText" Property="Foreground"
-                    Value="{StaticResource NodeInterviewPendingBrush}"/>
+                            <Setter TargetName="NodeIdText"
+                                    Property="Foreground"
+                                    Value="{StaticResource NodeInterviewPendingBrush}"/>
+                            <Setter TargetName="StateText"
+                                    Property="Foreground"
+                                    Value="{StaticResource NodeInterviewPendingBrush}"/>
+                            <Setter TargetName="InterviewText"
+                                    Property="Foreground"
+                                    Value="{StaticResource NodeInterviewPendingBrush}"/>
                         </DataTrigger>
 
                         <DataTrigger Binding="{Binding InterviewState}" Value="">
-                            <Setter TargetName="NodeIdText" Property="Foreground"
-                    Value="{StaticResource NodeInterviewPendingBrush}"/>
-                            <Setter TargetName="StateText" Property="Foreground"
-                    Value="{StaticResource NodeInterviewPendingBrush}"/>
-                            <Setter TargetName="InterviewText" Property="Foreground"
-                    Value="{StaticResource NodeInterviewPendingBrush}"/>
+                            <Setter TargetName="NodeIdText"
+                                    Property="Foreground"
+                                    Value="{StaticResource NodeInterviewPendingBrush}"/>
+                            <Setter TargetName="StateText"
+                                    Property="Foreground"
+                                    Value="{StaticResource NodeInterviewPendingBrush}"/>
+                            <Setter TargetName="InterviewText"
+                                    Property="Foreground"
+                                    Value="{StaticResource NodeInterviewPendingBrush}"/>
                         </DataTrigger>
 
                         <DataTrigger Binding="{Binding InterviewState}" Value="ProtocolInfoDone">
-                            <Setter TargetName="NodeIdText" Property="Foreground"
-                    Value="{StaticResource NodeInterviewPendingBrush}"/>
-                            <Setter TargetName="StateText" Property="Foreground"
-                    Value="{StaticResource NodeInterviewPendingBrush}"/>
-                            <Setter TargetName="InterviewText" Property="Foreground"
-                    Value="{StaticResource NodeInterviewPendingBrush}"/>
+                            <Setter TargetName="NodeIdText"
+                                    Property="Foreground"
+                                    Value="{StaticResource NodeInterviewPendingBrush}"/>
+                            <Setter TargetName="StateText"
+                                    Property="Foreground"
+                                    Value="{StaticResource NodeInterviewPendingBrush}"/>
+                            <Setter TargetName="InterviewText"
+                                    Property="Foreground"
+                                    Value="{StaticResource NodeInterviewPendingBrush}"/>
                         </DataTrigger>
+
+                        <MultiDataTrigger>
+                            <MultiDataTrigger.Conditions>
+                                <Condition Binding="{Binding State}" Value="Sleepy"/>
+                                <Condition Binding="{Binding InterviewState}" Value="InterviewDone"/>
+                                <Condition Binding="{Binding NeedsUpdate}" Value="True"/>
+                            </MultiDataTrigger.Conditions>
+
+                            <!-- Background highlight, keep original text color -->
+                            <Setter TargetName="NodeIdText"
+                                Property="Background"
+                                Value="{StaticResource NodeNeedsUpdateBrush}"/>
+
+                            <Setter TargetName="StateText"
+                                Property="Background"
+                                Value="{StaticResource NodeNeedsUpdateBrush}"/>
+
+                            <Setter TargetName="InterviewText"
+                                Property="Background"
+                                Value="{StaticResource NodeNeedsUpdateBrush}"/>
+                        </MultiDataTrigger>
 
                         <!-- AWAKE -->
                         <DataTrigger Binding="{Binding State}" Value="Awake">
-                            <Setter TargetName="NodeIdText" Property="Foreground"
-                    Value="{StaticResource NodeAwakeBrush}"/>
-                            <Setter TargetName="StateText" Property="Foreground"
-                    Value="{StaticResource NodeAwakeBrush}"/>
+                            <Setter TargetName="NodeIdText"
+                                    Property="Foreground"
+                                    Value="{StaticResource NodeAwakeBrush}"/>
+                            <Setter TargetName="StateText"
+                                    Property="Foreground"
+                                    Value="{StaticResource NodeAwakeBrush}"/>
                         </DataTrigger>
 
                         <!-- SLEEPY -->
                         <DataTrigger Binding="{Binding State}" Value="Sleepy">
-                            <Setter TargetName="NodeIdText" Property="Foreground"
-                    Value="{StaticResource NodeSleepyBrush}"/>
-                            <Setter TargetName="StateText" Property="Foreground"
-                    Value="{StaticResource NodeSleepyBrush}"/>
+                            <Setter TargetName="NodeIdText"
+                                    Property="Foreground"
+                                    Value="{StaticResource NodeSleepyBrush}"/>
+                            <Setter TargetName="StateText"
+                                    Property="Foreground"
+                                    Value="{StaticResource NodeSleepyBrush}"/>
                         </DataTrigger>
 
                     </DataTemplate.Triggers>
@@ -121,17 +158,17 @@
 
         <!-- Splitter -->
         <GridSplitter Grid.Column="1"
-                  Width="5"
-                  HorizontalAlignment="Stretch"
-                  VerticalAlignment="Stretch"
-                  Background="#DDD"
-                  ShowsPreview="True"/>
+                      Width="5"
+                      HorizontalAlignment="Stretch"
+                      VerticalAlignment="Stretch"
+                      Background="#DDD"
+                      ShowsPreview="True"/>
 
         <ScrollViewer Grid.Column="2"
-              VerticalScrollBarVisibility="Auto"
-              DataContext="{Binding NodeInfo.Node}">
+                      VerticalScrollBarVisibility="Auto"
+                      DataContext="{Binding NodeInfo.Node}">
 
-            <Grid Margin="10" >
+            <Grid Margin="10">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="*"/>
@@ -269,30 +306,105 @@
                     </ItemsControl>
                 </GroupBox>
 
-                <!-- ASSOCIATIONS -->
-                <GroupBox Header="Association Groups" Grid.Row="2" Grid.Column="0">
-                    <ItemsControl ItemsSource="{Binding AssociationGroups}">
-                        <ItemsControl.ItemTemplate>
-                            <DataTemplate>
-                                <StackPanel Margin="4">
-                                    <TextBlock Text="{Binding GroupId, StringFormat=Group {0}}" FontWeight="Bold"/>
-                                    <TextBlock Text="Members:"/>
-                                    <ItemsControl ItemsSource="{Binding Members}">
-                                        <ItemsControl.ItemTemplate>
-                                            <DataTemplate>
-                                                <TextBlock Text="{Binding}" Margin="2"/>
-                                            </DataTemplate>
-                                        </ItemsControl.ItemTemplate>
-                                    </ItemsControl>
-                                </StackPanel>
-                            </DataTemplate>
-                        </ItemsControl.ItemTemplate>
-                    </ItemsControl>
+                <!-- MULTICHANNEL ASSOCIATIONS -->
+                <GroupBox Header="Associations" Grid.Row="2" Grid.Column="0">
+                    <StackPanel Margin="4">
+
+                        <!-- Add/remove multi-channel association -->
+                        <StackPanel Orientation="Horizontal"
+                                    Margin="0,0,0,8"
+                                    VerticalAlignment="Center">
+
+                            <TextBlock Margin="0,0,4,0"
+                                       VerticalAlignment="Center"
+                                       Text="Group:"/>
+                            <TextBox Width="40"
+                                     Margin="0,0,12,0"
+                                     Text="{Binding DataContext.NodeInfo.NewAssocGroup, RelativeSource={RelativeSource AncestorType=UserControl}, UpdateSourceTrigger=PropertyChanged}"/>
+
+                            <TextBlock Margin="0,0,4,0"
+                                       VerticalAlignment="Center"
+                                       Text="Node:"/>
+                            <TextBox Width="40"
+                                     Margin="0,0,12,0"
+                                     Text="{Binding DataContext.NodeInfo.NewAssocNode, RelativeSource={RelativeSource AncestorType=UserControl}, UpdateSourceTrigger=PropertyChanged}"/>
+
+                            <TextBlock Margin="0,0,4,0"
+                                       VerticalAlignment="Center"
+                                       Text="EP:"/>
+                            <TextBox Width="40"
+                                     Margin="0,0,12,0"
+                                     Text="{Binding DataContext.NodeInfo.NewAssocEndpoint, RelativeSource={RelativeSource AncestorType=UserControl}, UpdateSourceTrigger=PropertyChanged}"/>
+
+                            <Button Margin="0,0,8,0"
+                                    Command="{Binding DataContext.NodeInfo.AddMultiChannelAssociationCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                    Content="Add"/>
+
+                            <Button Margin="0,0,8,0"
+                                    Command="{Binding DataContext.NodeInfo.RemoveMultiChannelAssociationCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                    Content="Remove"/>
+
+                            <Button Margin="0,0,8,0"
+                                    Command="{Binding DataContext.NodeInfo.UpdateMultiChannelAssociationCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                    Content="Read"/>
+                        </StackPanel>
+
+                        <ScrollViewer VerticalScrollBarVisibility="Auto" Height="600">
+                            <ItemsControl ItemsSource="{Binding MultiChannelAssociations}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <StackPanel Margin="4">
+                                            <TextBlock Text="{Binding GroupId, StringFormat=Group {0}}" 
+                                           FontWeight="Bold"/>
+
+                                            <TextBlock Text="Members:"/>
+
+                                            <ItemsControl ItemsSource="{Binding Members}">
+                                                <ItemsControl.ItemTemplate>
+                                                    <DataTemplate>
+                                                        <TextBlock Margin="2">
+                                                            <TextBlock.Style>
+                                                                <Style TargetType="TextBlock">
+                                                                    <Setter Property="Text">
+                                                                        <Setter.Value>
+                                                                            <MultiBinding StringFormat="MC {0}.{1}">
+                                                                                <Binding Path="NodeId"/>
+                                                                                <Binding Path="Endpoint"/>
+                                                                            </MultiBinding>
+                                                                        </Setter.Value>
+                                                                    </Setter>
+
+                                                                    <!-- If endpoint == 0 → SC instead of MC -->
+                                                                    <Style.Triggers>
+                                                                        <DataTrigger Binding="{Binding Endpoint}" Value="0">
+                                                                            <Setter Property="Text">
+                                                                                <Setter.Value>
+                                                                                    <MultiBinding StringFormat="SC {0}.0">
+                                                                                        <Binding Path="NodeId"/>
+                                                                                    </MultiBinding>
+                                                                                </Setter.Value>
+                                                                            </Setter>
+                                                                        </DataTrigger>
+                                                                    </Style.Triggers>
+                                                                </Style>
+                                                            </TextBlock.Style>
+                                                        </TextBlock>
+                                                    </DataTemplate>
+                                                </ItemsControl.ItemTemplate>
+                                            </ItemsControl>
+
+                                        </StackPanel>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </ScrollViewer>
+                    </StackPanel>
                 </GroupBox>
 
                 <!-- CONFIGURATION -->
                 <GroupBox Header="Configuration Parameters" Grid.Row="2" Grid.Column="1">
-                    <ScrollViewer VerticalScrollBarVisibility="Auto" Height="200">
+                    <ScrollViewer VerticalScrollBarVisibility="Auto" Height="600">
+
                         <ItemsControl ItemsSource="{Binding Configuration}">
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate>
@@ -302,26 +414,27 @@
                                             <ColumnDefinition Width="70"/>
                                             <ColumnDefinition Width="70"/>
                                             <ColumnDefinition Width="100"/>
+                                            <ColumnDefinition Width="100"/>
                                         </Grid.ColumnDefinitions>
 
-                                        <!-- Parameter ID -->
-                                        <TextBlock Text="{Binding Param, StringFormat=Parameter {0} }"
-                                               Grid.Column="0"
-                                               VerticalAlignment="Center"/>
+                                        <!-- Parameter number -->
+                                        <TextBlock Grid.Column="0"
+                                                   VerticalAlignment="Center"
+                                                   Text="{Binding Param, StringFormat=Parameter {0} }"/>
 
-                                        <!-- Editable HEX Value -->
+                                        <!-- Hex value editor -->
                                         <TextBox Grid.Column="1"
                                                  Margin="4,0"
                                                  VerticalAlignment="Center"
-                                                 Text="{Binding HexValue, Mode=TwoWay, UpdateSourceTrigger=LostFocus}"
                                                  IsEnabled="{Binding Valid}"
-                                                 Style="{StaticResource HexTextBox}"/>
+                                                 Style="{StaticResource HexTextBox}"
+                                                 Text="{Binding HexValue, Mode=TwoWay, UpdateSourceTrigger=LostFocus}"/>
 
-                                        <!-- Size Combo -->
+                                        <!-- Value size in bytes -->
                                         <ComboBox Grid.Column="2"
-                                              Margin="4,0"
-                                              VerticalAlignment="Center"
-                                              SelectedItem="{Binding Size, Mode=TwoWay}">
+                                                  Margin="4,0"
+                                                  VerticalAlignment="Center"
+                                                  SelectedItem="{Binding Size, Mode=TwoWay}">
                                             <ComboBox.ItemsSource>
                                                 <x:Array Type="{x:Type sys:Int32}">
                                                     <sys:Int32>1</sys:Int32>
@@ -331,12 +444,18 @@
                                             </ComboBox.ItemsSource>
                                         </ComboBox>
 
-                                        <!-- Update Button -->
-                                        <Button Content="Update"
-                                Grid.Column="3"
-                                Margin="4,0"
-                                Command="{Binding DataContext.NodeInfo.UpdateConfigCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                                CommandParameter="{Binding}"/>
+                                        <!-- Sends the edited configuration value -->
+                                        <Button Grid.Column="3"
+                                                Margin="4,0"
+                                                Command="{Binding DataContext.NodeInfo.UpdateConfigCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                IsEnabled="{Binding Valid}"
+                                                CommandParameter="{Binding}"
+                                                Content="Write"/>
+                                        <Button Grid.Column="4"
+                                                Margin="4,0"
+                                                Command="{Binding DataContext.NodeInfo.UpdateConfigurationCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                CommandParameter="{Binding}"
+                                                Content="Read"/>
                                     </Grid>
                                 </DataTemplate>
                             </ItemsControl.ItemTemplate>
