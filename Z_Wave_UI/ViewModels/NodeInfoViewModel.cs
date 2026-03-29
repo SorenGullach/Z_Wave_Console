@@ -188,6 +188,7 @@ namespace Z_Wave_UI.ViewModels
     {
         private readonly Dispatcher dispatcher;
         private readonly Action<string> setStatusMessage;
+        private readonly Func<int, int, Task> switchBinaryAsync;
         private readonly Func<int, int, int, int, Task> updateConfigAsync;
         private readonly Func<int, int, int, int, Task> addMultiChannelAssociationAsync;
         private readonly Func<int, int, int, int, Task> removeMultiChannelAssociationAsync;
@@ -211,12 +212,16 @@ namespace Z_Wave_UI.ViewModels
         }
 
         private readonly AsyncRelayCommand nodeSelectedCommand;
+        private readonly RelayCommand switchBinaryCommandOn;
+        private readonly RelayCommand switchBinaryCommandOff;
         private readonly RelayCommand<ConfigurationParameter> updateConfigCommand;
         private readonly RelayCommand addMultiChannelAssociationCommand;
         private readonly RelayCommand removeMultiChannelAssociationCommand;
         private readonly RelayCommand updateMultiChannelAssociationCommand;
         private readonly RelayCommand<ConfigurationParameter> updateConfigurationCommand;
 
+        public ICommand SwitchBinaryCommandOn => switchBinaryCommandOn;
+        public ICommand SwitchBinaryCommandOff => switchBinaryCommandOff;
         public ICommand UpdateConfigCommand => updateConfigCommand;
         public ICommand AddMultiChannelAssociationCommand => addMultiChannelAssociationCommand;
         public ICommand RemoveMultiChannelAssociationCommand => removeMultiChannelAssociationCommand;
@@ -256,6 +261,7 @@ namespace Z_Wave_UI.ViewModels
         public NodeInfoViewModel(
             Dispatcher dispatcher,
             Action<string> setStatusMessage,
+            Func<int, int, Task> switchbinaryasync,
             Func<int, int, int, int, Task> updateconfigasync,
             Func<int, int, int, int, Task> addmultichannelassociationasync,
             Func<int, int, int, int, Task> removemultichannelassociationasync,
@@ -264,12 +270,19 @@ namespace Z_Wave_UI.ViewModels
         {
             this.dispatcher = dispatcher;
             this.setStatusMessage = setStatusMessage;
+            switchBinaryAsync = switchbinaryasync;
             updateConfigAsync = updateconfigasync;
             addMultiChannelAssociationAsync = addmultichannelassociationasync;
             removeMultiChannelAssociationAsync = removemultichannelassociationasync;
             updateMultiChannelAssociationAsync = updatemultichannelassociationasync;
             updateConfigurationAsync = updateconfigurationasync;
             nodeSelectedCommand = new AsyncRelayCommand(() => Task.CompletedTask, () => Node is not null);
+            switchBinaryCommandOn = new RelayCommand(
+                () => ExecuteSwitchBinary(255),
+                () => Node is not null);
+            switchBinaryCommandOff = new RelayCommand(
+                () => ExecuteSwitchBinary(0),
+                () => Node is not null);
             updateConfigCommand = new RelayCommand<ConfigurationParameter>(
                 ExecuteUpdateConfig,
                 param => Node is not null && param is not null);
@@ -290,6 +303,11 @@ namespace Z_Wave_UI.ViewModels
         private void ExecuteUpdateConfig(ConfigurationParameter? param)
         {
             _ = UpdateConfigAsync(param);
+        }
+
+        private void ExecuteSwitchBinary(int value)
+        {
+            _ = SwitchBinaryAsync(value);
         }
 
         public void SetSelectedNode(int? nodeid)
@@ -388,11 +406,29 @@ namespace Z_Wave_UI.ViewModels
 
         private void RaiseCommandStates()
         {
+            switchBinaryCommandOn.RaiseCanExecuteChanged();
+            switchBinaryCommandOff.RaiseCanExecuteChanged();
             updateConfigCommand.RaiseCanExecuteChanged();
             addMultiChannelAssociationCommand.RaiseCanExecuteChanged();
             removeMultiChannelAssociationCommand.RaiseCanExecuteChanged();
             updateMultiChannelAssociationCommand.RaiseCanExecuteChanged();
             updateConfigurationCommand.RaiseCanExecuteChanged();
+        }
+
+        private async Task SwitchBinaryAsync(int value)
+        {
+            if (Node is null)
+                return;
+
+            try
+            {
+                await switchBinaryAsync(Node.NodeId, value);
+                setStatusMessage($"Node {Node.NodeId} switch binary {(value == 0 ? "off" : "on")} requested");
+            }
+            catch (Exception ex)
+            {
+                setStatusMessage(ex.Message);
+            }
         }
 
         private async Task UpdateConfigAsync(ConfigurationParameter? param)

@@ -501,6 +501,29 @@ bool ZW_Node::ExecuteBatteryCommandJob()
 	return true;
 }
 
+bool ZW_Node::ExecuteSwitchBinaryCommandJob(uint8_t value)
+{
+	if (!HasCC(eCommandClass::SWITCH_BINARY))
+	{
+		Log.AddL(eLogTypes::DVC, MakeTag(), "Node does not support SWITCH_BINARY CC node {}", NodeId);
+		return true;
+	}
+
+	auto* handler = device.GetHandler(eCommandClass::SWITCH_BINARY);
+	if (!handler)
+	{
+		Log.AddL(eLogTypes::DVC, MakeTag(), "No handler for SWITCH_BINARY CC node {}", NodeId);
+		return true;
+	}
+
+	ZW_APIFrame frame;
+	handler->MakeFrame(frame, ZW_CC_SwitchBinary::eSwitchBinaryCommand::SWITCH_BINARY_SET, { value });
+	Log.AddL(eLogTypes::DVC, MakeTag(), ">> SWITCH_BINARY_SET: node {} value=0x{:02X}", NodeId, value);
+	enqueue(frame);
+
+	return true;
+}
+
 
 bool ZW_Node::ExecuteBindCommandJob(uint8_t groupId, node_t nodeid)
 {

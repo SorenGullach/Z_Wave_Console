@@ -64,6 +64,15 @@ protected:
 			return JsonUtils::MakeOk("", message);
 		}
 
+		if (type == "switch_binary")
+		{
+			int id = 0, value = 0;
+			JsonUtils::TryExtractInt(message, "node_id", id);
+			JsonUtils::TryExtractInt(message, "value", value);
+			ZW.SwitchBinary((node_t)id, static_cast<uint8_t>(value));
+			return JsonUtils::MakeOk("", message);
+		}
+
 		if (type == "mc_bind")
 		{
 			int id = 0, groupId = 0, targetNodeId = 0, targetEndpoint = 0;

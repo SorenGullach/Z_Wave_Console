@@ -120,7 +120,7 @@ public:
 		bool valid = false;               // True when a REPORT has been received
 	};
 	std::array<ConfigurationInfo, 255> configurationInfo{};
-	
+
 	/* we remove the 0x85 association and map it into 0x8E, as nodes that support 0x8E also support 0x85
 	* multi channel EP nodeId 1,0 is the same as 0x85 nodeId 1
 	// ---------- Association DVC (CC 0x85) ----------
@@ -435,6 +435,7 @@ public:
 	enum class eJobs
 	{
 		BATTERY_GET,
+		SWITCH_BINARY,
 		ASSOCIATION_INTERVIEW,
 		MULTI_CHANNEL_ASSOCIATION_INTERVIEW,
 		CONFIGURATION_INTERVIEW,
@@ -499,6 +500,9 @@ private:
 		{
 		case eJobs::BATTERY_GET:
 			return HasCC(eCommandClass::BATTERY);
+
+		case eJobs::SWITCH_BINARY:
+			return HasCC(eCommandClass::SWITCH_BINARY);
 
 		case eJobs::CONFIGURATION_INTERVIEW:
 		case eJobs::CONFIGURATION_COMMAND:
@@ -627,6 +631,9 @@ private:
 		case eJobs::BATTERY_GET:
 			doneOrError = ExecuteBatteryCommandJob();
 			break;
+		case eJobs::SWITCH_BINARY:
+			doneOrError = ExecuteSwitchBinaryCommandJob(static_cast<uint8_t>(job.value & 0xFF));
+			break;
 		case eJobs::ASSOCIATION_INTERVIEW:
 			doneOrError = ExecuteAssociationInterviewJob();
 			break;
@@ -634,7 +641,7 @@ private:
 			doneOrError = ExecuteMultiChannelAssociationInterviewJob();
 			break;
 		case eJobs::CONFIGURATION_INTERVIEW:
-			doneOrError = ExecuteConfigurationInterviewJob(job.group, (uint8_t)(job.value&0xFF));
+			doneOrError = ExecuteConfigurationInterviewJob(job.group, (uint8_t)(job.value & 0xFF));
 			break;
 		case eJobs::BIND_COMMAND:
 			doneOrError = ExecuteBindCommandJob(job.group, job.nodeId);
@@ -671,6 +678,7 @@ private:
 	void ProcessInterviewState();
 
 	bool ExecuteBatteryCommandJob();
+	bool ExecuteSwitchBinaryCommandJob(uint8_t value);
 	bool ExecuteAssociationInterviewJob();
 	bool ExecuteMultiChannelAssociationInterviewJob();
 	bool ExecuteConfigurationInterviewJob(uint8_t startparam, uint8_t numParams);

@@ -182,79 +182,132 @@
                     <RowDefinition Height="Auto"/>
                 </Grid.RowDefinitions>
 
-                <!-- BASIC INFO -->
-                <GroupBox Header="Basic Information" Grid.Row="0" Grid.Column="0">
-                    <Grid Margin="8">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="160"/>
-                            <ColumnDefinition Width="*"/>
-                        </Grid.ColumnDefinitions>
+                <Grid Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
 
-                        <Grid.RowDefinitions>
-                            <RowDefinition/>
-                            <RowDefinition/>
-                            <RowDefinition/>
-                            <RowDefinition/>
-                            <RowDefinition/>
-                        </Grid.RowDefinitions>
+                    <!-- BASIC INFO -->
+                    <GroupBox Header="Basic Information" Grid.Row="0" Grid.Column="0">
+                        <Grid Margin="8">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="160"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
 
-                        <TextBlock Text="Node ID:" Grid.Row="0" Grid.Column="0"/>
-                        <TextBlock Text="{Binding NodeId}" Grid.Row="0" Grid.Column="1"/>
+                            <Grid.RowDefinitions>
+                                <RowDefinition/>
+                                <RowDefinition/>
+                                <RowDefinition/>
+                                <RowDefinition/>
+                                <RowDefinition/>
+                            </Grid.RowDefinitions>
 
-                        <TextBlock Text="Floor:" Grid.Row="1" Grid.Column="0"/>
-                        <TextBlock Text="{Binding Floor}" Grid.Row="1" Grid.Column="1"/>
+                            <TextBlock Text="Node ID:" Grid.Row="0" Grid.Column="0"/>
+                            <TextBlock Text="{Binding NodeId}" Grid.Row="0" Grid.Column="1"/>
 
-                        <TextBlock Text="Room:" Grid.Row="2" Grid.Column="0"/>
-                        <TextBlock Text="{Binding Room}" Grid.Row="2" Grid.Column="1"/>
+                            <TextBlock Text="Floor:" Grid.Row="1" Grid.Column="0"/>
+                            <TextBlock Text="{Binding Floor}" Grid.Row="1" Grid.Column="1"/>
 
-                        <TextBlock Text="State:" Grid.Row="3" Grid.Column="0"/>
-                        <TextBlock Text="{Binding State}" Grid.Row="3" Grid.Column="1"/>
+                            <TextBlock Text="Room:" Grid.Row="2" Grid.Column="0"/>
+                            <TextBlock Text="{Binding Room}" Grid.Row="2" Grid.Column="1"/>
 
-                        <TextBlock Text="Interview State:" Grid.Row="4" Grid.Column="0"/>
-                        <TextBlock Text="{Binding InterviewState}" Grid.Row="4" Grid.Column="1"/>
-                    </Grid>
-                </GroupBox>
+                            <TextBlock Text="State:" Grid.Row="3" Grid.Column="0"/>
+                            <TextBlock Text="{Binding State}" Grid.Row="3" Grid.Column="1"/>
 
-                <!-- PROTOCOL INFO -->
-                <GroupBox Header="Protocol Information" Grid.Row="0" Grid.Column="1">
-                    <Grid Margin="8">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="160"/>
-                            <ColumnDefinition Width="*"/>
-                        </Grid.ColumnDefinitions>
+                            <TextBlock Text="Interview State:" Grid.Row="4" Grid.Column="0"/>
+                            <TextBlock Text="{Binding InterviewState}" Grid.Row="4" Grid.Column="1"/>
+                        </Grid>
+                    </GroupBox>
 
-                        <Grid.RowDefinitions>
-                            <RowDefinition/>
-                            <RowDefinition/>
-                            <RowDefinition/>
-                            <RowDefinition/>
-                            <RowDefinition/>
-                            <RowDefinition/>
-                            <RowDefinition/>
-                        </Grid.RowDefinitions>
+                    <!-- VALUES -->
+                    <GroupBox Header="Basic Values" Grid.Row="0" Grid.Column="1">
+                        <Grid Margin="8">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="160"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
 
-                        <TextBlock Text="Basic:" Grid.Row="0" Grid.Column="0"/>
-                        <TextBlock Text="{Binding Protocol.Basic}" Grid.Row="0" Grid.Column="1"/>
+                            <Grid.RowDefinitions>
+                                <RowDefinition/>
+                                <RowDefinition/>
+                                <RowDefinition/>
+                                <RowDefinition/>
+                                <RowDefinition/>
+                                <RowDefinition/>
+                            </Grid.RowDefinitions>
 
-                        <TextBlock Text="Generic:" Grid.Row="1" Grid.Column="0"/>
-                        <TextBlock Text="{Binding Protocol.Generic}" Grid.Row="1" Grid.Column="1"/>
+                            <TextBlock Text="Battery:" Grid.Row="0" Grid.Column="0"/>
+                            <TextBlock Text="{Binding Values.Battery}" Grid.Row="0" Grid.Column="1"/>
 
-                        <TextBlock Text="Specific:" Grid.Row="2" Grid.Column="0"/>
-                        <TextBlock Text="{Binding Protocol.Specific}" Grid.Row="2" Grid.Column="1"/>
+                            <TextBlock Text="Basic:" Grid.Row="1" Grid.Column="0"/>
+                            <TextBlock Text="{Binding Values.Basic}" Grid.Row="1" Grid.Column="1"/>
 
-                        <TextBlock Text="Listening:" Grid.Row="3" Grid.Column="0"/>
-                        <TextBlock Text="{Binding Protocol.Listening}" Grid.Row="3" Grid.Column="1"/>
+                            <TextBlock Text="SwitchBinary:" Grid.Row="2" Grid.Column="0"/>
+                            <TextBlock Text="{Binding Values.SwitchBinary}" Grid.Row="2" Grid.Column="1"/>
+                            <Button Content="On"
+                                    Command="{Binding DataContext.NodeInfo.SwitchBinaryCommandOn, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                    Grid.Row="2" Grid.Column="2"/>
+                            <Button Content="Off"
+                                    Command="{Binding DataContext.NodeInfo.SwitchBinaryCommandOff, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                    Grid.Row="2" Grid.Column="3"/>
 
-                        <TextBlock Text="Routing:" Grid.Row="4" Grid.Column="0"/>
-                        <TextBlock Text="{Binding Protocol.Routing}" Grid.Row="4" Grid.Column="1"/>
+                            <TextBlock Text="SwitchMultilevel:" Grid.Row="3" Grid.Column="0"/>
+                            <TextBlock Text="{Binding Values.SwitchMultilevel}" Grid.Row="3" Grid.Column="1"/>
 
-                        <TextBlock Text="Speed:" Grid.Row="5" Grid.Column="0"/>
-                        <TextBlock Text="{Binding Protocol.Speed}" Grid.Row="5" Grid.Column="1"/>
+                            <TextBlock Text="SensorBinary:" Grid.Row="4" Grid.Column="0"/>
+                            <TextBlock Text="{Binding Values.SensorBinary}" Grid.Row="4" Grid.Column="1"/>
 
-                        <TextBlock Text="Protocol Version:" Grid.Row="6" Grid.Column="0"/>
-                        <TextBlock Text="{Binding Protocol.ProtocolVersion}" Grid.Row="6" Grid.Column="1"/>
-                    </Grid>
-                </GroupBox>
+                            <TextBlock Text="Protection:" Grid.Row="5" Grid.Column="0"/>
+                            <TextBlock Text="{Binding Values.Protection}" Grid.Row="4" Grid.Column="1"/>
+                        </Grid>
+                    </GroupBox>
+
+                    <!-- PROTOCOL INFO -->
+                    <GroupBox Header="Protocol Information" Grid.Row="0" Grid.Column="2">
+                        <Grid Margin="8">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="160"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+
+                            <Grid.RowDefinitions>
+                                <RowDefinition/>
+                                <RowDefinition/>
+                                <RowDefinition/>
+                                <RowDefinition/>
+                                <RowDefinition/>
+                                <RowDefinition/>
+                                <RowDefinition/>
+                            </Grid.RowDefinitions>
+
+                            <TextBlock Text="Basic:" Grid.Row="0" Grid.Column="0"/>
+                            <TextBlock Text="{Binding Protocol.Basic}" Grid.Row="0" Grid.Column="1"/>
+
+                            <TextBlock Text="Generic:" Grid.Row="1" Grid.Column="0"/>
+                            <TextBlock Text="{Binding Protocol.Generic}" Grid.Row="1" Grid.Column="1"/>
+
+                            <TextBlock Text="Specific:" Grid.Row="2" Grid.Column="0"/>
+                            <TextBlock Text="{Binding Protocol.Specific}" Grid.Row="2" Grid.Column="1"/>
+
+                            <TextBlock Text="Listening:" Grid.Row="3" Grid.Column="0"/>
+                            <TextBlock Text="{Binding Protocol.Listening}" Grid.Row="3" Grid.Column="1"/>
+
+                            <TextBlock Text="Routing:" Grid.Row="4" Grid.Column="0"/>
+                            <TextBlock Text="{Binding Protocol.Routing}" Grid.Row="4" Grid.Column="1"/>
+
+                            <TextBlock Text="Speed:" Grid.Row="5" Grid.Column="0"/>
+                            <TextBlock Text="{Binding Protocol.Speed}" Grid.Row="5" Grid.Column="1"/>
+
+                            <TextBlock Text="Protocol Version:" Grid.Row="6" Grid.Column="0"/>
+                            <TextBlock Text="{Binding Protocol.ProtocolVersion}" Grid.Row="6" Grid.Column="1"/>
+                        </Grid>
+                    </GroupBox>
+                </Grid>
 
                 <!-- SUPPORTED CCs -->
                 <GroupBox Header="Supported Command Classes" Grid.Row="1" Grid.Column="0">

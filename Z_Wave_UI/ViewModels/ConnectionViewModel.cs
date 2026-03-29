@@ -332,6 +332,29 @@ public sealed class ConnectionViewModel : ViewModelBase
         }
     }
 
+    public async Task SwitchBinaryAsync(int nodeid, int value)
+    {
+        if (!IsConnected)
+            return;
+
+        try
+        {
+            var payload = new
+            {
+                type = "switch_binary",
+                node_id = nodeid,
+                value
+            };
+
+            var json = JsonSerializer.Serialize(payload);
+            await tcpService.SendLineAsync(json, CancellationToken.None).ConfigureAwait(false);
+        }
+        catch (Exception ex)
+        {
+            SetStatusMessage(ex.Message);
+        }
+    }
+
     public void HandleConnectionClosed()
     {
         _ = dispatcher.InvokeAsync(() =>

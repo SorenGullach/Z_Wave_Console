@@ -41,6 +41,7 @@ public sealed class MainViewModel : ViewModelBase, IDisposable
         NodeInfo = new NodeInfoViewModel(
             dispatcher,
             SetStatusMessage,
+            Connection.SwitchBinaryAsync,
             Connection.UpdateConfigAsync,
             Connection.AddMultiChannelAssociationAsync,
             Connection.RemoveMultiChannelAssociationAsync,

@@ -116,6 +116,7 @@ void ZW_CC_Battery::HandleReport(const ZW_CmdId cmdid, const uint8_t destination
 
 	const uint8_t level = params[0];
 	node.batteryLevel = level;   // from your existing code
+	NotifyUI(UINotify::NodeChanged, node.NodeId);
 	Log.AddL(eLogTypes::DVC, MakeTag(), "<< BATTERY_REPORT: node={} level={}", node.NodeId, level);
 }
 
@@ -124,11 +125,21 @@ void ZW_CC_Battery::HandleReport(const ZW_CmdId cmdid, const uint8_t destination
 //
 void ZW_CC_SwitchBinary::MakeFrame(ZW_APIFrame& frame, ZW_CmdId cmdid, const ZW_ByteVector& params)
 {
-	(void)cmdid;
-	Log.AddL(eLogTypes::DVC, MakeTag(), "MF SWITCH_BINARY_GET: node {}", node.NodeId);
-	frame.MakeSendData(node.NodeId, 3,
-					   { static_cast<uint8_t>(eCommandClass::SWITCH_BINARY),
-						 static_cast<uint8_t>(eSwitchBinaryCommand::SWITCH_BINARY_GET) });
+	switch (cmdid.value)
+	{
+	case static_cast<uint8_t>(eSwitchBinaryCommand::SWITCH_BINARY_GET):
+		Log.AddL(eLogTypes::DVC, MakeTag(), "MF SWITCH_BINARY_GET: node {}", node.NodeId);
+		frame.MakeSendData(node.NodeId, 3,
+						   { static_cast<uint8_t>(eCommandClass::SWITCH_BINARY),
+							 static_cast<uint8_t>(eSwitchBinaryCommand::SWITCH_BINARY_GET) });
+		break;
+	case static_cast<uint8_t>(eSwitchBinaryCommand::SWITCH_BINARY_SET):
+		Log.AddL(eLogTypes::DVC, MakeTag(), "MF SWITCH_BINARY_SET: node {} {}", node.NodeId, params[0]);
+		frame.MakeSendData(node.NodeId, 3,
+						   { static_cast<uint8_t>(eCommandClass::SWITCH_BINARY),
+							 static_cast<uint8_t>(eSwitchBinaryCommand::SWITCH_BINARY_SET), params[0] });
+
+	}
 }
 
 void ZW_CC_SwitchBinary::HandleReport(const ZW_CmdId cmdid, const uint8_t destinationEP, const ZW_ByteVector& params)
@@ -144,6 +155,7 @@ void ZW_CC_SwitchBinary::HandleReport(const ZW_CmdId cmdid, const uint8_t destin
 
 	const uint8_t value = params[0];
 	node.switchBinaryValue = value;
+	NotifyUI(UINotify::NodeChanged, node.NodeId);
 	Log.AddL(eLogTypes::DVC, MakeTag(), "<< SWITCH_BINARY_REPORT: node={} value=0x{:02X}",
 			 node.NodeId, value);
 }
@@ -204,6 +216,7 @@ void ZW_CC_Basic::HandleReport(const ZW_CmdId cmdid, const uint8_t destinationEP
 		const uint8_t value = params[0];
 		// unsolicited state change from device
 		node.basicValue = value;
+		NotifyUI(UINotify::NodeChanged, node.NodeId);
 		Log.AddL(eLogTypes::DVC, MakeTag(),
 				 "<< BASIC_SET: node={} value=0x{:02X} destinationEP={}", node.NodeId, value, destinationEP);
 	}
@@ -248,6 +261,7 @@ void ZW_CC_Basic::HandleReport(const ZW_CmdId cmdid, const uint8_t destinationEP
 			return;
 		}
 		node.basicValue = params[0];
+		NotifyUI(UINotify::NodeChanged, node.NodeId);
 		Log.AddL(eLogTypes::DVC, MakeTag(),
 				 "<< BASIC_REPORT: node={} value=0x{:02X} destinationEP={}", node.NodeId, node.basicValue.value(), destinationEP);
 	}
@@ -285,6 +299,7 @@ void ZW_CC_SwitchMultilevel::HandleReport(const ZW_CmdId cmdid, const uint8_t de
 
 	const uint8_t level = params[0];
 	node.switchMultilevelValue = level;
+	NotifyUI(UINotify::NodeChanged, node.NodeId);
 	Log.AddL(eLogTypes::DVC, MakeTag(), "<< SWITCH_MULTILEVEL_REPORT: node={} level={}",
 			 node.NodeId, level);
 }
@@ -314,6 +329,7 @@ void ZW_CC_SensorBinary::HandleReport(const ZW_CmdId cmdid, const uint8_t destin
 
 	const uint8_t value = params[0];
 	node.sensorBinaryValue = value;
+	NotifyUI(UINotify::NodeChanged, node.NodeId);
 	Log.AddL(eLogTypes::DVC, MakeTag(), "<< SENSOR_BINARY_REPORT: node={} value={}",
 			 node.NodeId, value);
 }
@@ -655,7 +671,7 @@ void ZW_CC_Protection::HandleReport(const ZW_CmdId cmdid, const uint8_t destinat
 		return;
 
 	node.protectionState = params[0];
-
+	NotifyUI(UINotify::NodeChanged, node.NodeId);
 	Log.AddL(eLogTypes::DVC, MakeTag(), "<< PROTECTION_REPORT: node={} state={}",
 			 node.NodeId, params[0]);
 }
@@ -774,8 +790,8 @@ void ZW_CC_Association::HandleReport(const ZW_CmdId cmdid, const uint8_t destina
 			for (size_t i = 3; i < params.size(); i++)
 			{
 				uint8_t nodeId = params[i];
-//				g.nodeList[nodeId].valid = true;
-	//			g.nodeList[nodeId].nodeId = (node_t)nodeId;
+				//				g.nodeList[nodeId].valid = true;
+					//			g.nodeList[nodeId].nodeId = (node_t)nodeId;
 				g.members[nodeId].nodeId = (node_t)nodeId;
 				g.members[nodeId].endpointId = 0;
 				g.members[nodeId].valid = true;
@@ -797,8 +813,8 @@ void ZW_CC_Association::HandleReport(const ZW_CmdId cmdid, const uint8_t destina
 			uint8_t groupCount = params[0];
 			node.multiChannelAssociationGroups.clear();
 			node.multiChannelAssociationGroups.resize(groupCount);
-//			node.associationGroups.clear();
-	//		node.associationGroups.resize(groupCount);
+			//			node.associationGroups.clear();
+				//		node.associationGroups.resize(groupCount);
 
 			for (uint8_t g = 0; g < groupCount; g++)
 			{

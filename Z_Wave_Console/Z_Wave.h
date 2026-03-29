@@ -98,6 +98,16 @@ public:
 		node->EnqueueJob(job);
 	}
 
+	void SwitchBinary(node_t nodeid, uint8_t value)
+	{
+		ZW_Node* node = nodes.Get(nodeid);
+		if (!node) return;
+		ZW_Node::Job job;
+		job.job = ZW_Node::eJobs::SWITCH_BINARY;
+		job.value = value;
+		node->EnqueueJob(job);
+	}
+
 	void AssociationInterview(node_t nodeid)
 	{
 		ZW_Node* node = nodes.Get(nodeid);
