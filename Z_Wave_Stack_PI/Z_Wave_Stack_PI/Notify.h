@@ -1,5 +1,4 @@
 #pragma once
-
 #include "NodeId.h"
 
 enum class UINotify
