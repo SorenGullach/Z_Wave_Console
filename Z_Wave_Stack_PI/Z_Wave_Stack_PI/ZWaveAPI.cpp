@@ -5,8 +5,10 @@ ZWaveAPI::ZWaveAPI() = default;
 
 ZWaveAPI::~ZWaveAPI() = default;
 
-void NotifyUI(const UINotify notify, node_t nodeId)
+void NotifyUI(const UINotify notify, nodeid_t nodeId)
 {
+  (void)notify;
+	(void)nodeId;
 	// TODO: Implement server notification
 	// Temporarily commented out for build optimization work
 	/*

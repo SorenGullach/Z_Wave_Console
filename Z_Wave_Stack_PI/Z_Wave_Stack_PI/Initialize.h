@@ -9,14 +9,15 @@ public:
   Initialize(EnqueueFn enqueue, ControllerInfo& controllerinfo);
 
 	void Start();
+	bool Done();
 	
-	bool HandleFrame(const ZW_APIFrame& frame);
-	bool HandleFrameTimeout(const ZW_APIFrame& frame);
+	bool HandleFrame(const APIFrame& frame);
+	bool HandleFrameTimeout(const APIFrame& frame);
 
     private:
 	EnqueueFn enqueue;
 	ControllerInfo& controllerInfo;
-	int currentStep;
+    size_t currentStep;
 
 	void Continue(); // continue initialization
 
@@ -83,44 +84,44 @@ public:
 		{ eCommandIds::FUNC_ID_GET_INIT_DATA,
 			ControllerInfo::eInitializationState::InitDataPending,                  
 			ControllerInfo::eInitializationState::InitDataDone,
-			&GetInitData,               
-			&DecodeInitData,               
+            &Initialize::GetInitData,
+			&Initialize::DecodeInitData,
 			true },
 		{ eCommandIds::FUNC_ID_GET_CAPABILITIES,
 			ControllerInfo::eInitializationState::InitCapabilitiesPending,           
 			ControllerInfo::eInitializationState::InitCapabilitiesDone,
-			&GetCapabilities,            
-			&DecodeCapabilities,            
+           &Initialize::GetCapabilities,
+			&Initialize::DecodeCapabilities,
 			true },
 		{ eCommandIds::FUNC_ID_GET_CONTROLLER_CAPABILITIES, 
 			ControllerInfo::eInitializationState::InitControllerCapabilitiesPending,
 			ControllerInfo::eInitializationState::InitControllerCapabilitiesDone, 
-			&GetControllerCapabilities,
-			&DecodeControllerCapabilities, 
+         &Initialize::GetControllerCapabilities,
+			&Initialize::DecodeControllerCapabilities,
 			true },
 		{ eCommandIds::FUNC_ID_GET_PROTOCOL_VERSION,        
 			ControllerInfo::eInitializationState::InitProtocolVersionPending,
 			ControllerInfo::eInitializationState::InitProtocolVersionDone,        
-			&GetProtocolVersion,
-			&DecodeProtocolVersion,        
+            &Initialize::GetProtocolVersion,
+			&Initialize::DecodeProtocolVersion,
 			false },
 		{ eCommandIds::ZW_API_GET_NETWORK_IDS_FROM_MEMORY,  
 			ControllerInfo::eInitializationState::InitNetworkIdsFromMemoryPending,
 			ControllerInfo::eInitializationState::InitNetworkIdsFromMemoryDone,   
-			&GetNetworkIdsFromMemory,
-			&DecodeNetworkIdsFromMemory,   
+           &Initialize::GetNetworkIdsFromMemory,
+			&Initialize::DecodeNetworkIdsFromMemory,
 			true },
 		{ eCommandIds::FUNC_ID_GET_LIBRARY_VERSION,         
 			ControllerInfo::eInitializationState::InitLibraryVersionPending,
 			ControllerInfo::eInitializationState::InitLibraryVersionDone,         
-			&GetLibraryVersion,
-			&DecodeLibraryVersion,         
+         &Initialize::GetLibraryVersion,
+			&Initialize::DecodeLibraryVersion,
 			true },
 		{ eCommandIds::FUNC_ID_GET_LIBRARY_TYPE,            
 			ControllerInfo::eInitializationState::InitLibraryTypePending,
 			ControllerInfo::eInitializationState::InitLibraryTypeDone,            
-			&GetLibraryType,
-			&DecodeLibraryType,            
+            &Initialize::GetLibraryType,
+			&Initialize::DecodeLibraryType,
 			false },
 	};
 

@@ -55,6 +55,13 @@ public:
 	int ProtocolMinor = 0;
 
 	// 4.3.2 Get Init Data (0x02)
+	enum class eAPICapabilities : uint8_t
+	{
+		EndNode = 0x01,
+		TimerFunctions = 0x02,
+		PrimaryController = 0x04,
+		SISFunctions = 0x08
+	};
 	uint8_t ApiVersion = 0;
 	uint8_t ApiCapabilities = 0;
 	bool IsEndNode = false, HasTimerFunctions = false, IsPrimarayController = false, HasSISFunctions = false;

@@ -74,7 +74,7 @@ private:
 
 	std::chrono::steady_clock::time_point stateDeadline{};
 	std::chrono::steady_clock::time_point nextSendTime{};
-	const std::chrono::milliseconds coolDown{ 50 };
+	const std::chrono::milliseconds coolDown{ 100 };
 
 	std::mutex queueMutex;
 	std::queue<CommandFrame> cmdQueue;

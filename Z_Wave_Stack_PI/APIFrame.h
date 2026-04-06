@@ -147,7 +147,7 @@ public:
 public:
 	std::string Info() const
 	{
-#ifdef _DEBUG
+#ifndef NDEBUG
 		const char* typeStr =
 			(type == eFrameTypes::REQ) ? "REQ" :
 			(type == eFrameTypes::RES) ? "RES" : "??";

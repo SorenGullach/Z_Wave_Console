@@ -8,7 +8,7 @@
 #include <string_view>
 
 #include "APICommands.h"
-#include "NodeId.h"
+#include "NodeId_t.h"
 
 // Prefer `std::uint8_t` explicitly in this header to avoid any reliance on
 // global typedefs or toolchain-specific behavior.
@@ -141,10 +141,11 @@ public:
 public:
 	std::string Info() const
 	{
-#ifdef _DEBUG
-		const char* typeStr =
+#ifndef NDEBUG
+		std::string typeStr =
 			(type == eFrameTypes::REQ) ? "REQ" :
-			(type == eFrameTypes::RES) ? "RES" : "??";
+			((type == eFrameTypes::RES) ? "RES" : 
+			 std::to_string((int)type));
 
 		std::string name =
 			APICmd.Name.empty() ? "UNKNOWN" : APICmd.Name;
@@ -159,7 +160,7 @@ public:
 			if (payload.size() > 2)
 			{
 				auto ev = static_cast<ApplicationUpdateEvent>(payload[0]);
-				node_t nodeid{ payload[1] };
+				nodeid_t nodeid{ payload[1] };
                extra = " | event=" + ToString(ev);
 			}
 			else
@@ -175,8 +176,8 @@ public:
 		{
 			if (type == eFrameTypes::REQ && payload.size() >= 4)
 			{
-				node_t nodeId{ payload[0] };
-				uint8_t rfLen = payload[1];
+				nodeid_t nodeId{ payload[0] };
+				size_t rfLen = payload[1];
 				uint8_t callbackId = payload[payload.size() - 2];
 				uint8_t txOptions = payload[payload.size() - 1];
 
@@ -185,7 +186,7 @@ public:
 				if (payload.size() >= 2 + rfLen)
 					rf.assign(payload.begin() + 2, payload.begin() + 2 + rfLen);
 
-                extra = " | node=0x" + FormatCompat::HexValue(nodeId.value) +
+                extra = " | node=0x" + FormatCompat::HexValue(nodeId.Value()) +
 					" rf=[" + PayLoad::ToString(rf) + "] cb=0x" +
 					FormatCompat::HexValue(callbackId) + " txOpt=0x" +
 					FormatCompat::HexValue(txOptions);
@@ -208,12 +209,13 @@ public:
 			}
 		}
 
-     return "[" + std::string(typeStr) + "] cmdId=0x" +
+     return "type=" + std::string(typeStr) + " cmdId=0x" +
 			FormatCompat::HexValue(static_cast<std::uint8_t>(APICmd.CmdId)) +
 			" " + name + " | payload=" + payload.ToString() + extra;
-#endif
+#else
 
         return "0x" + FormatCompat::HexValue(static_cast<std::uint8_t>(APICmd.CmdId));
+#endif
 	}
 
 	std::string DVC() const
@@ -235,13 +237,13 @@ public:
 	}
 
 	// Make a request for a specific node (base type 8-bit)
-	void Make(const eCommandIds cmd, const node_t nodeId, const std::vector<std::uint8_t>& params = {})
+	void Make(const eCommandIds cmd, const nodeid_t nodeId, const std::vector<std::uint8_t>& params = {})
 	{
 		APICmd = APICommands[static_cast<std::uint8_t>(cmd)];
 		assert(APICmd.CmdId == cmd);
 		type = eFrameTypes::REQ;
 		payload.clear();
-		payload.push_back(nodeId.value);
+		payload.push_back(nodeId.Value());
 		payload.insert(payload.end(), params.begin(), params.end());
 	}
 	/*
@@ -258,13 +260,13 @@ public:
 	}
 	*/
 	// Make a request for a specific node (base type 8-bit)
-	void MakeSendData(const node_t nodeId, const std::uint8_t callbackId, const std::vector<std::uint8_t>& params = {})
+	void MakeSendData(const nodeid_t nodeId, const std::uint8_t callbackId, const std::vector<std::uint8_t>& params = {})
 	{
 		APICmd = APICommands[static_cast<std::uint8_t>(eCommandIds::ZW_API_CONTROLLER_SEND_DATA)];
 		assert(APICmd.CmdId == eCommandIds::ZW_API_CONTROLLER_SEND_DATA);
 		type = eFrameTypes::REQ;
 		payload.clear();
-		payload.push_back(nodeId.value); // NodeID
+		payload.push_back(nodeId.Value()); // NodeID
 		payload.push_back(static_cast<std::uint8_t>(params.size())); // Payload length 
 		payload.insert(payload.end(), params.begin(), params.end()); // RF payload 
 		payload.push_back(static_cast<std::uint8_t>(callbackId));
@@ -287,7 +289,5 @@ public:
 	}
 	*/
 };
-
-using ZW_APIFrame = APIFrame;
 
 using EnqueueFn = std::function<void(const APIFrame&)>;

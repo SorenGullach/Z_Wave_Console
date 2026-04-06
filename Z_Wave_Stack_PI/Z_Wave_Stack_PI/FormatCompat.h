@@ -27,8 +27,12 @@ namespace FormatCompat
 	void ReplaceFirst(std::string& text, const T& value);
 
 	template <typename... Args>
-	std::string Format(std::string_view text, Args&&... args);
+	std::string format(std::string_view text, Args&&... args);
 }
 
 // Implementation must be in header for templates
 #include "FormatCompat.inl"
+namespace std 
+{ 
+	using namespace FormatCompat; 
+}

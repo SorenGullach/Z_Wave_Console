@@ -125,7 +125,7 @@ namespace FormatCompat
 	}
 
 	template <typename... Args>
-	std::string Format(std::string_view text, Args&&... args)
+	std::string format(std::string_view text, Args&&... args)
 	{
 		std::string result(text);
 		(ReplaceFirst(result, std::forward<Args>(args)), ...);

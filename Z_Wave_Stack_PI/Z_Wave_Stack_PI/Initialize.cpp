@@ -1,4 +1,4 @@
-#include "logging.h"
+#include "Logging.h"
 #include "Initialize.h"
 #include "APICommands.h"
 #include "ControllerInfo.h"
@@ -16,7 +16,12 @@ void Initialize::Start()
 	Continue();
 }
 
-bool Initialize::HandleFrame(const ZW_APIFrame& frame)
+bool Initialize::Done()
+{
+	return controllerInfo.InitializationState == ControllerInfo::eInitializationState::Initialized;
+}
+
+bool Initialize::HandleFrame(const APIFrame& frame)
 {
 	const size_t count = std::size(InitSequence);
 	if (currentStep >= count)
@@ -40,7 +45,7 @@ bool Initialize::HandleFrame(const ZW_APIFrame& frame)
 	return true;
 }
 
-bool Initialize::HandleFrameTimeout(const ZW_APIFrame& frame)
+bool Initialize::HandleFrameTimeout(const APIFrame& frame)
 {
 	Log.AddL(eLogTypes::ERR, MakeTag(), "Initialization timed out: {}", frame.Info());
 	const size_t count = std::size(InitSequence);
@@ -64,7 +69,9 @@ void Initialize::Continue()
 		if (!controllerInfo.HasAPICommand(step.CmdId))
 		{
 			if (step.Mandatory)
-				Log.AddL(eLogTypes::ERR, MakeTag(), "Initialization failed Mandatory: cmdId={}", APICommands[static_cast<uint8_t>(step.CmdId)].Name);
+				Log.AddL(eLogTypes::ERR, MakeTag(), "Initialization failed Mandatory: cmdId={}", ToString(step.CmdId));
+			else
+				Log.AddL(eLogTypes::ERR, MakeTag(), "Initialization not supported: cmdId={}", ToString(step.CmdId));
 			currentStep++;
 			continue;
 		}
@@ -81,7 +88,7 @@ void Initialize::Continue()
 /////////////////////////////////////////////////
 void Initialize::GetInitData()
 {
-	ZW_APIFrame frame;
+	APIFrame frame;
 	frame.Make(eCommandIds::FUNC_ID_GET_INIT_DATA);
 	Log.AddL(eLogTypes::ITZ, MakeTag(), ">> GetInitData: cmdId=0x{:02X}", static_cast<uint8_t>(eCommandIds::FUNC_ID_GET_INIT_DATA));
 	enqueue(frame);
@@ -115,18 +122,14 @@ void Initialize::DecodeInitData(const APIFrame::PayLoad& payload)
 	{
 		out.clear();
 		for (size_t i = 0; i < len; ++i)
-          for (size_t j = 0; j < ControllerInfo::BitsPerByte; ++j)
+			for (size_t j = 0; j < ControllerInfo::BitsPerByte; ++j)
 				if ((data[i] & (1u << j)) != 0)
-                    out.push_back(T(i * ControllerInfo::BitsPerByte + j + 1));
+					out.push_back(T{ static_cast<uint8_t>(i * ControllerInfo::BitsPerByte + j + 1) });
 	};
 
 	const auto* p = reinterpret_cast<const PayloadStruct*>(payload.data());
 	controllerInfo.ApiVersion = p->ApiVersion;
 	controllerInfo.ApiCapabilities = p->ApiCapabilities;
- controllerInfo.IsEndNode = (controllerInfo.ApiCapabilities & ControllerInfo::ApiCapabilityFlags::EndNode) != 0;
-	controllerInfo.HasTimerFunctions = (controllerInfo.ApiCapabilities & ControllerInfo::ApiCapabilityFlags::TimerFunctions) != 0;
-	controllerInfo.IsPrimarayController = (controllerInfo.ApiCapabilities & ControllerInfo::ApiCapabilityFlags::PrimaryController) != 0;
-	controllerInfo.HasSISFunctions = (controllerInfo.ApiCapabilities & ControllerInfo::ApiCapabilityFlags::SISFunctions) != 0;
 
 	controllerInfo.NodeListLength = p->NodeListLength;
 
@@ -157,20 +160,20 @@ void Initialize::DecodeInitData(const APIFrame::PayLoad& payload)
 			 controllerInfo.ApiVersion,
 			 controllerInfo.ApiCapabilities,
 			 controllerInfo.NodeListLength,
-			 controllerInfo.ChipType,
+			 (uint8_t)controllerInfo.ChipType,
 			 controllerInfo.ChipVersion);
-	Log.AddL(eLogTypes::ITZ, MakeTag(), "<< GetInitData: parsed nodeIds={} (first={}, last={})", controllerInfo.NodeIds.size(), controllerInfo.NodeIds.empty() ? node_t{} : controllerInfo.NodeIds.front(), controllerInfo.NodeIds.empty() ? node_t{} : controllerInfo.NodeIds.back());
-	//	NotifyUI(UINotify::ControllerChanged);
+	Log.AddL(eLogTypes::ITZ, MakeTag(), "<< GetInitData: parsed nodeIds={} (first={}, last={})", controllerInfo.NodeIds.size(), controllerInfo.NodeIds.empty() ? nodeid_t{} : controllerInfo.NodeIds.front(), controllerInfo.NodeIds.empty() ? nodeid_t{} : controllerInfo.NodeIds.back());
+	NotifyUI(UINotify::ControllerChanged);
 
-#ifdef _DEBUG
+#ifndef NDEBUG
 	{
 		assert(controllerInfo.ApiVersion == 5);
 		assert(controllerInfo.ApiCapabilities == 8);
 		assert(controllerInfo.NodeListLength == 29);
 
 		assert(controllerInfo.NodeIds.size() == 7);
-		assert(controllerInfo.NodeIds.front().value == 1);
-		assert(controllerInfo.NodeIds.back().value == 26);
+		assert(controllerInfo.NodeIds.front().Value() == 1);
+		assert(controllerInfo.NodeIds.back().Value() == 26);
 
 		assert((uint8_t)controllerInfo.ChipType == 3);
 		assert(controllerInfo.ChipVersion == 1);
@@ -184,7 +187,7 @@ void Initialize::DecodeInitData(const APIFrame::PayLoad& payload)
 /////////////////////////////////////////////////
 void Initialize::GetControllerCapabilities()
 {
-	ZW_APIFrame frame;
+	APIFrame frame;
 	frame.Make(eCommandIds::FUNC_ID_GET_CONTROLLER_CAPABILITIES);
 	Log.AddL(eLogTypes::ITZ, MakeTag(), ">> GetControllerCapabilities: cmdId=0x{:02X}", static_cast<uint8_t>(eCommandIds::FUNC_ID_GET_CONTROLLER_CAPABILITIES));
 	enqueue(frame);
@@ -208,33 +211,28 @@ void Initialize::DecodeControllerCapabilities(const APIFrame::PayLoad& payload)
 	}
 
 	const auto* p = reinterpret_cast<const PayloadStruct*>(payload.data());
-	uint8_t ControllerCapabilities = p->ControllerCapabilities;
-	controllerInfo.IsSecondaryController = (ControllerCapabilities & ControllerInfo::ControllerCaps::Secondary) != 0;
-	controllerInfo.IsOtherNetwork = (ControllerCapabilities & ControllerInfo::ControllerCaps::OtherNet) != 0;
-	controllerInfo.IsSISPresent = (ControllerCapabilities & ControllerInfo::ControllerCaps::SIS);
-	controllerInfo.IsSUCEnabled = (ControllerCapabilities & ControllerInfo::ControllerCaps::SUC) != 0;
-	controllerInfo.IsNoNodesIncluded = (ControllerCapabilities & ControllerInfo::ControllerCaps::NoNodes) != 0;
+	controllerInfo.ControllerCapabilities = p->ControllerCapabilities;
 
 	Log.AddL(eLogTypes::ITZ,
 			 MakeTag(),
 			 "<< GetControllerCapabilities: caps=0x{:02X} secondary={} otherNet={} sisPresent={} sucEnabled={} noNodesIncluded={} (payloadLen={})",
-			 ControllerCapabilities,
-			 controllerInfo.IsSecondaryController,
-			 controllerInfo.IsOtherNetwork,
-			 controllerInfo.IsSISPresent,
-			 controllerInfo.IsSUCEnabled,
-			 controllerInfo.IsNoNodesIncluded,
+			 controllerInfo.ControllerCapabilities,
+			 controllerInfo.IsSecondaryController() ? "yes" : "no",
+			 controllerInfo.IsOtherNetwork() ? "yes" : "no",
+			 controllerInfo.IsSISPresent() ? "yes" : "no",
+			 controllerInfo.IsSUCEnabled() ? "yes" : "no",
+			 controllerInfo.IsNoNodesIncluded() ? "yes" : "no",
 			 payload.size());
 
-	//NotifyUI(UINotify::ControllerChanged);
+	NotifyUI(UINotify::ControllerChanged);
 
-#ifdef _DEBUG
+#ifndef NDEBUG
 	{
-		assert(controllerInfo.IsSecondaryController == false);
-		assert(controllerInfo.IsOtherNetwork == false);
-		assert(controllerInfo.IsSISPresent == true);
-		assert(controllerInfo.IsSUCEnabled == true);
-		assert(controllerInfo.IsNoNodesIncluded == false);
+		assert(controllerInfo.IsSecondaryController() == false);
+		assert(controllerInfo.IsOtherNetwork() == false);
+		assert(controllerInfo.IsSISPresent() == true);
+		assert(controllerInfo.IsSUCEnabled() == true);
+		assert(controllerInfo.IsNoNodesIncluded() == false);
 	}
 #endif
 
@@ -245,7 +243,7 @@ void Initialize::DecodeControllerCapabilities(const APIFrame::PayLoad& payload)
 /////////////////////////////////////////////////
 void Initialize::GetProtocolVersion()
 {
-	ZW_APIFrame frame;
+	APIFrame frame;
 	frame.Make(eCommandIds::FUNC_ID_GET_PROTOCOL_VERSION);
 	Log.AddL(eLogTypes::ITZ, MakeTag(), ">> GetProtocolVersion: cmdId=0x{:02X}", static_cast<uint8_t>(eCommandIds::FUNC_ID_GET_PROTOCOL_VERSION));
 	enqueue(frame);
@@ -263,18 +261,14 @@ void Initialize::DecodeProtocolVersion(const APIFrame::PayLoad& payload)
 #pragma pack(push, 1)
 	struct PayloadStruct
 	{
-		uint8_t ProtocolType;
+		uint8_t ProtocolType = 0xFF; // ff not found
 		uint8_t ProtocolMajorVersion;
 		uint8_t ProtocolMinorVersion;
 		uint8_t ProtocolRevisionVersion;
-	};
-#pragma pack(pop)
-
-	struct BuildPayloadStruct
-	{
 		uint8_t AppFrameworkBuildNumberMSB;
 		uint8_t AppFrameworkBuildNumberLSB;
 	};
+#pragma pack(pop)
 
 	if (payload.size() < sizeof(PayloadStruct))
 		return;
@@ -286,18 +280,11 @@ void Initialize::DecodeProtocolVersion(const APIFrame::PayLoad& payload)
 	controllerInfo.ProtocolMajorVersion = p->ProtocolMajorVersion;
 	controllerInfo.ProtocolMinorVersion = p->ProtocolMinorVersion;
 	controllerInfo.ProtocolRevisionVersion = p->ProtocolRevisionVersion;
+	controllerInfo.AppFrameworkBuildNumber = (static_cast<uint16_t>(p->AppFrameworkBuildNumberMSB) << 8) | p->AppFrameworkBuildNumberLSB;
 
-	const size_t buildOffset = sizeof(PayloadStruct);
-	const size_t gitCommitOffset = buildOffset + sizeof(BuildPayloadStruct);
-	if (payload.size() >= gitCommitOffset)
-	{
-		const auto* pBuild = reinterpret_cast<const BuildPayloadStruct*>(payload.data() + buildOffset);
-		controllerInfo.AppFrameworkBuildNumber = (static_cast<uint16_t>(pBuild->AppFrameworkBuildNumberMSB) << 8) | pBuild->AppFrameworkBuildNumberLSB;
-	}
-	else
-		controllerInfo.AppFrameworkBuildNumber = 0;
+	const size_t gitCommitOffset = sizeof(PayloadStruct);
 
- if (payload.size() >= gitCommitOffset + ControllerInfo::ProtocolGitCommitHashLength)
+	if (payload.size() >= gitCommitOffset + ControllerInfo::ProtocolGitCommitHashLength)
 		controllerInfo.ProtocolGitCommitHash.assign(payload.begin() + gitCommitOffset, payload.begin() + gitCommitOffset + ControllerInfo::ProtocolGitCommitHashLength);
 	else if (payload.size() > gitCommitOffset)
 		controllerInfo.ProtocolGitCommitHash.assign(payload.begin() + gitCommitOffset, payload.end());
@@ -313,7 +300,7 @@ void Initialize::DecodeProtocolVersion(const APIFrame::PayLoad& payload)
 			 controllerInfo.ProtocolGitCommitHash.size(),
 			 payload.size());
 
-	//	NotifyUI(UINotify::ControllerChanged);
+	NotifyUI(UINotify::ControllerChanged);
 }
 
 //////////////////////////////////////////////////
@@ -321,7 +308,7 @@ void Initialize::DecodeProtocolVersion(const APIFrame::PayLoad& payload)
 //////////////////////////////////////////////////
 void Initialize::GetCapabilities()
 {
-	ZW_APIFrame frame;
+	APIFrame frame;
 	frame.Make(eCommandIds::FUNC_ID_GET_CAPABILITIES);
 	Log.AddL(eLogTypes::ITZ, MakeTag(), ">> GetCapabilities: cmdId=0x{:02X}", static_cast<uint8_t>(eCommandIds::FUNC_ID_GET_CAPABILITIES));
 	enqueue(frame);
@@ -369,13 +356,13 @@ void Initialize::DecodeCapabilities(const APIFrame::PayLoad& payload)
 	std::ostringstream oss;
 	for (int i = 0; i < APICListLength; i++)
 	{
-     for (int j = 0; j < static_cast<int>(ControllerInfo::BitsPerByte); j++)
+		for (int j = 0,b=1; j < static_cast<int>(ControllerInfo::BitsPerByte); j++,b<<=1)
 		{
-			bool APICExists = ((payload[APICListOffset + i] >> j) & 0x01) > 0;
+			bool APICExists = (payload[APICListOffset + i] & b) > 0;
 			if (APICExists)
 			{
 				int ApiCmd = (i * 8 + j) + 1;
-				controllerInfo.ApiCommands.push_back(ApiCmd);
+				controllerInfo.ApiCommands.push_back(static_cast<uint8_t>(ApiCmd));
 				oss << ApiCmd << ' ';
 			}
 		}
@@ -391,9 +378,9 @@ void Initialize::DecodeCapabilities(const APIFrame::PayLoad& payload)
 			 oss.str(),
 			 payload.size());
 
-	//	NotifyUI(UINotify::ControllerChanged);
+	NotifyUI(UINotify::ControllerChanged);
 
-#ifdef _DEBUG
+#ifndef NDEBUG
 	{
 		assert(controllerInfo.AppVersion == 3);
 		assert(controllerInfo.AppRevision == 7);
@@ -413,7 +400,7 @@ void Initialize::DecodeCapabilities(const APIFrame::PayLoad& payload)
 /////////////////////////////////////////////////
 void Initialize::GetNetworkIdsFromMemory()
 {
-	ZW_APIFrame frame;
+	APIFrame frame;
 	frame.Make(eCommandIds::ZW_API_GET_NETWORK_IDS_FROM_MEMORY);
 	Log.AddL(eLogTypes::ITZ, MakeTag(), ">> GetNetworkIdsFromMemory: cmdId=0x{:02X}", static_cast<uint8_t>(eCommandIds::ZW_API_GET_NETWORK_IDS_FROM_MEMORY));
 	enqueue(frame);
@@ -437,7 +424,7 @@ void Initialize::DecodeNetworkIdsFromMemory(const APIFrame::PayLoad& payload)
 	};
 #pragma pack(pop)
 
-   if (payload.size() < ControllerInfo::MinNetworkIdsPayloadSize)
+	if (payload.size() < ControllerInfo::MinNetworkIdsPayloadSize)
 	{
 		Log.AddL(eLogTypes::ITZ, MakeTag(),
 				 "<< GetNetworkIdsFromMemory: failed (payloadLen={})",
@@ -480,9 +467,9 @@ void Initialize::DecodeNetworkIdsFromMemory(const APIFrame::PayLoad& payload)
 
 	Log.AddL(eLogTypes::ITZ, MakeTag(), "<< GetNetworkIdsFromMemory: homeId=0x{:08X} nodeId={} (payloadLen={})", controllerInfo.HomeId, controllerInfo.NodeId, payload.size());
 
-	//	NotifyUI(UINotify::ControllerChanged);
+	NotifyUI(UINotify::ControllerChanged);
 
-#ifdef _DEBUG
+#ifndef NDEBUG
 	{
 		assert(controllerInfo.HomeId == 0x014CE451);
 		assert(controllerInfo.NodeId == 1);
@@ -496,7 +483,7 @@ void Initialize::DecodeNetworkIdsFromMemory(const APIFrame::PayLoad& payload)
 //////////////////////////////////////////////////
 void Initialize::GetLibraryVersion()
 {
-	ZW_APIFrame frame;
+	APIFrame frame;
 	frame.Make(eCommandIds::FUNC_ID_GET_LIBRARY_VERSION);
 	Log.AddL(eLogTypes::ITZ, MakeTag(), ">> GetLibraryVersion: cmdId=0x{:02X}", static_cast<uint8_t>(eCommandIds::FUNC_ID_GET_LIBRARY_VERSION));
 	enqueue(frame);
@@ -513,7 +500,7 @@ void Initialize::DecodeLibraryVersion(const APIFrame::PayLoad& payload)
 #pragma pack(push, 1)
 	struct PayloadStruct
 	{
-     char LibraryVersion[ControllerInfo::LibraryVersionTextLength];
+		char LibraryVersion[ControllerInfo::LibraryVersionTextLength];
 		uint8_t libraryType;
 	};
 #pragma pack(pop)
@@ -524,9 +511,9 @@ void Initialize::DecodeLibraryVersion(const APIFrame::PayLoad& payload)
 		return;
 	}
 
-   const auto* p = reinterpret_cast<const PayloadStruct*>(payload.data());
+	const auto* p = reinterpret_cast<const PayloadStruct*>(payload.data());
 	controllerInfo.LibraryVersion.assign(p->LibraryVersion, std::find(p->LibraryVersion, p->LibraryVersion + ControllerInfo::LibraryVersionTextLength, '\0'));
-	controllerInfo.libraryType = static_cast<ControllerInfo::LibraryType>(p->libraryType);
+	controllerInfo.libraryType = static_cast<ControllerInfo::eLibraryType>(p->libraryType);
 
 	// Expected format: "Z-Wave x.y" where x/y are 1-2 digits.
 	const std::string prefix = "Z-Wave ";
@@ -546,17 +533,17 @@ void Initialize::DecodeLibraryVersion(const APIFrame::PayLoad& payload)
 		}
 	}
 
- Log.AddL(eLogTypes::ITZ, MakeTag(), "<< GetLibraryVersion: verStr='{}' libType=0x{:02X} protoParsed={}.{} (payloadLen={})", controllerInfo.LibraryVersion, static_cast<uint8_t>(controllerInfo.libraryType), controllerInfo.ProtocolMajor, controllerInfo.ProtocolMinor, payload.size());
+	Log.AddL(eLogTypes::ITZ, MakeTag(), "<< GetLibraryVersion: verStr='{}' libType=0x{:02X} protoParsed={}.{} (payloadLen={})", controllerInfo.LibraryVersion, static_cast<uint8_t>(controllerInfo.libraryType), controllerInfo.ProtocolMajor, controllerInfo.ProtocolMinor, payload.size());
 
-	//	NotifyUI(UINotify::ControllerChanged);
+	NotifyUI(UINotify::ControllerChanged);
 
-#ifdef _DEBUG
- {
-	 assert(controllerInfo.LibraryVersion == "Z-Wave 2.78");
-	 assert((uint8_t)controllerInfo.libraryType == 0x01);
-	 assert(controllerInfo.ProtocolMajor == 2);
-	 assert(controllerInfo.ProtocolMinor == 78);
- }
+#ifndef NDEBUG
+	{
+		assert(controllerInfo.LibraryVersion == "Z-Wave 2.78");
+		assert((uint8_t)controllerInfo.libraryType == 0x01);
+		assert(controllerInfo.ProtocolMajor == 2);
+		assert(controllerInfo.ProtocolMinor == 78);
+	}
 #endif
 
 }
@@ -566,7 +553,7 @@ void Initialize::DecodeLibraryVersion(const APIFrame::PayLoad& payload)
 //////////////////////////////////////////////////
 void Initialize::GetLibraryType()
 {
-	ZW_APIFrame frame;
+	APIFrame frame;
 	frame.Make(eCommandIds::FUNC_ID_GET_LIBRARY_TYPE);
 	Log.AddL(eLogTypes::ITZ, MakeTag(), ">> GetLibraryType: cmdId=0x{:02X}", static_cast<uint8_t>(eCommandIds::FUNC_ID_GET_LIBRARY_TYPE));
 	enqueue(frame);
@@ -588,22 +575,22 @@ void Initialize::DecodeLibraryType(const APIFrame::PayLoad& payload)
 	}
 
 	const auto* p = reinterpret_cast<const PayloadStruct*>(payload.data());
-    controllerInfo.libraryType = static_cast<ControllerInfo::LibraryType>(p->libraryType);
+	controllerInfo.libraryType = static_cast<ControllerInfo::eLibraryType>(p->libraryType);
 
 	std::string typeStr;
 	switch (controllerInfo.libraryType)
 	{
-    case ControllerInfo::LibraryType::StaticController: typeStr = "Static Controller"; break;
-	case ControllerInfo::LibraryType::BridgeController: typeStr = "Bridge Controller"; break;
-	case ControllerInfo::LibraryType::PortableController: typeStr = "Portable Controller"; break;
-	case ControllerInfo::LibraryType::EnhancedSlave: typeStr = "Enhanced Slave"; break;
-	case ControllerInfo::LibraryType::EnhancedController: typeStr = "Enhanced Controller"; break;
+	case ControllerInfo::eLibraryType::StaticController: typeStr = "Static Controller"; break;
+	case ControllerInfo::eLibraryType::BridgeController: typeStr = "Bridge Controller"; break;
+	case ControllerInfo::eLibraryType::PortableController: typeStr = "Portable Controller"; break;
+	case ControllerInfo::eLibraryType::EnhancedSlave: typeStr = "Enhanced Slave"; break;
+	case ControllerInfo::eLibraryType::EnhancedController: typeStr = "Enhanced Controller"; break;
 	default:
-        typeStr = std::format("Unknown (0x{:02X})", static_cast<uint8_t>(controllerInfo.libraryType));
+		typeStr = std::format("Unknown (0x{:02X})", static_cast<uint8_t>(controllerInfo.libraryType));
 		break;
 	}
 
-  Log.AddL(eLogTypes::ITZ, MakeTag(), "<< GetLibraryType: type=0x{:02X} ({}) (payloadLen={})", static_cast<uint8_t>(controllerInfo.libraryType), typeStr, payload.size());
+	Log.AddL(eLogTypes::ITZ, MakeTag(), "<< GetLibraryType: type=0x{:02X} ({}) (payloadLen={})", static_cast<uint8_t>(controllerInfo.libraryType), typeStr, payload.size());
 
 	NotifyUI(UINotify::ControllerChanged);
 }

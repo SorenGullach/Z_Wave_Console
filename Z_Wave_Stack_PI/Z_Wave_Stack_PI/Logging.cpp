@@ -15,7 +15,7 @@ std::string LogBaseName(const char* file)
 
 std::string MakeTag(std::source_location loc)
 {
-#ifdef _DEBUG
+#ifndef NDEBUG
 	return LogBaseName(loc.file_name()) + ":" + std::to_string(loc.line());
 #else
 	return LogBaseName(loc.file_name());

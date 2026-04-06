@@ -5,13 +5,57 @@
 #include <vector>
 #include <string>
 
-#include "NodeId.h"
+#include "NodeId_t.h"
 #include "APICommands.h"
 
-class ControllerInfo
+class ControllerInfo;
+
+class ControllerInfoFormatter
 {
 public:
+	explicit ControllerInfoFormatter(const ControllerInfo& ci)
+		: ci(ci)
+	{
+	}
+
+	// Human-readable grouped fields
+	std::string InitializationStateString() const;
+	std::string APIVersionText() const;
+	std::string ChipTypeName() const;
+	std::string LibraryTypeName() const;
+	std::string ProductIdName() const;
+	std::string ManufacturerIdName() const;
+	std::string ProductTypeName() const;
+
+	// Full text dump
+	std::string ToText() const;
+
+	// JSON for GUI
+//	std::string ToJson() const;
+
+private:
+	const ControllerInfo& ci;
+};
+
+// ----------------------- ControllerInfo -----------------------
+class ControllerInfo
+{
+private:
+	ControllerInfoFormatter formatter;
+	friend class ControllerInfoFormatter;
+
+public:
 	ControllerInfo();
+
+	std::string ToString() const 
+	{
+		return formatter.ToText();
+	}
+
+	static constexpr size_t BitsPerByte = 8;
+	static constexpr size_t LibraryVersionTextLength = 12;
+	static constexpr size_t ProtocolGitCommitHashLength = 16;
+	static constexpr size_t MinNetworkIdsPayloadSize = sizeof(uint32_t) + sizeof(uint8_t);
 
 	enum class eChipTypes : uint8_t
 	{
@@ -36,65 +80,84 @@ public:
 	};
 
 	// 4.3.11 Get Library Version (0x15)
- enum class LibraryType : uint8_t
+	enum class eLibraryType : uint8_t
 	{
 		Unknown = 0x00,
-		StaticController = 0x01,
-		BridgeController = 0x02,
-		PortableController = 0x03,
-		EnhancedSlave = 0x07,
-		EnhancedController = 0x08
+
+		// Controllers
+		StaticController = 0x01, // ZW_LIB_CONTROLLER_STATIC
+		BridgeController = 0x02, // ZW_LIB_CONTROLLER
+		PortableController = 0x03, // ZW_LIB_CONTROLLER_PORTABLE
+		EnhancedController = 0x08, // ZW_LIB_CONTROLLER_ENHANCED
+
+		// Slaves
+		Slave = 0x04, // ZW_LIB_SLAVE
+		Installer = 0x05, // ZW_LIB_INSTALLER
+		RoutingSlave = 0x06, // ZW_LIB_SLAVE_ROUTING
+		EnhancedSlave = 0x07, // ZW_LIB_SLAVE_ENHANCED
+
+		// Special-purpose
+		DeviceUnderTest = 0x09, // ZW_LIB_DUT
+		AVRemote = 0x0A, // ZW_LIB_AVREMOTE
+		AVDevice = 0x0B  // ZW_LIB_AVDEVICE
 	};
 
-	static constexpr size_t BitsPerByte = 8;
-	static constexpr size_t LibraryVersionTextLength = 12;
-	static constexpr size_t ProtocolGitCommitHashLength = 16;
-	static constexpr size_t MinNetworkIdsPayloadSize = sizeof(uint32_t) + sizeof(uint8_t);
-
 	std::string LibraryVersion;
-    LibraryType libraryType = LibraryType::Unknown;
+	eLibraryType libraryType = eLibraryType::Unknown;
 	// Parsed from the returned version string (best-effort)
 	int ProtocolMajor = 0;
 	int ProtocolMinor = 0;
 
 	// 4.3.2 Get Init Data (0x02)
- enum ApiCapabilityFlags : uint8_t
+	enum class eApiCapabilityFlags : uint8_t
 	{
-		EndNode = 0x01,
-		TimerFunctions = 0x02,
-		PrimaryController = 0x04,
-		SISFunctions = 0x08
+		EndNode = 1 << 0,
+		TimerFunctions = 1 << 1,
+		PrimaryController = 1 << 2,
+		SISFunctions = 1 << 3
 	};
 
 	uint8_t ApiVersion = 0;
 	uint8_t ApiCapabilities = 0;
-	bool IsEndNode = false, HasTimerFunctions = false, IsPrimarayController = false, HasSISFunctions = false;
-	uint8_t NodeListLength = 0;
-	std::vector<node_t> NodeIds;
 
+	bool IsEndNode() const { return (ApiCapabilities & static_cast<uint8_t>(eApiCapabilityFlags::EndNode)) > 0; };
+	bool HasTimerFunctions() const { return (ApiCapabilities & static_cast<uint8_t>(eApiCapabilityFlags::TimerFunctions)) > 0; };
+	bool IsPrimaryController() const { return (ApiCapabilities & static_cast<uint8_t>(eApiCapabilityFlags::PrimaryController)) > 0; };
+	bool HasSISFunctions() const { return (ApiCapabilities & static_cast<uint8_t>(eApiCapabilityFlags::SISFunctions)) > 0; };
+
+	// 4.3.3 Get Node List (0x03)
+	uint8_t NodeListLength = 0;
+	std::vector<nodeid_t> NodeIds;
+
+	// 4.3.1 Get Chip Type (0x01)
 	eChipTypes ChipType = eChipTypes::Unknown;
 	uint8_t ChipVersion = 0;
 
 	// 4.3.4 Get Controller Capabilities (0x05)
-	enum ControllerCaps : uint8_t
+	enum class eControllerCaps : uint8_t
 	{
-		Secondary = 0x01,
-		OtherNet = 0x02,
-		SIS = 0x04,
-		SUC = 0x10,
-		NoNodes = 0x20
+		Secondary = 1 << 0,
+		OtherNet = 1 << 1,
+		SISPresent = 1 << 2,
+		SUCEnabled = 1 << 4,
+		NoNodesIncluded = 1 << 5
 	};
-	bool IsSecondaryController = false, IsOtherNetwork = false, IsSISPresent = false, IsSUCEnabled = false, IsNoNodesIncluded = false;
+	uint8_t ControllerCapabilities = 0;
+	bool IsSecondaryController() const { return (ControllerCapabilities & static_cast<uint8_t>(eControllerCaps::Secondary)) > 0; }
+	bool IsOtherNetwork() const { return (ControllerCapabilities & static_cast<uint8_t>(eControllerCaps::OtherNet)) > 0; }
+	bool IsSISPresent() const { return (ControllerCapabilities & static_cast<uint8_t>(eControllerCaps::SISPresent)) > 0; }
+	bool IsSUCEnabled() const { return (ControllerCapabilities & static_cast<uint8_t>(eControllerCaps::SUCEnabled)) > 0; }
+	bool IsNoNodesIncluded() const { return (ControllerCapabilities & static_cast<uint8_t>(eControllerCaps::NoNodesIncluded)) > 0; }
 
 	// 4.3.10 Get Protocol Version (0x09)
-	uint8_t ProtocolType = 0;
+	uint8_t ProtocolType = 0xFF; // Unknown
 	uint8_t ProtocolMajorVersion = 0;
 	uint8_t ProtocolMinorVersion = 0;
 	uint8_t ProtocolRevisionVersion = 0;
 	uint16_t AppFrameworkBuildNumber = 0;
 	std::vector<uint8_t> ProtocolGitCommitHash;
 
-	// 4.3.6 Get Capabilities (0x07)
+	// 4.3.5 Get Capabilities (0x07)
 	uint8_t AppVersion = 0;
 	uint8_t AppRevision = 0;
 	uint16_t ManufacturerId = 0;
@@ -107,7 +170,7 @@ public:
 	uint32_t HomeId = 0;
 	uint16_t NodeId = 0;
 
-	enum eInitializationState
+	enum class eInitializationState
 	{
 		NotInitialized,
 		InitDataPending,
@@ -128,7 +191,7 @@ public:
 		Initialized
 	} InitializationState = eInitializationState::NotInitialized;
 
-	bool HasAPICommand(eCommandIds cmdId)
+	bool HasAPICommand(eCommandIds cmdId) const
 	{
 		if (cmdId == eCommandIds::FUNC_ID_GET_INIT_DATA) // always expected to be a part of a module initialization sequence
 			return true;
@@ -142,5 +205,5 @@ public:
 		}
 		return false;
 	}
-
 };
+

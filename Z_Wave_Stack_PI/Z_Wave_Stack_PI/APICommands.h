@@ -196,7 +196,7 @@ struct APICommand
 {
 	eCommandIds CmdId{};
 	eFlowType Flow{ eFlowType::Unknown };
-#ifdef _DEBUG
+#ifndef NEBUG
 	std::string Name{};
 	std::string Title{};
 #endif // DEBUG
@@ -300,10 +300,10 @@ inline std::string ToString(ApplicationUpdateEvent500 event)
 
 inline std::string ToString(eCommandIds command)
 {
+#ifndef NDEBUG
 	const auto& api = APICommands[static_cast<uint8_t>(command)];
-#ifdef _DEBUG
 	if (!api.Name.empty())
 		return api.Name;
 #endif
-  return "0x" + FormatCompat::HexValue(static_cast<uint8_t>(command));
+	return "0x" + FormatCompat::HexValue(static_cast<uint8_t>(command));
 }

@@ -27,4 +27,3 @@
 // Other Common Headers
 #include <ctime>
 #include <cassert>
-#include <format>

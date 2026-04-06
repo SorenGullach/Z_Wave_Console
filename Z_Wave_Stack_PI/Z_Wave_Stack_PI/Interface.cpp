@@ -44,10 +44,12 @@ void Interface::Enqueue(const APIFrame& frame)
 
 bool Interface::OnFrameReceived(const APIFrame& frame)
 {
+	(void)frame;
 	return false; // not handled
 }
 bool Interface::OnFrameReceivedTimeout(const APIFrame& frame)
 {
+	(void)frame;
 	return false; // not handled
 }
 
@@ -132,18 +134,35 @@ int Interface::SerialRead(uint8_t* buffer, int size)
 {
 	std::scoped_lock lock(serialMutex);
 	return serial.Read(buffer, size);
+	// Read return < 0 on error
+	// Read return 0 on timeout
+	// Read return > 0 on success
 }
+
+constexpr auto SerialWriteDelay = std::chrono::milliseconds(10);
 
 int Interface::SerialWrite(const uint8_t* buffer, int size)
 {
 	std::scoped_lock lock(serialMutex);
-	return serial.Write(buffer, size);
+	//return serial.Write(buffer, size);
+   for (int i = 0; i < size; i++)
+	{
+       serial.Write(buffer + i, 1);
+		std::this_thread::sleep_for(SerialWriteDelay);
+	}
+	return size;
 }
 
 int Interface::SerialWrite(const std::vector<uint8_t>& buffer)
 {
 	std::scoped_lock lock(serialMutex);
-	return serial.Write(buffer);
+	//return serial.Write(buffer);
+    for (size_t i = 0; i < buffer.size(); i++)
+	{
+        serial.Write(buffer.data() + i, 1);
+		std::this_thread::sleep_for(SerialWriteDelay);
+	}
+   return static_cast<int>(buffer.size());
 }
 
 const std::string Interface::ToString(const std::vector<uint8_t>& buffer) const
@@ -167,6 +186,8 @@ void Interface::HandleTimeouts()
 	if (now <= stateDeadline)
 		return;
 
+	const auto timeoutMs = std::chrono::duration_cast<std::chrono::milliseconds>(now - stateDeadline).count();
+	Log.AddL(eLogTypes::ERR, MakeTag(), "Timeout: state={} overdueMs={}", static_cast<int>(state), timeoutMs);
 	switch (state)
 	{
 	case SendState::WaitingForAck:
@@ -277,9 +298,30 @@ bool Interface::ReadFrameWithTimeout(std::vector<uint8_t>& buffer)
 {
 	auto start = std::chrono::steady_clock::now();
 
+	// we have recived a SOF
+	// next byte is the length
+
 	uint8_t len = 0;
-	if (SerialRead(&len, 1) != 1)
-		return false;
+	while (true)
+	{
+		auto now = std::chrono::steady_clock::now();
+		if (now - start > std::chrono::milliseconds(1500))
+		{
+			Log.AddL(eLogTypes::ERR, MakeTag(), "ReadFrameWithTimeout: timeout waiting for length (>1500ms after SOF)");
+			return false;
+		}
+
+		int n = SerialRead(&len, 1); // Read return < 0 on error Read return 0 on timeout Read return > 0 on success
+		if (n == 1)
+			break;
+
+		if (n < 0)
+		{
+			Log.AddL(eLogTypes::ERR, MakeTag(), "ReadFrameWithTimeout: read error while waiting for length");
+			return false;
+		}
+	}
+	Log.AddL(eLogTypes::ITF, MakeTag(), "ReadFrameWithTimeout: len={}", len);
 
 	buffer.resize(static_cast<size_t>(2 + len));
 	buffer[0] = static_cast<uint8_t>(AckTypes::SOF);
@@ -297,9 +339,21 @@ bool Interface::ReadFrameWithTimeout(std::vector<uint8_t>& buffer)
 			return false;
 		}
 
-		int n = SerialRead(dst, static_cast<int>(remaining));
-		if (n <= 0)
+		int n = SerialRead(dst, static_cast<int>(remaining)); // Read return < 0 on error Read return 0 on timeout Read return > 0 on success
+		if (n < 0)
+		{
+			Log.AddL(eLogTypes::ERR, MakeTag(), "ReadFrameWithTimeout: read error while waiting for length");
+			return false;
+		}
+		if (n == 0)
 			continue;
+
+		Log.AddL(eLogTypes::ITF, MakeTag(), "ReadFrameWithTimeout: n={}", n);
+
+		const size_t bytesReceived = static_cast<size_t>(len - remaining) + static_cast<size_t>(n);
+		std::vector<uint8_t> partial(buffer.begin(), buffer.begin() + 2 + bytesReceived);
+		std::string str = ToString(partial);
+		Log.AddL(eLogTypes::ITF, MakeTag(), "ReadFrameWithTimeout: Buffer={}", str);
 
 		dst += n;
 		remaining -= static_cast<size_t>(n);
@@ -323,10 +377,19 @@ void Interface::ProcessValidFrame(const std::vector<uint8_t>& buffer)
 	Log.AddL(eLogTypes::DBG, MakeTag(), "<< Recv frame {}", frame.Info());
 
 	uint8_t ack = static_cast<uint8_t>(AckTypes::ACK);
-	//    logger.AddLogLock(MakeTag(), ">> ACK");
+	Log.AddL(eLogTypes::DBG, MakeTag(), ">> ACK state={}", static_cast<int>(state));
 	SerialWrite(&ack, 1);
 
 	consecutiveChecksumErrors = 0;
+
+	if (state == SendState::WaitingForAck && frame.APICmd.CmdId == LastCmd.cmd.APICmd.CmdId)
+	{
+		Log.AddL(eLogTypes::DBG, MakeTag(),
+				 "<< Implicit ACK via frame: outstanding={} recvType={}",
+				 LastCmd.cmd.Info(),
+				 frame.Type() == APIFrame::eFrameTypes::REQ ? "REQ" : "RES");
+		HandleAck();
+	}
 
 	if (!OnFrameReceived(frame))
 		Log.AddL(eLogTypes::ITF, MakeTag(), "Unhandled frame {}", frame.Info());
@@ -371,7 +434,7 @@ void Interface::ProcessSerialCommunication()
 	}
 
 	uint8_t b = 0;
-	int n = SerialRead(&b, 1);
+	int n = SerialRead(&b, 1); // Read return < 0 on error Read return 0 on timeout Read return > 0 on success
 	if (n <= 0)
 	{
 		std::this_thread::yield();
@@ -416,15 +479,15 @@ void Interface::ProcessSerialCommunication()
 
 	if (b != static_cast<uint8_t>(AckTypes::SOF))
 	{
-		Log.AddL(eLogTypes::ERR, MakeTag(), "<< Unexpected byte: 0x{:02X} (state={})", static_cast<int>(b), static_cast<int>(state));
+		Log.AddL(eLogTypes::ERR, MakeTag(), "<< Unexpected byte: 0x{:02X} len={} (state={})", static_cast<int>(b), n, static_cast<int>(state));
 		return;
 	}
+	else
+		Log.AddL(eLogTypes::ITF, MakeTag(), "<< SOF recived");
 
 	std::vector<uint8_t> buffer;
 	if (!ReadFrameWithTimeout(buffer))
 		return;
-
-	//    logger.AddLogLock(MakeTag(), ">> SOF frame");
 
 	uint8_t checksum = 0xFF;
 	for (size_t i = 1; i < buffer.size(); ++i)
@@ -451,6 +514,6 @@ void Interface::ProcessSerialCommunication()
 void Interface::Test()
 {
 	APIFrame frame;
- frame.Make(eCommandIds::FUNC_ID_GET_INIT_DATA, std::vector<std::uint8_t>{});
+	frame.Make(eCommandIds::FUNC_ID_GET_INIT_DATA, std::vector<std::uint8_t>{});
 	Enqueue(frame);
 }

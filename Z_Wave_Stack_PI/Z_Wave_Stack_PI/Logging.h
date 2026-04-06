@@ -11,7 +11,7 @@
 
 #include "FormatCompat.h"
 
-//#include "Notify.h"
+#include "Notify.h"
 
 #ifdef min
 #undef min
@@ -135,11 +135,11 @@ public:
 		case eLogTypes::ITZ: return "ITZ";
 		case eLogTypes::ITW: return "ITW";
 		case eLogTypes::DVC: return "DVC";
-		case eLogTypes::ERR: return "ERR ";
-		case eLogTypes::DBG: return "DBG ";
+		case eLogTypes::ERR: return "ERR";
+		case eLogTypes::DBG: return "DBG";
 		case eLogTypes::ITF: return "ITF";
 		case eLogTypes::RTU: return "RTU";
-		case eLogTypes::WRN: return "WRN ";
+		case eLogTypes::WRN: return "WRN";
 		default: return "???";
 		}
 	}
@@ -147,7 +147,7 @@ public:
 	template <typename... Args>
 	void AddL(eLogTypes lt, const std::string& tag, const std::string& fmt, Args&&... args)
 	{
-		std::string msg = FormatCompat::Format(fmt, std::forward<Args>(args)...);
+		std::string msg = FormatCompat::format(fmt, std::forward<Args>(args)...);
 		AddInternal(lt, tag, msg);
 	}
 
@@ -177,7 +177,7 @@ private:
 			while (log.size() > maxEntries)
 				log.pop_front();
 		}
-		//		NotifyUI(UINotify::LogChanged);
+		NotifyUI(UINotify::LogChanged);
 
 		if (logFile.is_open())
 		{
@@ -185,13 +185,20 @@ private:
 				auto _lock = Lock();
 				std::string line = BuildLogLine(ToString(lt), tag, msg);
 
-				std::cout << line << std::endl;
+			//	std::cout << line << std::endl;
 
 				auto now = std::chrono::system_clock::now();
 				auto t = std::chrono::system_clock::to_time_t(now);
 				std::tm tmBuf = GetLocalTime(t);
 
-				logFile << std::put_time(&tmBuf, "%H:%M:%S") << '.'
+				std::cout 
+					<< std::put_time(&tmBuf, "%H:%M:%S") << '.'
+					<< std::setw(3) << std::setfill('0')
+					<< std::chrono::duration_cast<std::chrono::milliseconds>(now.time_since_epoch()).count() % 1000
+					<< " " << line << std::endl;
+
+				logFile 
+					<< std::put_time(&tmBuf, "%H:%M:%S") << '.'
 					<< std::setw(3) << std::setfill('0')
 					<< std::chrono::duration_cast<std::chrono::milliseconds>(now.time_since_epoch()).count() % 1000
 					<< " " << line << std::endl;

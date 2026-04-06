@@ -1,5 +1,5 @@
 #pragma once
-#include "NodeId.h"
+#include "NodeId_t.h"
 
 enum class UINotify
 {
@@ -9,4 +9,4 @@ enum class UINotify
     NodeChanged,
 };
 
-extern void NotifyUI(const UINotify notify, node_t nodeId=(node_t)0);
+extern void NotifyUI(const UINotify notify, nodeid_t nodeId=(nodeid_t)0);

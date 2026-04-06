@@ -1,3 +1,8 @@
+
 #include "ControllerInfo.h"
 
-ControllerInfo::ControllerInfo() = default;
+ControllerInfo::ControllerInfo()
+	: formatter(*this)
+{
+};
+
