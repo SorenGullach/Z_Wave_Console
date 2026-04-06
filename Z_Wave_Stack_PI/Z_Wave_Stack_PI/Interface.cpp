@@ -112,9 +112,9 @@ void Interface::SendCommand(CommandFrame& cmd)
 	LastCmd.attempts++;
 
 	Log.AddL(eLogTypes::DBG, MakeTag(), ">> Send: attempt={} frame={}", LastCmd.attempts, LastCmd.cmd.Info());
-	Log.AddL(eLogTypes::DBG, MakeTag(), ">> FrameBytes: len={} bytes=[{}]",
-			 LastCmd.FrameBytes.size(),
-			 ToString(LastCmd.FrameBytes));
+//	Log.AddL(eLogTypes::DBG, MakeTag(), ">> FrameBytes: len={} bytes=[{}]",
+	//		 LastCmd.FrameBytes.size(),
+		//	 ToString(LastCmd.FrameBytes));
 
 	SerialWrite(LastCmd.FrameBytes);
 
@@ -144,25 +144,13 @@ constexpr auto SerialWriteDelay = std::chrono::milliseconds(10);
 int Interface::SerialWrite(const uint8_t* buffer, int size)
 {
 	std::scoped_lock lock(serialMutex);
-	//return serial.Write(buffer, size);
-   for (int i = 0; i < size; i++)
-	{
-       serial.Write(buffer + i, 1);
-		std::this_thread::sleep_for(SerialWriteDelay);
-	}
-	return size;
+	return serial.Write(buffer, size);
 }
 
 int Interface::SerialWrite(const std::vector<uint8_t>& buffer)
 {
 	std::scoped_lock lock(serialMutex);
-	//return serial.Write(buffer);
-    for (size_t i = 0; i < buffer.size(); i++)
-	{
-        serial.Write(buffer.data() + i, 1);
-		std::this_thread::sleep_for(SerialWriteDelay);
-	}
-   return static_cast<int>(buffer.size());
+	return serial.Write(buffer);
 }
 
 const std::string Interface::ToString(const std::vector<uint8_t>& buffer) const
@@ -302,7 +290,7 @@ bool Interface::ReadFrameWithTimeout(std::vector<uint8_t>& buffer)
 	// next byte is the length
 
 	uint8_t len = 0;
-	while (true)
+	while (len<=1)
 	{
 		auto now = std::chrono::steady_clock::now();
 		if (now - start > std::chrono::milliseconds(1500))
@@ -321,7 +309,7 @@ bool Interface::ReadFrameWithTimeout(std::vector<uint8_t>& buffer)
 			return false;
 		}
 	}
-	Log.AddL(eLogTypes::ITF, MakeTag(), "ReadFrameWithTimeout: len={}", len);
+//	Log.AddL(eLogTypes::ITF, MakeTag(), "ReadFrameWithTimeout: len={}", len);
 
 	buffer.resize(static_cast<size_t>(2 + len));
 	buffer[0] = static_cast<uint8_t>(AckTypes::SOF);
@@ -348,12 +336,12 @@ bool Interface::ReadFrameWithTimeout(std::vector<uint8_t>& buffer)
 		if (n == 0)
 			continue;
 
-		Log.AddL(eLogTypes::ITF, MakeTag(), "ReadFrameWithTimeout: n={}", n);
+		//Log.AddL(eLogTypes::ITF, MakeTag(), "ReadFrameWithTimeout: n={}", n);
 
 		const size_t bytesReceived = static_cast<size_t>(len - remaining) + static_cast<size_t>(n);
 		std::vector<uint8_t> partial(buffer.begin(), buffer.begin() + 2 + bytesReceived);
 		std::string str = ToString(partial);
-		Log.AddL(eLogTypes::ITF, MakeTag(), "ReadFrameWithTimeout: Buffer={}", str);
+	//	Log.AddL(eLogTypes::ITF, MakeTag(), "ReadFrameWithTimeout: Buffer={}", str);
 
 		dst += n;
 		remaining -= static_cast<size_t>(n);
@@ -371,13 +359,13 @@ void Interface::ProcessValidFrame(const std::vector<uint8_t>& buffer)
 		return;
 	}
 
-	Log.AddL(eLogTypes::DBG, MakeTag(), "<< Recv: bytesLen={} bytes=[{}]",
-			 buffer.size(), ToString(buffer));
+	//Log.AddL(eLogTypes::DBG, MakeTag(), "<< Recv: bytesLen={} bytes=[{}]",
+	//		 buffer.size(), ToString(buffer));
 
 	Log.AddL(eLogTypes::DBG, MakeTag(), "<< Recv frame {}", frame.Info());
 
 	uint8_t ack = static_cast<uint8_t>(AckTypes::ACK);
-	Log.AddL(eLogTypes::DBG, MakeTag(), ">> ACK state={}", static_cast<int>(state));
+//	Log.AddL(eLogTypes::DBG, MakeTag(), ">> ACK state={}", static_cast<int>(state));
 	SerialWrite(&ack, 1);
 
 	consecutiveChecksumErrors = 0;
@@ -482,8 +470,8 @@ void Interface::ProcessSerialCommunication()
 		Log.AddL(eLogTypes::ERR, MakeTag(), "<< Unexpected byte: 0x{:02X} len={} (state={})", static_cast<int>(b), n, static_cast<int>(state));
 		return;
 	}
-	else
-		Log.AddL(eLogTypes::ITF, MakeTag(), "<< SOF recived");
+//	else
+	//	Log.AddL(eLogTypes::ITF, MakeTag(), "<< SOF recived");
 
 	std::vector<uint8_t> buffer;
 	if (!ReadFrameWithTimeout(buffer))

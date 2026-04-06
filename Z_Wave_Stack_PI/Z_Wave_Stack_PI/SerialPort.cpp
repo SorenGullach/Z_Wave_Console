@@ -1,9 +1,12 @@
 #include "SerialPort.h"
+#include "Logging.h"
 
 #if defined(__linux__)
+#include <chrono>
 #include <fcntl.h>
 #include <sys/ioctl.h>
 #include <termios.h>
+#include <thread>
 #include <unistd.h>
 
 static constexpr std::intptr_t InvalidSerialHandle = -1;
@@ -27,6 +30,36 @@ static void EnableModemLines(int fd)
 	ioctl(fd, TIOCMSET, &status);
 }
 
+static void DisableModemLines(int fd)
+{
+	int status = 0;
+	if (ioctl(fd, TIOCMGET, &status) != 0)
+		return;
+
+	status &= ~TIOCM_DTR;
+	status &= ~TIOCM_RTS;
+	ioctl(fd, TIOCMSET, &status);
+}
+
+static void CleanStartAfterReopen(int fd)
+{
+	tcflush(fd, TCIOFLUSH);
+	DisableModemLines(fd);
+	std::this_thread::sleep_for(std::chrono::milliseconds(100));
+	tcflush(fd, TCIOFLUSH);
+	EnableModemLines(fd);
+	std::this_thread::sleep_for(std::chrono::milliseconds(100));
+	tcflush(fd, TCIOFLUSH);
+
+	// Toggle DTR to reset Z-Wave chip
+	int flags = TIOCM_DTR;
+	ioctl(fd, TIOCMBIC, &flags); // DTR low
+	usleep(100000);
+	ioctl(fd, TIOCMBIS, &flags); // DTR high
+	usleep(100000);
+	tcflush(fd, TCIOFLUSH);
+}
+
 SerialPort::SerialPort()
 	: serialHandle(InvalidSerialHandle)
 {
@@ -44,137 +77,86 @@ bool SerialPort::Open(const std::string& portname)
 	if (IsOpen())
 		return true;
 
+    // Open the device in non-blocking mode and make sure it is a TTY.
 	const auto fullName = NormalizeDevicePath(portname);
 	const auto fd = open(fullName.c_str(), O_RDWR | O_NOCTTY | O_NDELAY);
-	if (fd < 0 || !isatty(fd))
+   if (fd < 0)
+	{
+		Log.AddL(eLogTypes::ERR, MakeTag(), "SerialPort::Open failed: open port='{}'", fullName);
 		return false;
+	}
+
+	if (!isatty(fd))
+	{
+		Log.AddL(eLogTypes::ERR, MakeTag(), "SerialPort::Open failed: device is not a tty port='{}'", fullName);
+       close(fd);
+		return false;
+	}
 
 	termios ttyOptions{};
+  // Read the current termios state before applying our raw serial settings.
 	if (tcgetattr(fd, &ttyOptions) != 0)
 	{
+        Log.AddL(eLogTypes::ERR, MakeTag(), "SerialPort::Open failed: tcgetattr initial port='{}'", fullName);
 		close(fd);
 		return false;
 	}
 
-	//
-	// Get the current configuration of the serial interface
-	//
-	if (tcgetattr(fd, &ttyOptions) < 0) 
+	// Preserve the previous setup flow by re-reading the active configuration.
+	if (tcgetattr(fd, &ttyOptions) < 0)
 	{
+		Log.AddL(eLogTypes::ERR, MakeTag(), "SerialPort::Open failed: tcgetattr reread port='{}'", fullName);
 		close(fd);
 		return false;
 	}
 
-	//
-	// Input flags - Turn off input processing
-	//
-	// convert break to null byte, no CR to NL translation,
-	// no NL to CR translation, don't mark parity errors or breaks
-	// no input parity check, don't strip high bit off,
-	// no XON/XOFF software flow control
-	//
-	//ttyOptions.c_iflag &= ~(IGNBRK | BRKINT | ICRNL |
-		//				INLCR | PARMRK | INPCK | ISTRIP | IXON);
+    // Disable input processing and software flow control.
 	ttyOptions.c_iflag = 0;
 
-	//
-	// Output flags - Turn off output processing
-	//
-	// no CR to NL translation, no NL to CR-NL translation,
-	// no NL to CR translation, no column 0 CR suppression,
-	// no Ctrl-D suppression, no fill characters, no case mapping,
-	// no local output processing
-	//
-	// config.c_oflag &= ~(OCRNL | ONLCR | ONLRET |
-	//                     ONOCR | ONOEOT| OFILL | OLCUC | OPOST);
+    // Disable output post-processing.
 	ttyOptions.c_oflag = 0;
 
-	//
-	// No line processing
-	//
-	// echo off, echo newline off, canonical mode off,
-	// extended input processing off, signal chars off
-	//
+   // Disable canonical mode, echo, signals, and other line-oriented handling.
 	ttyOptions.c_lflag &= ~(ECHO | ECHONL | ICANON | IEXTEN | ISIG);
 
-	//
-	// Turn off character processing
-	//
-	// clear current char size mask, no parity checking,
-	// no output processing, force 8 bit input
-	//
+    // Configure 8 data bits, no parity, and one stop bit.
 	ttyOptions.c_cflag &= ~(CSIZE | PARENB | CSTOPB);
 	ttyOptions.c_cflag |= CS8;
 
-	//
-	// One input byte is enough to return from read()
-	// Inter-character timer off
-	//
+
+   // Keep reads non-blocking with no inter-character timeout.
 	ttyOptions.c_cc[VMIN] = 0;
 	ttyOptions.c_cc[VTIME] = 0;
 
-	//
-	// Communication speed (simple version, using the predefined
-	// constants)
-	//
+  // Use the fixed 115200 baud rate required by the interface.
 	if (cfsetispeed(&ttyOptions, B115200) < 0 || cfsetospeed(&ttyOptions, B115200) < 0)
 	{
+      Log.AddL(eLogTypes::ERR, MakeTag(), "SerialPort::Open failed: set baud rate port='{}'", fullName);
 		close(fd);
 		return false;
 	}
 
-	//
-	// Finally, apply the configuration
-	//
+  // Apply the updated serial settings and flush pending input/output.
 	if (tcsetattr(fd, TCSAFLUSH, &ttyOptions) < 0) 
 	{
+      Log.AddL(eLogTypes::ERR, MakeTag(), "SerialPort::Open failed: tcsetattr port='{}'", fullName);
 		close(fd);
 		return false;
 	}
-	/*
+
+	flock(fd, LOCK_EX | LOCK_NB);
+/*
 	if (ioctl(fd, TIOCEXCL, NULL) < 0)
 	{
+		Log.AddL(eLogTypes::ERR, MakeTag(), "SerialPort::Open failed: TIOCEXCL port='{}'", fullName);
 		close(fd);
 		return false;
 	}
-	*/
-	/*
-	cfmakeraw(&ttyOptions);
-	cfsetospeed(&ttyOptions, B115200);
-	cfsetispeed(&ttyOptions, B115200);
-
-	config.c_iflag &= ~ // Disable all input modes
-		( IGNBRK // Ignore break condition
-		| BRKINT // Signal break condition
-		| ICRNL // Map CR to NL on input
-		| INLCR // Map NL to CR on input
-		| PARMRK // Mark parity errors
-		| INPCK // Enable parity checking
-		| ISTRIP // Strip 8th bit off characters
-		| IXON // Enable XON/XOFF flow control
-		);
-
-	ttyOptions.c_cflag &= ~CSIZE;
-	ttyOptions.c_cflag |= CS8;
-	ttyOptions.c_cflag |= CLOCAL | CREAD;
-	ttyOptions.c_cflag &= ~(PARENB | PARODD);
-	ttyOptions.c_cflag &= ~CSTOPB;
-	ttyOptions.c_cflag &= ~CRTSCTS;
-	ttyOptions.c_iflag &= ~(IXON | IXOFF | IXANY);
-	ttyOptions.c_lflag &= ~(ECHO | ECHOE | ECHOK | ECHONL);
-
-	ttyOptions.c_cc[VMIN] = 0;
-	ttyOptions.c_cc[VTIME] = 0;
-
-	if (tcsetattr(fd, TCSANOW, &ttyOptions) != 0)
-	{
-		close(fd);
-		return false;
-	}
-	*/
-	EnableModemLines(fd);
+*/
+   // Force a clean controller/adapter state on every open, even if the previous
+	// debug session ended without running normal shutdown.
+	CleanStartAfterReopen(fd);
 	serialHandle = fd;
-	tcflush(fd, TCIOFLUSH);
 
 	return true;
 }
@@ -290,12 +272,16 @@ bool SerialPort::Open(const std::string& portname)
 		nullptr);
 
 	if (hSerial == INVALID_HANDLE_VALUE)
+   {
+		Log.AddL(eLogTypes::ERR, MakeTag(), "SerialPort::Open failed: CreateFileA port='{}'", fullName);
 		return false;
+	}
 
 	DCB dcbSerialParams{};
 	dcbSerialParams.DCBlength = sizeof(dcbSerialParams);
 	if (!GetCommState(hSerial, &dcbSerialParams))
 	{
+       Log.AddL(eLogTypes::ERR, MakeTag(), "SerialPort::Open failed: GetCommState port='{}'", fullName);
 		CloseHandle(hSerial);
 		return false;
 	}
@@ -310,6 +296,7 @@ bool SerialPort::Open(const std::string& portname)
 
 	if (!SetCommState(hSerial, &dcbSerialParams))
 	{
+       Log.AddL(eLogTypes::ERR, MakeTag(), "SerialPort::Open failed: SetCommState port='{}'", fullName);
 		CloseHandle(hSerial);
 		return false;
 	}
@@ -324,6 +311,7 @@ bool SerialPort::Open(const std::string& portname)
 
 	if (!SetCommTimeouts(hSerial, &timeouts))
 	{
+       Log.AddL(eLogTypes::ERR, MakeTag(), "SerialPort::Open failed: SetCommTimeouts port='{}'", fullName);
 		CloseHandle(hSerial);
 		return false;
 	}

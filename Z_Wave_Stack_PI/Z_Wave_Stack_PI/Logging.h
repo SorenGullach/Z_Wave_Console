@@ -192,7 +192,7 @@ private:
 				std::tm tmBuf = GetLocalTime(t);
 
 				std::cout 
-					<< std::put_time(&tmBuf, "%H:%M:%S") << '.'
+					<< std::put_time(&tmBuf, ":%S") << '.'
 					<< std::setw(3) << std::setfill('0')
 					<< std::chrono::duration_cast<std::chrono::milliseconds>(now.time_since_epoch()).count() % 1000
 					<< " " << line << std::endl;
