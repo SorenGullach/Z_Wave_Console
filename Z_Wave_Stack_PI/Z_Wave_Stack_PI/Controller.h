@@ -21,4 +21,8 @@ protected:
 private:
 	Initialize initialize;
 	NodeInterview nodeInterview;
+
+	// Add these declarations:
+	void HandleCCFrame(const APIFrame::PayLoad& payload);
+	void HandleCCFrameTimeout(const APIFrame::PayLoad& payload);
 };

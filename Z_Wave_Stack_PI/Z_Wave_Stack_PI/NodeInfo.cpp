@@ -1,10 +1,10 @@
-
 #include "NodeInfo.h"
 #include "Notify.h"
 
 NodeInfo::NodeInfo(nodeid_t nodeid)
-	: nodeId(nodeid),
-	ccHandlerFactory(*this)
+	: formatter(*this)
+	, nodeId(nodeid)
+	, ccHandlerFactory(*this)
 {
 }
 
@@ -20,7 +20,7 @@ void NodeInfo::SetProtocolInfo(const ProtocolInfo& DVC)
 bool NodeInfo::IsListening() const
 {
     DebugLockGuard lock(stateMutex);
-	return protocolInfo.isListening;
+	return protocolInfo.IsListening();
 }
 
 void NodeInfo::SetWakeUpInfo(const WakeUpInfo& wakeup)
@@ -38,14 +38,14 @@ NodeInfo::WakeUpInfo NodeInfo::GetWakeUpInfo() const
 	return wakeUpInfo;
 }
 
-void NodeInfo::SetNIF(uint8_t basicType, uint8_t genericClass, uint8_t specificClass,
+void NodeInfo::SetNIF(ProtocolInfo::eBasicDeviceType basicType, ProtocolInfo::eGenericDeviceClass genericClass, uint8_t specificClass,
 	const std::vector<uint8_t>& commandClasses)
 {
 	{
         DebugLockGuard lock(stateMutex);
-		protocolInfo.basic = basicType;
-		protocolInfo.generic = genericClass;
-		protocolInfo.specific = specificClass;
+		protocolInfo.basicType = basicType;
+		protocolInfo.genericDeviceClass = genericClass;
+      protocolInfo.specificDeviceClass = specificClass;
 		ccs.fill({});
 		for (auto cc : commandClasses)
 		{
@@ -150,14 +150,16 @@ bool NodeInfo::supportsCC(eCommandClass cc) const
 	// 2) Special rule: Multi Channel CC (0x60)
 	if (cc == eCommandClass::MULTI_CHANNEL)
 	{
+		const auto g = protocolInfo.GenericDeviceClass();
+
 		// Multi Channel CC is only valid if the node has endpoints
 		// or if the device class is one that MUST have endpoints
+		using eGenericDeviceClass = NodeInfo::ProtocolInfo::eGenericDeviceClass;
 		bool hasEndpoints =
-			//			(multiChannel.endpointCount > 0) ||
-			(protocolInfo.generic == 0x11) ||   // Multi Level Switch
-			(protocolInfo.generic == 0x12) ||   // Multi Level Sensor
-			(protocolInfo.generic == 0x13) ||   // Multi Channel Device
-			(protocolInfo.generic == 0xA1);     // Multi Endpoint Controller
+			(g == eGenericDeviceClass::SwitchMultilevel) ||   // Multilevel Switch
+			(g == eGenericDeviceClass::SwitchRemote) ||   // Remote Switch
+			(g == eGenericDeviceClass::SwitchToggle) ||   // Toggle Switch
+			(g == eGenericDeviceClass::MultiChannelDevice);   // Multi-Channel Device
 
 		return hasEndpoints;
 	}

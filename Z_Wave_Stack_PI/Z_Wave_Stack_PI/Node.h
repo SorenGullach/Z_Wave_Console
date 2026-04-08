@@ -12,7 +12,9 @@ public:
 		: NodeInfo(id)
 		, enqueue(enqueue)
 	{
+		Start();
 	}
+	~Node() { Stop(); }
 
 	void SendFrame(const APIFrame& frame) override
 	{
@@ -55,7 +57,7 @@ public:
         bool notify = false;
 		{
 			DebugLockGuard lock(stateMutex);
-			if (!protocolInfo.isListening && nodeState != eNodeState::Sleepy)
+			if (!protocolInfo.IsListening() && nodeState != eNodeState::Sleepy)
 			{
 				nodeState = eNodeState::Sleepy;
 				notify = true;
@@ -106,6 +108,8 @@ public:
 		NotifyUI(UINotify::NodeListChanged, nodeId);
 		Log.AddL(eLogTypes::DVC, MakeTag(), "EnqueueJob: num={}", jobQueue.size());
 	}
+
+	void HandleCCDeviceReport(eCommandClass cmdClass, ccid_t cmdId, const ccparams_t& cmdParams);
 
 private:
 	EnqueueFn enqueue;
@@ -289,6 +293,7 @@ private:
 			Sleeping();
 		}
 	}
+
 
 	void ProcessInterviewState();
 

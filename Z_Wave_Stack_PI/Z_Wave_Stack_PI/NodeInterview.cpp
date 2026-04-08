@@ -1,6 +1,7 @@
 
 #include "Logging.h"
 #include "NodeInterview.h"
+#include "Node.h"
 
 NodeInterview::NodeInterview(Nodes& nodes, EnqueueFn enqueue)
 	: nodes(nodes)
@@ -54,8 +55,8 @@ bool NodeInterview::Done(nodeid_t nodeid)
 		if (!node->IsListening() && node->GetInterviewState() == Node::eInterviewState::ProtocolInfoDone)
 			return true;
 
-		if (node->IsListening() && node->GetInterviewState() == Node::eInterviewState::InterviewDone)
-			return true;
+		if (node->IsListening() && node->GetInterviewState() == Node::eInterviewState::NodeInfoDone)
+			return true; // rest of interview is done in Node
 	}
 	return false;
 }
@@ -162,63 +163,55 @@ void NodeInterview::DecodeNodeProtocolInfo(nodeid_t nodeid, const APIFrame::PayL
 	// [3]=Basic Device Type
 	// [4]=Generic Device Class
 	// [5]=Specific Device Class
-	if (payload.size() < 6)
+
+#pragma pack(push, 1)
+	struct PayloadStruct
+	{
+		uint8_t b0, b1, b2;
+		uint8_t basic;
+		uint8_t generic;
+		uint8_t specific;
+	};
+#pragma pack(pop)
+	static_assert(sizeof(PayloadStruct) == 6);
+
+	if (payload.size() < sizeof(PayloadStruct))
 	{
 		Log.AddL(eLogTypes::ITW, MakeTag(), "DecodeNodeProtocolInfo: node={} payload too short (len={})", nodeid, payload.size());
 		return;
 	}
 
-	const uint8_t b1 = payload[0];
-	const uint8_t b2 = payload[1];
-	const uint8_t b3 = payload[2];
-	const uint8_t basic = payload[3];
-	const uint8_t generic = payload[4];
-	const uint8_t specific = payload[5];
+	const auto* p = reinterpret_cast<const PayloadStruct*>(payload.data());
 
-	const bool listening = (b1 & 0x80) != 0;
-	const bool routing = (b1 & 0x40) != 0;
-	const uint8_t supportedSpeed = static_cast<uint8_t>((b1 >> 3) & 0x07);
-	const uint8_t protocolVersion = static_cast<uint8_t>(b1 & 0x07);
+	NodeInfo::ProtocolInfo info;
 
-	const bool optionalFunctionality = (b2 & 0x80) != 0;
-	const bool sensor1000ms = (b2 & 0x40) != 0;
-	const bool sensor250ms = (b2 & 0x20) != 0;
-	const bool beamCapability = (b2 & 0x10) != 0;
-	const bool routingEndNode = (b2 & 0x08) != 0;
-	const bool specificDevice = (b2 & 0x04) != 0;
-	const bool controllerNode = (b2 & 0x02) != 0;
-	const bool security = (b2 & 0x01) != 0;
+	info.b0 = p->b0;
+	info.b1 = p->b1;
+	info.b2 = p->b2;
+	info.basicType = static_cast<NodeInfo::ProtocolInfo::eBasicDeviceType>(p->basic);
+	info.genericDeviceClass = static_cast<NodeInfo::ProtocolInfo::eGenericDeviceClass>(p->generic); 
+	info.specificDeviceClass = p->specific;
+
+	Node* node = nodes.Get(nodeid);
+	node->SetProtocolInfo(info);
+
+	info.IsListening() ? node->WakeUp() : node->Sleeping();
 
 	Log.AddL(
 		eLogTypes::DVC,
 		MakeTag(),
-		"<< {}: node={} listening={} routing={} speed={} proto={} basic=0x{:02X} generic=0x{:02X} specific=0x{:02X} opt=0x{:02X} speedExt=0x{:02X} (payloadLen={})",
+		"<< {}: node={} listening={} routing={} speed={} proto={} basic=0x{:02X} generic=0x{:02X} specific=0x{:02X} (payloadLen={})",
 		ToString(eCommandIds::ZW_API_GET_NODE_INFO_PROTOCOL_DATA),
-		nodeid, listening, routing, supportedSpeed, protocolVersion, basic, generic, specific, b2, b3
-		, payload.size());
-
-	Node* node = nodes.GetOrCreate(nodeid);
-	listening ? node->WakeUp() : node->Sleeping();
-
-	NodeInfo::ProtocolInfo protocolInfo;
-	protocolInfo.basic = basic;
-	protocolInfo.generic = generic;
-	protocolInfo.specific = specific;
-
-	protocolInfo.isListening = listening;
-	protocolInfo.isRouting = routing;
-	protocolInfo.supportedSpeed = supportedSpeed;
-	protocolInfo.protocolVersion = protocolVersion;
-
-	protocolInfo.optionalFunctionality = optionalFunctionality;
-	protocolInfo.sensor1000ms = sensor1000ms;
-	protocolInfo.sensor250ms = sensor250ms;
-	protocolInfo.beamCapable = beamCapability;
-	protocolInfo.routingEndNode = routingEndNode;
-	protocolInfo.specificDevice = specificDevice;
-	protocolInfo.controllerNode = controllerNode;
-	protocolInfo.security = security;
-	node->SetProtocolInfo(protocolInfo);
+		nodeid,
+		info.IsListening() ? "yes" : "no",
+		info.IsRouting() ? "yes" : "no",
+		(int)info.SupportedSpeed(),
+		(int)info.ProtocolVersion(),
+		(int)info.BasicType(),
+		(int)info.GenericDeviceClass(),
+		info.specificDeviceClass,
+		payload.size()
+	);
 
 	node->SetInterviewState(Node::eInterviewState::ProtocolInfoDone);
 }
@@ -277,8 +270,8 @@ void NodeInterview::DecodeNodeInfo(const APIFrame::PayLoad& payload)
 		return;
 	}
 
-	const uint8_t basic = payload[index++];
-	const uint8_t generic = payload[index++];
+	const NodeInfo::ProtocolInfo::eBasicDeviceType basic = static_cast<NodeInfo::ProtocolInfo::eBasicDeviceType>(payload[index++]); 
+	const NodeInfo::ProtocolInfo::eGenericDeviceClass generic = static_cast<NodeInfo::ProtocolInfo::eGenericDeviceClass>(payload[index++]);
 	const uint8_t specific = payload[index++];
 
 	std::vector<uint8_t> ccList;

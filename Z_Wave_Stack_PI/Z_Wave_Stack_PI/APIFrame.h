@@ -86,7 +86,7 @@ public:
 			std::string out = "(" + std::to_string(data.size()) + ")";
 			out.reserve(data.size() * 3);
 			for (auto c : data)
-               out += " " + FormatCompat::HexValue(c);
+				out += " " + FormatCompat::HexValue(c);
 			return out;
 		};
 
@@ -144,7 +144,7 @@ public:
 #ifndef NDEBUG
 		std::string typeStr =
 			(type == eFrameTypes::REQ) ? "REQ" :
-			((type == eFrameTypes::RES) ? "RES" : 
+			((type == eFrameTypes::RES) ? "RES" :
 			 std::to_string((int)type));
 
 		std::string name =
@@ -161,7 +161,7 @@ public:
 			{
 				auto ev = static_cast<ApplicationUpdateEvent>(payload[0]);
 				nodeid_t nodeid{ payload[1] };
-               extra = " | event=" + ToString(ev);
+				extra = " | event=" + ToString(ev);
 			}
 			else
 			{
@@ -186,7 +186,7 @@ public:
 				if (payload.size() >= 2 + rfLen)
 					rf.assign(payload.begin() + 2, payload.begin() + 2 + rfLen);
 
-                extra = " | node=0x" + FormatCompat::HexValue(nodeId.Value()) +
+				extra = " | node=0x" + FormatCompat::HexValue(nodeId.Value()) +
 					" rf=[" + PayLoad::ToString(rf) + "] cb=0x" +
 					FormatCompat::HexValue(callbackId) + " txOpt=0x" +
 					FormatCompat::HexValue(txOptions);
@@ -195,13 +195,13 @@ public:
 			{
 				uint8_t sesionsid = payload[0];
 				uint8_t txStatus = payload[1]; // TODO: decode status
-               extra = " | sessionid=0x" + FormatCompat::HexValue(sesionsid) +
+				extra = " | sessionid=0x" + FormatCompat::HexValue(sesionsid) +
 					" tx status 0x" + FormatCompat::HexValue(txStatus);
 			}
 			else if (type == eFrameTypes::RES && payload.size() == 1)
 			{
 				uint8_t rspStatus = payload[payload.size() - 1];
-               extra = " | rsp status 0x" + FormatCompat::HexValue(rspStatus);
+				extra = " | rsp status 0x" + FormatCompat::HexValue(rspStatus);
 			}
 			else
 			{
@@ -209,12 +209,16 @@ public:
 			}
 		}
 
-     return "type=" + std::string(typeStr) + " cmdId=0x" +
-			FormatCompat::HexValue(static_cast<std::uint8_t>(APICmd.CmdId)) +
-			" " + name + " | payload=" + payload.ToString() + extra;
+		return std::format(
+			"Type = {} cmdId = 0x{:02X} {} | payload = {} {}",
+			typeStr,
+			(int)APICmd.CmdId,
+			name,
+			payload.ToString(),
+			extra
+		);
 #else
-
-        return "0x" + FormatCompat::HexValue(static_cast<std::uint8_t>(APICmd.CmdId));
+    return std::format("0x{:02X}", static_cast<std::uint8_t>(APICmd.CmdId));
 #endif
 	}
 

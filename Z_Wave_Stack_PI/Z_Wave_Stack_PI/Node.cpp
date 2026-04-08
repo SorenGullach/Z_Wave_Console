@@ -1,6 +1,40 @@
 #include "Node.h"
 #include "NodeCommandClasses.h"
 
+// ---------- CC Dispatch ----------
+void Node::HandleCCDeviceReport(eCommandClass cmdClass, ccid_t cmdId, const ccparams_t& cmdParams)
+{
+	ccparams_t innerParams = cmdParams;
+	uint8_t destiationEndpoint = 0;
+	if (cmdClass == eCommandClass::MULTI_CHANNEL &&
+		cmdId.value == static_cast<uint8_t>(CC_MultiChannel::eMultiChannelCommand::MULTI_CHANNEL_CMD_ENCAP))
+	{
+		// pull out the encapsulated command
+		// | 0x60 | 0x06 | DE | CC | CMD | PAYLOAD...
+		if (cmdParams.size() >= 3)
+		{
+			destiationEndpoint = cmdParams[0];
+			cmdClass = static_cast<eCommandClass>(cmdParams[1]);
+			cmdId = ccid_t(cmdParams[2]);
+			innerParams.assign(cmdParams.begin() + 3, cmdParams.end());
+			Log.AddL(eLogTypes::DVC, MakeTag(),
+					 "Encapsulated command class: 0x{:02X} {} (to endpoint {})",
+					 (uint8_t)cmdClass, CommandClassToString(cmdClass), destiationEndpoint);
+		}
+		else
+		{
+			Log.AddL(eLogTypes::ERR, MakeTag(), "Malformed multi-channel encapsulated command");
+		}
+	}
+	auto handler = ccHandlerFactory.GetHandler(cmdClass);
+	if (handler)
+	{
+		handler->HandleReport(cmdId, destiationEndpoint, innerParams);
+	}
+	else
+		Log.AddL(eLogTypes::DVC, MakeTag(), "Unknown command class handler: 0x{:02X} {}", (uint8_t)cmdClass, CommandClassToString(cmdClass));
+}
+
 void Node::ProcessInterviewState()
 {
 	switch (GetInterviewState())

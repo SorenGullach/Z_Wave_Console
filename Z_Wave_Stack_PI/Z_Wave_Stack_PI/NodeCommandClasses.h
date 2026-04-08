@@ -10,13 +10,32 @@
 #include "CommandClass.h"
 #include "APIFrame.h"
 
+enum class eSpecificDeviceClass_SensorMultilevel : uint8_t
+{
+	AirTemperature = 0x01,
+	GeneralPurpose = 0x02,
+	Luminance = 0x03,
+	Power = 0x04,
+	Humidity = 0x05,
+	Velocity = 0x06,
+	Direction = 0x07,
+	AtmosphericPressure = 0x08,
+	Unknown = 0x00
+};
+
+enum class eSpecificDeviceClass_EntryControl : uint8_t
+{
+	DoorLock = 0x01,
+	AdvancedDoorLock = 0x02,
+	Unknown = 0x00
+};
+
 struct ccid_t
 {
 	uint8_t value;
 	constexpr ccid_t(uint8_t v) : value(v) {}
 
-	template <typename E>
-		requires std::is_enum_v<E>
+	template <typename E, typename = std::enable_if_t<std::is_enum_v<E>>>
 	constexpr ccid_t(E e) : value(static_cast<uint8_t>(e)) {}
 };
 
@@ -139,6 +158,13 @@ public:
 class CC_SwitchBinary : public CCHandler
 {
 public:
+	enum class eSpecificDeviceClass : uint8_t
+	{
+		PowerSwitchBinary = 0x01,
+		SceneSwitchBinary = 0x03,
+		Unknown = 0x00
+	};
+
 	enum class eSwitchBinaryCommand : uint8_t
 	{
 		SWITCH_BINARY_SET = 0x01,
@@ -175,6 +201,17 @@ public:
 class CC_SwitchMultilevel : public CCHandler
 {
 public:
+	enum class eSpecificDeviceClass : uint8_t
+	{
+		PowerSwitchMultilevel = 0x01,
+		MotorMultiposition = 0x02,
+		SceneSwitchMultilevel = 0x03,
+		ClassA = 0x04,
+		ClassB = 0x05,
+		ClassC = 0x06,
+		Unknown = 0x00
+	};
+
 	enum class eSwitchMultilevelCommand : uint8_t
 	{
 		SWITCH_MULTILEVEL_SET = 0x01,
@@ -193,6 +230,19 @@ public:
 class CC_SensorBinary : public CCHandler
 {
 public:
+	enum class eSpecificDeviceClass : uint8_t
+	{
+		GeneralPurpose = 0x01,
+		Smoke = 0x02,
+		CO = 0x03,
+		CO2 = 0x04,
+		Heat = 0x05,
+		Water = 0x06,
+		Freeze = 0x07,
+		Tamper = 0x08,
+		Unknown = 0x00
+	};
+
 	enum class eSensorBinaryCommand : uint8_t
 	{
 		SENSOR_BINARY_GET = 0x02,

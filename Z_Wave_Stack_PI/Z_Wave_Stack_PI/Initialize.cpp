@@ -19,6 +19,7 @@ void Initialize::Start()
 bool Initialize::Done()
 {
 	return controllerInfo.InitializationState == ControllerInfo::eInitializationState::Initialized;
+	// initialization go to library type done, rest is in node interview
 }
 
 bool Initialize::HandleFrame(const APIFrame& frame)

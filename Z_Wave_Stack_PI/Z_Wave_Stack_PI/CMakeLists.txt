@@ -4,35 +4,55 @@
 
 # Add source to this project's executable.
 add_executable(Z_Wave_Stack_PI
+    # Precompiled header
     "pch.h"
     "pch.cpp"
-    "Initialize.h"
-    "Initialize.cpp"
-    
-    "APICommands.cpp"
-    "Controller.cpp"
-    "ControllerInfo.cpp"
-    "Interface.cpp"
-    "SerialPort.cpp"
-    "Logging.cpp"
+
+    # Entry point
     "Z_Wave_Stack_PI.cpp"
-    "ZWaveAPI.cpp"
-    "APICommands.h"
-    
+    "Z_Wave_Stack_PI.h"
+
+    # Serial API and transport
+    "APICommands.cpp"
     "APICommands.h"
     "APIFrame.h"
     "CommandClass.h"
-    "Controller.h"
-    "ControllerInfo.h"
-    "FormatCompat.h"
-    "Initialize.h"
+    "Interface.cpp"
     "Interface.h"
-    "NodeId_t.h"
-    "SerialPort.h"
+    "Logging.cpp"
     "Logging.h"
     "Notify.h"
-    "Z_Wave_Stack_PI.h"
-    "ZWaveAPI.h" "Nodes.h" "Nodes.cpp" "NodeInfo.h" "NodeInfo.cpp" "NodeInterview.h" "NodeInterview.cpp" "Node.h" "Node.cpp" "NodeCommandClasses.h" "NodeCommandClasses.cpp" "ControllerInfoFormatter.cpp")
+    "SerialPort.cpp"
+    "SerialPort.h"
+    "ZWaveAPI.cpp"
+    "ZWaveAPI.h"
+
+    # Controller and initialization
+    "Controller.cpp"
+    "Controller.h"
+    "ControllerInfo.cpp"
+    "ControllerInfo.h"
+    "ControllerInfoFormatter.cpp"
+    "Initialize.cpp"
+    "Initialize.h"
+
+    # Node model and interview
+    "Node.cpp"
+    "Node.h"
+    "NodeCommandClasses.cpp"
+    "NodeCommandClasses.h"
+    "NodeInfo.cpp"
+    "NodeInfo.h"
+    "NodeInfoFormatter.cpp"
+    "NodeInterview.cpp"
+    "NodeInterview.h"
+    "Nodes.cpp"
+    "Nodes.h"
+
+    # Shared utilities
+    "FormatCompat.h"
+    "NodeId_t.h"
+)
 
 if (MSVC)
   string(REPLACE "/W3" "" CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")

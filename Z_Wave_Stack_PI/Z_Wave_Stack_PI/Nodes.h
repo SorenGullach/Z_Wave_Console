@@ -13,6 +13,8 @@ public:
 	Node* GetOrCreate(nodeid_t nodeid);
 	bool Exists(nodeid_t nodeid) const;
 
+	void HandleCCDeviceReport(nodeid_t nodeid, eCommandClass cmdclass, ccid_t cmdid, const ccparams_t& cmdparams);
+
 private:
 	EnqueueFn enqueue;
 

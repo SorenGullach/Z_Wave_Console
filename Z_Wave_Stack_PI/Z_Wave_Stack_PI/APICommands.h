@@ -196,7 +196,7 @@ struct APICommand
 {
 	eCommandIds CmdId{};
 	eFlowType Flow{ eFlowType::Unknown };
-#ifndef NEBUG
+#ifndef NDEBUG
 	std::string Name{};
 	std::string Title{};
 #endif // DEBUG
