@@ -4,70 +4,120 @@
 // ---------- CC Dispatch ----------
 void Node::HandleCCDeviceReport(eCommandClass cmdClass, ccid_t cmdId, const ccparams_t& cmdParams)
 {
-	ccparams_t innerParams = cmdParams;
-	uint8_t destiationEndpoint = 0;
+	// Multi Channel Encapsulation?
 	if (cmdClass == eCommandClass::MULTI_CHANNEL &&
-		cmdId.value == static_cast<uint8_t>(CC_MultiChannel::eMultiChannelCommand::MULTI_CHANNEL_CMD_ENCAP))
+		//cmdId.value == static_cast<uint8_t>(CC_MultiChannel::eMultiChannelCommand::MULTI_CHANNEL_CMD_ENCAP))
+		cmdId == CC_MultiChannel::eMultiChannelCommand::MULTI_CHANNEL_CMD_ENCAP)
 	{
-		// pull out the encapsulated command
-		// | 0x60 | 0x06 | DE | CC | CMD | PAYLOAD...
-		if (cmdParams.size() >= 3)
-		{
-			destiationEndpoint = cmdParams[0];
-			cmdClass = static_cast<eCommandClass>(cmdParams[1]);
-			cmdId = ccid_t(cmdParams[2]);
-			innerParams.assign(cmdParams.begin() + 3, cmdParams.end());
-			Log.AddL(eLogTypes::DVC, MakeTag(),
-					 "Encapsulated command class: 0x{:02X} {} (to endpoint {})",
-					 (uint8_t)cmdClass, CommandClassToString(cmdClass), destiationEndpoint);
-		}
-		else
+		// | 0x60 | 0x06 | destEP | CC | CMD | PAYLOAD...
+		if (cmdParams.size() < 3)
 		{
 			Log.AddL(eLogTypes::ERR, MakeTag(), "Malformed multi-channel encapsulated command");
+			return;
 		}
+
+		uint8_t destinationEndpoint = cmdParams[0];
+		eCommandClass innerCC = static_cast<eCommandClass>(cmdParams[1]);
+		ccid_t innerCCId = cmdParams[2];
+
+		ccparams_t innerParams(cmdParams.begin() + 3, cmdParams.end());
+
+		Log.AddL(eLogTypes::DVC, MakeTag(),
+				 "Encapsulated command class: 0x{:02X} {} (to endpoint {})",
+				 (uint8_t)innerCC, CommandClassToString(innerCC), destinationEndpoint);
+
+		// Look up handler for the *inner* CC
+		auto innerHandler = ccHandlerFactory.GetHandler(innerCC);
+		if (!innerHandler)
+		{
+			Log.AddL(eLogTypes::DVC, MakeTag(),
+					 "Unknown encapsulated command class handler: 0x{:02X} {}",
+					 (uint8_t)innerCC, CommandClassToString(innerCC));
+			return;
+		}
+
+		innerHandler->HandleReport(innerCCId, innerParams, destinationEndpoint);
+		return;
 	}
+
+	// Normal (non-encapsulated) CC
 	auto handler = ccHandlerFactory.GetHandler(cmdClass);
-	if (handler)
+	if (!handler)
 	{
-		handler->HandleReport(cmdId, destiationEndpoint, innerParams);
+		Log.AddL(eLogTypes::DVC, MakeTag(),
+				 "Unknown command class handler: 0x{:02X} {}",
+				 (uint8_t)cmdClass, CommandClassToString(cmdClass));
+		return;
 	}
-	else
-		Log.AddL(eLogTypes::DVC, MakeTag(), "Unknown command class handler: 0x{:02X} {}", (uint8_t)cmdClass, CommandClassToString(cmdClass));
+
+	handler->HandleReport(cmdId, cmdParams, 0);
 }
+
+/* ========================================================================
+   Z-Wave Node Interview — Overview
+   ========================================================================
+
+	ProcessInterviewState()
+		NodeInfoDone ->
+			CCVersionPending ->
+				query VERSION for each supported Command Class ->
+			CCVersionDone ->
+			CCMnfcSpecPending ->
+				query MANUFACTURER_SPECIFIC data/device id when supported ->
+			CCMnfcSpecDone ->
+			CCMultiChannelPending ->
+				query MULTI_CHANNEL endpoint report and endpoint capabilities when supported ->
+			CCMultiChannelDone ->
+				enqueue post-interview jobs:
+					ASSOCIATION_INTERVIEW
+					MULTI_CHANNEL_ASSOCIATION_INTERVIEW
+					CONFIGURATION_INTERVIEW
+				set InterviewDone
+
+		If a required Command Class is not supported, the state machine logs it and
+		continues to the next interview phase.
+
+		Listening nodes typically enter this flow after NodeInterview reaches
+		NodeInfoDone.
+
+		Non-listening/sleepy nodes continue asynchronously and should transition to
+		InterviewDone themselves, then perform post-interview jobs there.
+
+   ======================================================================== */
 
 void Node::ProcessInterviewState()
 {
 	switch (GetInterviewState())
 	{
 	case eInterviewState::NotInterviewed:
-	case eInterviewState::ProtocolInfoPending:
-	case eInterviewState::ProtocolInfoDone:
-	case eInterviewState::NodeInfoPending:
+	case eInterviewState::ProtocolInfoPending: // handled on Controller::Interview
+	case eInterviewState::ProtocolInfoDone:  // handled on Controller::Interview
+	case eInterviewState::NodeInfoPending:  // handled on Controller::Interview
 		break;
-	case eInterviewState::NodeInfoDone:
+	case eInterviewState::NodeInfoDone:  // handled on Controller::Interview, set to NodeInfoDone if is listening or after node wakeup
 		SetInterviewState(eInterviewState::CCVersionPending);
 		// fallthrough
 	case eInterviewState::CCVersionPending:
 		if (auto* handler = ccHandlerFactory.GetHandler(eCommandClass::VERSION))
 		{
-			for (const auto ccId : GetSupportedCCs())
+			for (const auto supportedCCId : GetSupportedCCs())
 			{
-				auto* cc = GetCC(ccId);
+				auto* cc = GetCC(supportedCCId);
 				if (!cc || cc->versionOk)
 					continue;
 
 				int retryCount = 0;
 				do
 				{
-					Log.AddL(eLogTypes::DVC, MakeTag(), ">> NODE VERSION_COMMAND_CLASS_GET CC [0x{:02X}] to node {}", (uint8_t)ccId, nodeId);
+					Log.AddL(eLogTypes::DVC, MakeTag(), ">> NODE VERSION_COMMAND_CLASS_GET CC [0x{:02X}] to node {}", supportedCCId, nodeId);
 
 					APIFrame frame;
-					handler->MakeFrame(frame, CC_Version::eVersionCommand::VERSION_COMMAND_CLASS_GET, { static_cast<uint8_t>(ccId) });
+					handler->MakeFrame(frame, CC_Version::eVersionCommand::VERSION_COMMAND_CLASS_GET, { supportedCCId });
 					enqueue(frame);
 					std::this_thread::sleep_for(std::chrono::milliseconds(10));
 
 					if (!WaitUntil(std::chrono::seconds(5), [&]() { return cc->versionOk; }))
-						Log.AddL(eLogTypes::ERR, MakeTag(), "Version timeout: CC 0x{:02X} for node {}", static_cast<uint8_t>(ccId), nodeId);
+						Log.AddL(eLogTypes::ERR, MakeTag(), "Version timeout: CC 0x{:02X} for node {}", supportedCCId, nodeId);
 				} while (!cc->versionOk && retryCount++ < 3);
 			}
 		}
@@ -82,15 +132,16 @@ void Node::ProcessInterviewState()
 	case eInterviewState::CCMnfcSpecPending:
 		if (auto* cc = GetCC(eCommandClass::MANUFACTURER_SPECIFIC))
 		{
-			uint8_t version = cc->version;
 			if (auto* handler = ccHandlerFactory.GetHandler(eCommandClass::MANUFACTURER_SPECIFIC))
 			{
+				(void)cc;
+				uint8_t version = handler->Version();
 				Log.AddL(eLogTypes::DVC, MakeTag(), ">> NODE MANUFACTURER_SPECIFIC_COMMAND_CLASS_GET to node {}", nodeId);
 
 				if (version >= 1)
 				{
 					APIFrame frame;
-					handler->MakeFrame(frame, CC_ManufacturerSpecific::eManufacturerSpecificCommand::DEVICE_SPECIFIC_GET, { 0 });
+					handler->MakeFrame(frame, CC_ManufacturerSpecific::eManufacturerSpecificCommand::DEVICE_SPECIFIC_GET, { });
 					enqueue(frame);
 					if (!WaitUntil(std::chrono::seconds(5), [&]() { return manufacturerInfo.hasManufacturerData; }))
 					{
@@ -162,6 +213,42 @@ void Node::ProcessInterviewState()
 		break;
 
 	case eInterviewState::CCMultiChannelDone:
+		{
+			Node::Job job;
+
+			// the merten 506004
+			if (manufacturerInfo.mfgId == 0x007A && manufacturerInfo.prodType == 0x0003 && manufacturerInfo.prodId == 0x0004)
+			{
+				for (int param = 0; param <= 7; param++)
+				{
+					job.job = Node::eJobs::CONFIGURATION_COMMAND;
+					job.group = param;
+					job.value = 22; // toggle on both buttons(top/down)
+					job.cfgSize = eConfigSize::OneByte;
+					EnqueueJob(job);
+				}
+				for (int groupid = 1; groupid <= 4; groupid++)
+				{
+					job.job = Node::eJobs::MULTI_CHANNEL_BIND_COMMAND;
+					job.group = groupid;
+					job.nodeId = nodeid_t(1); // controller
+					job.endpoint = groupid;
+					EnqueueJob(job);
+				}
+			}
+
+			job.job = Node::eJobs::ASSOCIATION_INTERVIEW;
+			EnqueueJob(job);
+			job.job = Node::eJobs::MULTI_CHANNEL_ASSOCIATION_INTERVIEW;
+			EnqueueJob(job);
+			job.job = Node::eJobs::CONFIGURATION_INTERVIEW;
+			job.group = 0; // start with param 0
+			job.value = 10; // get first 10 params
+			EnqueueJob(job);
+			SetInterviewState(Node::eInterviewState::InterviewDone);
+
+			std::cout << ToString();
+		}
 		break;
 	case eInterviewState::InterviewDone:
 		break;
@@ -308,7 +395,7 @@ bool Node::ExecuteMultiChannelBindCommandJob(uint8_t groupId, nodeid_t nodeid, u
 		groupId,
 		// no nodeid's
 		(uint8_t)CC_MultiChannelAssociation::eMultiChannelAssociationCommand::MULTI_CHANNEL_ASSOCIATION_SET_MARKER,
-		nodeId.Value(), endpoint
+		nodeid.Value(), endpoint
 	};
 
 	APIFrame frame;
@@ -512,5 +599,6 @@ bool Node::ExecuteConfigurationInterviewJob(uint8_t startparam, uint8_t numParam
 
 	Log.AddL(eLogTypes::DVC, MakeTag(), "Configuration interview completed for node {}", nodeId);
 	NotifyUI(UINotify::NodeChanged, nodeId);
+	std::cout << ToString(); // TODO remove when debug done
 	return true;
 }

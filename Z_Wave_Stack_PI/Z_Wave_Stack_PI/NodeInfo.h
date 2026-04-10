@@ -5,8 +5,9 @@
 #include <optional>
 #include <string>
 #include <vector>
+#include <map>
 
-#include "NodeId_t.h"
+#include "Strong_id.h"
 #include "APIFrame.h"
 #include "CommandClass.h"
 #include "DebugMutex.h"
@@ -26,12 +27,30 @@ public:
 	std::string SupportedSpeedName() const;
 	std::string ProtocolVersionName() const;
 	std::string BasicDeviceTypeName() const;
+	std::string ManufacturerName() const;
+	std::string ProductName() const;
 	std::string GenericDeviceClassName() const;
 	std::string SpecificDeviceClassName() const;
 
-	// Full text dump
+	// Part text dump
 	std::string ToTextProtocol() const;
+	std::string ToTextCommandClass() const;
+	std::string ToTextManufacturer() const;
+	std::string ToTextMultiChannel() const;
+	std::string ToTextWakeUp() const;
+	std::string ToTextValues() const;
+	std::string ToTextHeader() const;
+	std::string ToTextLocation() const;
+	std::string ToTextState() const;
+	std::string ToTextInterview() const;
+	std::string ToTextAssociations() const;
+	std::string ToTextConfiguration() const;
+	std::string ToTextMeter() const;
+
+	// Full text dump
 	std::string ToText() const;
+
+	std::string ToSummary() const;
 
 	// JSON for GUI
 //	std::string ToJson() const;
@@ -328,7 +347,8 @@ private:
 	std::array<CommandClassTag, 256> ccs{};
 	MeterInfo meterInfo;
 	std::optional<uint8_t> batteryLevel;
-	std::optional<uint8_t> basicValue;
+	std::map<uint8_t, uint8_t> basicValue; // EP,value
+	//std::optional<uint8_t> basicValue;
 	std::optional<uint8_t> switchBinaryValue;
 	std::optional<uint8_t> switchMultilevelValue;
 	std::optional<uint8_t> sensorBinaryValue;

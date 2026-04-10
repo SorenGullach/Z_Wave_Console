@@ -3,6 +3,7 @@
 
 #include <unordered_map>
 #include <memory>
+#include <type_traits>
 #include <vector>
 #include <string>
 #include "FormatCompat.h"
@@ -30,17 +31,6 @@ enum class eSpecificDeviceClass_EntryControl : uint8_t
 	Unknown = 0x00
 };
 
-struct ccid_t
-{
-	uint8_t value;
-	constexpr ccid_t(uint8_t v) : value(v) {}
-
-	template <typename E, typename = std::enable_if_t<std::is_enum_v<E>>>
-	constexpr ccid_t(E e) : value(static_cast<uint8_t>(e)) {}
-};
-
-using ccparams_t = std::vector<uint8_t>;
-
 class NodeInfo;
 
 class CCHandler
@@ -53,22 +43,10 @@ public:
 	virtual ~CCHandler() = default;
 
 	virtual void MakeFrame(APIFrame& frame, const ccid_t cc, const ccparams_t& params) = 0;
-	virtual void HandleReport(const ccid_t cc, const uint8_t destinationEP, const ccparams_t& params) = 0;
+	virtual void HandleReport(const ccid_t cc, const ccparams_t& params, const uint8_t destinationEP) = 0;
 
-	virtual std::string ToString() const { return ""; }
-
-	std::string ParamsToString(const ccparams_t& params) const
-	{
-		std::string result = "Params = ";
-		for (size_t i = 0; i < params.size(); i++)
-		{
-			result += std::format("0x{:02}", params[i]);
-			if (i + 1 < params.size())
-				result += ", ";
-		}
-		result += "";
-		return result;
-	}
+	int Version(const eCommandClass cc);
+	virtual int Version() = 0;
 };
 
 class CCHandlerFactory
@@ -112,11 +90,12 @@ public:
 	};
 
 	static constexpr eCommandClass CC = eCommandClass::VERSION;
+	int Version() override { return CCHandler::Version(CC); };
 
 	using CCHandler::CCHandler;
 
-	void MakeFrame(APIFrame& frame, const ccid_t cmdid, const ccparams_t& params) override;
-	void HandleReport(const ccid_t cmdid, const uint8_t destinationEP, const ccparams_t& params) override;
+	void MakeFrame(APIFrame& frame, const ccid_t ccid, const ccparams_t& params) override;
+	void HandleReport(const ccid_t ccid, const ccparams_t& params, const uint8_t destinationEP = 0) override;
 };
 
 class CC_Battery : public CCHandler
@@ -129,11 +108,12 @@ public:
 	};
 
 	static constexpr eCommandClass CC = eCommandClass::BATTERY;
+	int Version() override { return CCHandler::Version(CC); };
 
 	using CCHandler::CCHandler;
 
-	void MakeFrame(APIFrame& frame, ccid_t cmdid, const ccparams_t& params) override;
-	void HandleReport(const ccid_t cmdid, const uint8_t destinationEP, const ccparams_t& params) override;
+	void MakeFrame(APIFrame& frame, ccid_t ccid, const ccparams_t& params) override;
+	void HandleReport(const ccid_t ccid, const ccparams_t& params, const uint8_t destinationEP = 0) override;
 };
 
 class CC_ManufacturerSpecific : public CCHandler
@@ -148,11 +128,12 @@ public:
 	};
 
 	static constexpr eCommandClass CC = eCommandClass::MANUFACTURER_SPECIFIC;
+	int Version() override { return CCHandler::Version(CC); };
 
 	using CCHandler::CCHandler;
 
-	void MakeFrame(APIFrame& frame, ccid_t cmdid, const ccparams_t& params) override;
-	void HandleReport(const ccid_t cmdid, const uint8_t destinationEP, const ccparams_t& params) override;
+	void MakeFrame(APIFrame& frame, ccid_t ccid, const ccparams_t& params) override;
+	void HandleReport(const ccid_t ccid, const ccparams_t& params, const uint8_t destinationEP = 0) override;
 };
 
 class CC_SwitchBinary : public CCHandler
@@ -173,11 +154,12 @@ public:
 	};
 
 	static constexpr eCommandClass CC = eCommandClass::SWITCH_BINARY;
+	int Version() override { return CCHandler::Version(CC); };
 
 	using CCHandler::CCHandler;
 
-	void MakeFrame(APIFrame& frame, ccid_t cmdid, const ccparams_t& params) override;
-	void HandleReport(const ccid_t cmdid, const uint8_t destinationEP, const ccparams_t& params) override;
+	void MakeFrame(APIFrame& frame, ccid_t ccid, const ccparams_t& params) override;
+	void HandleReport(const ccid_t ccid, const ccparams_t& params, const uint8_t destinationEP = 0) override;
 };
 
 class CC_Basic : public CCHandler
@@ -191,11 +173,12 @@ public:
 	};
 
 	static constexpr eCommandClass CC = eCommandClass::BASIC;
+	int Version() override { return CCHandler::Version(CC); };
 
 	using CCHandler::CCHandler;
 
-	void MakeFrame(APIFrame& frame, ccid_t cmdid, const ccparams_t& params) override;
-	void HandleReport(const ccid_t cmdid, const uint8_t destinationEP, const ccparams_t& params) override;
+	void MakeFrame(APIFrame& frame, ccid_t ccid, const ccparams_t& params) override;
+	void HandleReport(const ccid_t ccid, const ccparams_t& params, const uint8_t destinationEP = 0) override;
 };
 
 class CC_SwitchMultilevel : public CCHandler
@@ -220,11 +203,12 @@ public:
 	};
 
 	static constexpr eCommandClass CC = eCommandClass::SWITCH_MULTILEVEL;
+	int Version() override { return CCHandler::Version(CC); };
 
 	using CCHandler::CCHandler;
 
-	void MakeFrame(APIFrame& frame, ccid_t cmdid, const ccparams_t& params) override;
-	void HandleReport(const ccid_t cmdid, const uint8_t destinationEP, const ccparams_t& params) override;
+	void MakeFrame(APIFrame& frame, ccid_t ccid, const ccparams_t& params) override;
+	void HandleReport(const ccid_t ccid, const ccparams_t& params, const uint8_t destinationEP = 0) override;
 };
 
 class CC_SensorBinary : public CCHandler
@@ -250,11 +234,12 @@ public:
 	};
 
 	static constexpr eCommandClass CC = eCommandClass::SENSOR_BINARY;
+	int Version() override { return CCHandler::Version(CC); };
 
 	using CCHandler::CCHandler;
 
-	void MakeFrame(APIFrame& frame, ccid_t cmdid, const ccparams_t& params) override;
-	void HandleReport(const ccid_t cmdid, const uint8_t destinationEP, const ccparams_t& params) override;
+	void MakeFrame(APIFrame& frame, ccid_t ccid, const ccparams_t& params) override;
+	void HandleReport(const ccid_t ccid, const ccparams_t& params, const uint8_t destinationEP = 0) override;
 };
 
 class CC_Meter : public CCHandler
@@ -267,11 +252,12 @@ public:
 	};
 
 	static constexpr eCommandClass CC = eCommandClass::METER;
+	int Version() override { return CCHandler::Version(CC); };
 
 	using CCHandler::CCHandler;
 
-	void MakeFrame(APIFrame& frame, ccid_t cmdid, const ccparams_t& params) override;
-	void HandleReport(const ccid_t cmdid, const uint8_t destinationEP, const ccparams_t& params) override;
+	void MakeFrame(APIFrame& frame, ccid_t ccid, const ccparams_t& params) override;
+	void HandleReport(const ccid_t ccid, const ccparams_t& params, const uint8_t destinationEP = 0) override;
 };
 
 class CC_MultiChannel : public CCHandler
@@ -351,11 +337,12 @@ public:
 	};
 
 	static constexpr eCommandClass CC = eCommandClass::MULTI_CHANNEL;
+	int Version() override { return CCHandler::Version(CC); };
 
 	using CCHandler::CCHandler;
 
-	void MakeFrame(APIFrame& frame, const ccid_t cmdid, const ccparams_t& params) override;
-	void HandleReport(const ccid_t cmdid, const uint8_t destinationEP, const ccparams_t& params) override;
+	void MakeFrame(APIFrame& frame, const ccid_t ccid, const ccparams_t& params) override;
+	void HandleReport(const ccid_t ccid, const ccparams_t& params, const uint8_t destinationEP = 0) override;
 };
 
 class CC_Configuration : public CCHandler
@@ -369,11 +356,12 @@ public:
 	};
 
 	static constexpr eCommandClass CC = eCommandClass::CONFIGURATION;
+	int Version() override { return CCHandler::Version(CC); };
 
 	using CCHandler::CCHandler;
 
-	void MakeFrame(APIFrame& frame, ccid_t cmdid, const ccparams_t& params) override;
-	void HandleReport(const ccid_t cmdid, const uint8_t destinationEP, const ccparams_t& params) override;
+	void MakeFrame(APIFrame& frame, ccid_t ccid, const ccparams_t& params) override;
+	void HandleReport(const ccid_t ccid, const ccparams_t& params, const uint8_t destinationEP = 0) override;
 };
 
 class CC_Protection : public CCHandler
@@ -386,11 +374,12 @@ public:
 	};
 
 	static constexpr eCommandClass CC = eCommandClass::PROTECTION;
+	int Version() override { return CCHandler::Version(CC); };
 
 	using CCHandler::CCHandler;
 
-	void MakeFrame(APIFrame& frame, ccid_t cmdid, const ccparams_t& params) override;
-	void HandleReport(const ccid_t cmdid, const uint8_t destinationEP, const ccparams_t& params) override;
+	void MakeFrame(APIFrame& frame, ccid_t ccid, const ccparams_t& params) override;
+	void HandleReport(const ccid_t ccid, const ccparams_t& params, const uint8_t destinationEP = 0) override;
 };
 
 class CC_Association : public CCHandler
@@ -407,11 +396,12 @@ public:
 	};
 
 	static constexpr eCommandClass CC = eCommandClass::ASSOCIATION;
+	int Version() override { return CCHandler::Version(CC); };
 
 	using CCHandler::CCHandler;
 
-	void MakeFrame(APIFrame& frame, ccid_t cmdid, const ccparams_t& params) override;
-	void HandleReport(const ccid_t cmdid, const uint8_t destinationEP, const ccparams_t& params) override;
+	void MakeFrame(APIFrame& frame, ccid_t ccid, const ccparams_t& params) override;
+	void HandleReport(const ccid_t ccid, const ccparams_t& params, const uint8_t destinationEP = 0) override;
 };
 
 class CC_MultiChannelAssociation : public CCHandler
@@ -434,17 +424,19 @@ public:
 	};
 
 	static constexpr eCommandClass CC = eCommandClass::MULTI_CHANNEL_ASSOCIATION;
+	int Version() override { return CCHandler::Version(CC); };
 
 	using CCHandler::CCHandler;
 
-	void MakeFrame(APIFrame& frame, const ccid_t cmdid, const ccparams_t& params) override;
-	void HandleReport(const ccid_t cmdid, const uint8_t destinationEP, const ccparams_t& params) override;
+	void MakeFrame(APIFrame& frame, const ccid_t ccid, const ccparams_t& params) override;
+	void HandleReport(const ccid_t ccid, const ccparams_t& params, const uint8_t destinationEP = 0) override;
 };
 
 class CC_WakeUp : public CCHandler
 {
 public:
 	static constexpr eCommandClass CC = eCommandClass::WAKE_UP;
+	int Version() override { return CCHandler::Version(CC); };
 
 	enum class eWakeUpCommand : uint8_t
 	{
@@ -461,6 +453,6 @@ public:
 
 	using CCHandler::CCHandler;
 
-	void MakeFrame(APIFrame& frame, ccid_t cmdid, const ccparams_t& params) override;
-	void HandleReport(const ccid_t cmdid, const uint8_t destinationEP, const ccparams_t& params) override;
+	void MakeFrame(APIFrame& frame, ccid_t ccid, const ccparams_t& params) override;
+	void HandleReport(const ccid_t ccid, const ccparams_t& params, const uint8_t destinationEP = 0) override;
 };

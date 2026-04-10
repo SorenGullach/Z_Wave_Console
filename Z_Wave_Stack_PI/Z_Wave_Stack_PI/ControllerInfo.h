@@ -5,7 +5,7 @@
 #include <vector>
 #include <string>
 
-#include "NodeId_t.h"
+#include "Strong_id.h"
 #include "APICommands.h"
 
 class ControllerInfo;

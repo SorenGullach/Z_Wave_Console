@@ -23,6 +23,6 @@ private:
 	NodeInterview nodeInterview;
 
 	// Add these declarations:
-	void HandleCCFrame(const APIFrame::PayLoad& payload);
-	void HandleCCFrameTimeout(const APIFrame::PayLoad& payload);
+	void HandleCCFrame(const payload_t& payload);
+	void HandleCCFrameTimeout(const payload_t& payload);
 };

@@ -8,7 +8,7 @@
 #include <string_view>
 
 #include "APICommands.h"
-#include "NodeId_t.h"
+#include "Strong_id.h"
 
 // Prefer `std::uint8_t` explicitly in this header to avoid any reliance on
 // global typedefs or toolchain-specific behavior.
@@ -54,43 +54,7 @@ private:
 
 public:
 	APICommand APICmd = APICommands[0];  // Default; will be overwritten for decoded frames
-	class PayLoad : private std::vector<std::uint8_t>
-	{
-	public:
-		using base = std::vector<std::uint8_t>;
-		using container_type = base;
-		using value_type = base::value_type;
-		using iterator = base::iterator;
-		using const_iterator = base::const_iterator;
-
-		using base::empty;
-		using base::size;
-		using base::clear;
-		using base::push_back;
-		using base::operator[];
-		using base::begin;
-		using base::end;
-		using base::assign;
-		using base::insert;
-		using base::data;
-		using base::back;
-
-		// Hex dump of payload
-		std::string ToString() const
-		{
-			return ToString(*this);
-		}
-		static std::string ToString(const std::vector<std::uint8_t>& data)
-		{
-			if (data.empty()) return std::string("(0)");
-			std::string out = "(" + std::to_string(data.size()) + ")";
-			out.reserve(data.size() * 3);
-			for (auto c : data)
-				out += " " + FormatCompat::HexValue(c);
-			return out;
-		};
-
-	} payload = {};
+	payload_t payload = {};
 
 	std::vector<std::uint8_t> Encode_Frame() const
 	{
@@ -182,14 +146,16 @@ public:
 				uint8_t txOptions = payload[payload.size() - 1];
 
 				// Extract RF payload
-				std::vector<uint8_t> rf;
+				payload_t rf;
 				if (payload.size() >= 2 + rfLen)
 					rf.assign(payload.begin() + 2, payload.begin() + 2 + rfLen);
 
-				extra = " | node=0x" + FormatCompat::HexValue(nodeId.Value()) +
-					" rf=[" + PayLoad::ToString(rf) + "] cb=0x" +
-					FormatCompat::HexValue(callbackId) + " txOpt=0x" +
-					FormatCompat::HexValue(txOptions);
+				std::ostringstream oss;
+				oss << " | node=0x" << FormatCompat::HexValue(nodeId.Value())
+					<< " rf=[" << rf << "]"
+					<< " cb=0x" << FormatCompat::HexValue(callbackId)
+					<< " txOpt=0x" << FormatCompat::HexValue(txOptions);
+				extra = oss.str();
 			}
 			else if (type == eFrameTypes::REQ && payload.size() >= 2)
 			{
@@ -214,7 +180,7 @@ public:
 			typeStr,
 			(int)APICmd.CmdId,
 			name,
-			payload.ToString(),
+			payload,
 			extra
 		);
 #else

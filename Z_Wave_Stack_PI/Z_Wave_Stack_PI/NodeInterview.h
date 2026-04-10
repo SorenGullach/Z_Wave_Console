@@ -20,8 +20,8 @@ private:
 	void HandleApplicationUpdate(const APIFrame& frame);
 
 	void RequestNodeProtocolInfo(nodeid_t nodeid);
-	void DecodeNodeProtocolInfo(nodeid_t nodeid, const APIFrame::PayLoad& payload);
+	void DecodeNodeProtocolInfo(nodeid_t nodeid, const payload_t& payload);
 	void RequestNodeInformation(nodeid_t nodeid);
-	void DecodeNodeInfo(const APIFrame::PayLoad& payload);
+	void DecodeNodeInfo(const payload_t& payload);
 
 };

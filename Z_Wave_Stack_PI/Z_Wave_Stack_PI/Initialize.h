@@ -25,7 +25,7 @@ public:
 	// Init sequence (table-driven)
 	// ===============================================================
 	using InitAction = void (Initialize::*)();
-	using InitDecodeAction = void (Initialize::*)(const APIFrame::PayLoad& payload);
+	using InitDecodeAction = void (Initialize::*)(const payload_t& payload);
 
 	struct InitStep
 	{
@@ -41,43 +41,43 @@ public:
 // GET INIT DATA (0x02)
 // ------------------------------------------------------------
 	void GetInitData();
-	void DecodeInitData(const APIFrame::PayLoad& payload);
+	void DecodeInitData(const payload_t& payload);
 
 	// ------------------------------------------------------------
 	// GET CONTROLLER CAPABILITIES (0x05)
 	// ------------------------------------------------------------
 	void GetControllerCapabilities();
-	void DecodeControllerCapabilities(const APIFrame::PayLoad& payload);
+	void DecodeControllerCapabilities(const payload_t& payload);
 
 	// ------------------------------------------------------------
 	// GET PROTOCOL VERSION (0x09)
 	// ------------------------------------------------------------
 	void GetProtocolVersion();
-	void DecodeProtocolVersion(const APIFrame::PayLoad& payload);
+	void DecodeProtocolVersion(const payload_t& payload);
 
 	// ------------------------------------------------------------
 	// GET CAPABILITIES (0x07)
 	// ------------------------------------------------------------
 	void GetCapabilities();
-	void DecodeCapabilities(const APIFrame::PayLoad& payload);
+	void DecodeCapabilities(const payload_t& payload);
 
 	// ------------------------------------------------------------
 	// GET NETWORK IDS FROM MEMORY (0x20)
 	// ------------------------------------------------------------
 	void GetNetworkIdsFromMemory();
-	void DecodeNetworkIdsFromMemory(const APIFrame::PayLoad& payload);
+	void DecodeNetworkIdsFromMemory(const payload_t& payload);
 
 	// ------------------------------------------------------------
 	// LIBRARY VERSION
 	// ------------------------------------------------------------
 	void GetLibraryVersion();
-	void DecodeLibraryVersion(const APIFrame::PayLoad& payload);
+	void DecodeLibraryVersion(const payload_t& payload);
 
 	// ------------------------------------------------------------
 	// LIBRARY TYPE
 	// ------------------------------------------------------------
 	void GetLibraryType();
-	void DecodeLibraryType(const APIFrame::PayLoad& payload);
+	void DecodeLibraryType(const payload_t& payload);
 
 	static constexpr InitStep InitSequence[] =
 	{

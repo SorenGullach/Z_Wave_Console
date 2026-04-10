@@ -7,6 +7,10 @@
 
 namespace FormatCompat
 {
+	// Helper for dependent static_assert
+	template <typename T>
+	inline constexpr bool always_false_v = false;
+
 	// Concept to check if a type can be streamed to std::ostream
 	template <typename T>
 	concept Streamable = requires(std::ostringstream& stream, const T& value) {
@@ -51,7 +55,7 @@ namespace FormatCompat
 		{
 			stream << static_cast<int>(value);
 		}
-        else if constexpr (std::is_enum_v<value_type>)
+		else if constexpr (std::is_enum_v<value_type>)
 		{
 			stream << static_cast<std::underlying_type_t<value_type>>(value);
 		}
@@ -61,7 +65,7 @@ namespace FormatCompat
 		}
 		else
 		{
-            static_assert(Streamable<T>, "ValueToString requires a streamable or enum type.");
+			static_assert(always_false_v<T>, "ValueToString requires a streamable or enum type.");
 		}
 
 		return stream.str();

@@ -11,11 +11,15 @@ enum class eCommandClass : uint8_t
     BASIC = 0x20,
     SWITCH_BINARY = 0x25,
     SWITCH_MULTILEVEL = 0x26,
+	SWITCH_ALL = 0x27,
+	SCENE_ACTUATOR_CONF = 0x28,
 
     SENSOR_BINARY = 0x30,
     SENSOR_MULTILEVEL = 0x31,
     METER = 0x32,
     COLOR_SWITCH = 0x33,
+
+	BASIC_TARIFF_INFO = 0x50,
 
     ASSOCIATION = 0x85,
     ASSOCIATION_GRP_INFO = 0x59,
@@ -59,7 +63,9 @@ enum class eCommandClass : uint8_t
     THERMOSTAT_MODE = 0x40,
     THERMOSTAT_SETPOINT = 0x43,
     THERMOSTAT_FAN_MODE = 0x44,
-    THERMOSTAT_OPERATING_STATE = 0x42
+    THERMOSTAT_OPERATING_STATE = 0x42,
+
+	MARK = 0xEF
 };
 
 inline std::string CommandClassToString(eCommandClass cc)
@@ -70,10 +76,13 @@ inline std::string CommandClassToString(eCommandClass cc)
 	case eCommandClass::NO_OPERATION: return "NO_OPERATION";                    // 0x00
 	case eCommandClass::SWITCH_BINARY: return "SWITCH_BINARY";                  // 0x25
 	case eCommandClass::SWITCH_MULTILEVEL: return "SWITCH_MULTILEVEL";          // 0x26
+	case eCommandClass::SWITCH_ALL: return "SWITCH_ALL";						// 0x27
+	case eCommandClass::SCENE_ACTUATOR_CONF: return "SCENE_ACTUATOR_CONF";		// 0x28
 	case eCommandClass::SENSOR_BINARY: return "SENSOR_BINARY";                  // 0x30
 	case eCommandClass::SENSOR_MULTILEVEL: return "SENSOR_MULTILEVEL";          // 0x31
 	case eCommandClass::METER: return "METER";                                  // 0x32
 	case eCommandClass::COLOR_SWITCH: return "COLOR_SWITCH";                    // 0x33
+	case eCommandClass::BASIC_TARIFF_INFO: return "BASIC_TARIFF_INFO";			// 0x50
 	case eCommandClass::ASSOCIATION: return "ASSOCIATION";                      // 0x85
 	case eCommandClass::ASSOCIATION_GRP_INFO: return "ASSOCIATION_GRP_INFO";    // 0x59
 	case eCommandClass::CONFIGURATION: return "CONFIGURATION";                  // 0x70
@@ -109,6 +118,8 @@ inline std::string CommandClassToString(eCommandClass cc)
 	case eCommandClass::THERMOSTAT_SETPOINT: return "THERMOSTAT_SETPOINT";      // 0x43
 	case eCommandClass::THERMOSTAT_FAN_MODE: return "THERMOSTAT_FAN_MODE";      // 0x44
 	case eCommandClass::THERMOSTAT_OPERATING_STATE: return "THERMOSTAT_OPERATING_STATE"; // 0x42
+	case eCommandClass::MARK: return "MARK"; // 0xEF
+
 	default: return "UNKNOWN";
 	}
 }

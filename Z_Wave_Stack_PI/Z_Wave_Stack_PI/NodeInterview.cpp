@@ -3,6 +3,122 @@
 #include "NodeInterview.h"
 #include "Node.h"
 
+/* ========================================================================
+   Z-Wave Node Interview — Overview
+   ========================================================================
+
+   Start(node)
+	   If state == NotInterviewed:
+		   RequestNodeProtocolInfo
+			   -> HandleFrame(ZW_API_GET_NODE_INFO_PROTOCOL_DATA)
+			   -> DecodeNodeProtocolInfo
+
+			   If node is listening:
+				   RequestNodeInformation
+					   -> HandleApplicationUpdate(
+							  UPDATE_STATE_NODE_INFO_RECEIVED
+							  or UPDATE_STATE_NODE_ADDED
+						  )
+					   -> DecodeNodeInfo
+					   -> NodeInterview reaches NodeInfoDone
+					   -> Node-specific interview/jobs continue asynchronously in Node
+
+			   If node is NOT listening:
+				   NodeInterview reaches ProtocolInfoDone
+				   (interview pauses until the node wakes up)
+
+   Later asynchronous path for non-listening/sleepy nodes:
+	   HandleApplicationUpdate(
+		   UPDATE_STATE_NODE_INFO_RECEIVED
+		   or UPDATE_STATE_NODE_ADDED
+	   )
+		   -> DecodeNodeInfo
+		   -> Node-specific interview/jobs continue asynchronously in Node
+		   -> Node transitions itself to InterviewDone
+			  and performs post-interview jobs there
+
+   Done(node) returns true when:
+	   Listening node     -> state == NodeInfoDone
+	   Non-listening node -> state == ProtocolInfoDone
+	   (Remaining interview work happens asynchronously inside Node)
+
+   ======================================================================== */
+
+   /* ========================================================================
+	  Z-Wave Node Interview State Machine
+	  ========================================================================
+
+						+----------------------+
+						|   NotInterviewed     |
+						+----------+-----------+
+								   |
+								   | Start(node)
+								   v
+						+----------------------+
+						| RequestNodeProtocol  |
+						| (ZW_API_GET_...)     |
+						+----------+-----------+
+								   |
+								   | HandleFrame(ZW_API_GET_NODE_INFO_PROTOCOL_DATA)
+								   v
+						+----------------------+
+						| DecodeProtocolInfo   |
+						+----------+-----------+
+								   |
+				   +---------------+----------------+
+				   |                                |
+				   | node is listening              | node is NOT listening
+				   v                                v
+	  +-----------------------------+      +-----------------------------+
+	  | RequestNodeInformation      |      |  ProtocolInfoDone           |
+	  | (ZW_API_REQUEST_NODE_INFO)  |      |  Done(node)==true           |
+	  +--------------+--------------+      +--------------+--------------+
+					 |                                |
+					 |                                | Later (async)
+					 |                                | ApplicationUpdate:
+					 |                                |   UPDATE_STATE_NODE_INFO_RECEIVED
+					 |                                |   UPDATE_STATE_NODE_ADDED
+					 v                                v
+	  +-----------------------------+      +-----------------------------+
+	  | ApplicationUpdate           |      | ApplicationUpdate           |
+	  | UPDATE_STATE_NODE_INFO_...  |      | UPDATE_STATE_NODE_INFO_...  |
+	  +--------------+--------------+      +--------------+--------------+
+					 |                                |
+					 v                                v
+			 +------------------+             +------------------+
+			 |  DecodeNodeInfo  |             |  DecodeNodeInfo  |
+			 +--------+---------+             +--------+---------+
+					  |                                |
+					  v                                v
+			 +------------------+             +------------------+
+			 |  NodeInfoDone    |             | Continue async   |
+			 | Done(node)==true |             | in Node          |
+			 +--------+---------+             +--------+---------+
+					  |                                |
+					  |                                | sleepy/non-listening node
+					  |                                | sets InterviewDone and runs
+					  |                                | post-interview jobs there
+					  v                                v
+			 +------------------+             +------------------+
+			 | Continue async   |             |   InterviewDone  |
+			 | in Node          |             +--------+---------+
+			 +--------+---------+                      |
+					  |                                v
+					  |                       +------------------+
+					  |                       |   Operational    |
+					  |                       +------------------+
+					  v
+			 +------------------+
+			 |   InterviewDone  |
+			 +--------+---------+
+					  |
+					  v
+			 +------------------+
+			 |   Operational    |
+			 +------------------+
+
+	  ======================================================================== */
+
 NodeInterview::NodeInterview(Nodes& nodes, EnqueueFn enqueue)
 	: nodes(nodes)
 	, enqueue(enqueue)
@@ -10,40 +126,15 @@ NodeInterview::NodeInterview(Nodes& nodes, EnqueueFn enqueue)
 {
 }
 
+// call Start and wait until Done reports true, add an timeout in calling task
 void NodeInterview::Start(nodeid_t nodeid)
 {
 	auto node = nodes.GetOrCreate(nodeid);
 	if (!node) return;
 
-	switch (node->GetInterviewState())
+	if (node->GetInterviewState() == Node::eInterviewState::NotInterviewed)
 	{
-	case Node::eInterviewState::NotInterviewed:
-		RequestNodeProtocolInfo(nodeid);
-		break;
-
-		//case Node::eInterviewState::ProtocolInfoDone:	// handled in HandleFrame
-		//case Node::eInterviewState::NodeInfoDone:		// handled in InteviewManager
-		//case Node::eInterviewState::CCVersionDone:		// handled in Device
-		//case Node::eInterviewState::CCMnfcSpecDone:	// handled in Device
-		// CCMultiChannelPending, CCMultiChannelDone // handled in 
-
-	case Node::eInterviewState::CCMultiChannelDone:
-		{
-			node->SetInterviewState(Node::eInterviewState::InterviewDone);
-			Node::Job job;
-			job.job = Node::eJobs::ASSOCIATION_INTERVIEW;
-			node->EnqueueJob(job);
-			job.job = Node::eJobs::MULTI_CHANNEL_ASSOCIATION_INTERVIEW;
-			node->EnqueueJob(job);
-			job.job = Node::eJobs::CONFIGURATION_INTERVIEW;
-			job.group = 0; // start with param 0
-			job.value = 10; // get 10 params
-			node->EnqueueJob(job);
-		}
-		break;
-
-	default:
-		break;
+		RequestNodeProtocolInfo(nodeid); // starts the interview chain
 	}
 }
 
@@ -53,17 +144,17 @@ bool NodeInterview::Done(nodeid_t nodeid)
 	if (node)
 	{
 		if (!node->IsListening() && node->GetInterviewState() == Node::eInterviewState::ProtocolInfoDone)
-			return true;
+			return true; // rest of interview is done when a UPDATE_STATE_NODE_INFO_RECEIVED or UPDATE_STATE_NODE_ADDED is received and async in Node
 
-		if (node->IsListening() && node->GetInterviewState() == Node::eInterviewState::NodeInfoDone)
-			return true; // rest of interview is done in Node
+		if (node->IsListening() && node->GetInterviewState() >= Node::eInterviewState::NodeInfoDone)
+			return true; // rest of interview is done async in Node
 	}
 	return false;
 }
 
 const bool NodeInterview::HandleFrame(const APIFrame& frame)
 {
-	Log.AddL(eLogTypes::DBG, MakeTag(), "HandleFrame called for node {}: {}", activeNode ? activeNode->nodeId : (nodeid_t)0, frame.Info());
+	Log.AddL(eLogTypes::DBG, MakeTag(), "HandleFrame called for node {}: {}", activeNode ? activeNode->nodeId : nullptr, frame.Info());
 
 	switch (frame.APICmd.CmdId)
 	{
@@ -94,7 +185,7 @@ const bool NodeInterview::HandleFrame(const APIFrame& frame)
 bool NodeInterview::HandleFrameTimeout(const APIFrame& frame)
 {
 	Log.AddL(eLogTypes::ITW, MakeTag(), "HandleFrameTimeout called for node {}: {}",
-			 activeNode ? activeNode->nodeId : (nodeid_t)0, frame.Info());
+			 activeNode ? activeNode->nodeId : nullptr, frame.Info());
 	return false;
 }
 
@@ -127,7 +218,7 @@ void NodeInterview::HandleApplicationUpdate(const APIFrame& frame)
 		break;
 
 	default:
-		Log.AddL(eLogTypes::DBG, MakeTag(), "<< {}: unexpected event=0x{:02X} payloadLen={}", ToString(eCommandIds::ZW_API_APPLICATION_UPDATE), static_cast<uint8_t>(event), p.size());
+		Log.AddL(eLogTypes::ERR, MakeTag(), "<< {}: unexpected event=0x{:02X} payloadLen={}", ToString(eCommandIds::ZW_API_APPLICATION_UPDATE), static_cast<uint8_t>(event), p.size());
 		break;
 	}
 
@@ -135,7 +226,7 @@ void NodeInterview::HandleApplicationUpdate(const APIFrame& frame)
 
 void NodeInterview::RequestNodeProtocolInfo(nodeid_t nodeid)
 {
-	if (nodeid == nodeid_t{ 0 } || nodeid == nodeid_t{ 1 }) return;
+	if (nodeid == 0 || nodeid == 1) return;
 
 	activeNode = nodes.GetOrCreate(nodeid);
 	activeNode->SetInterviewState(Node::eInterviewState::ProtocolInfoPending);
@@ -147,7 +238,7 @@ void NodeInterview::RequestNodeProtocolInfo(nodeid_t nodeid)
 	enqueue(frame);
 }
 
-void NodeInterview::DecodeNodeProtocolInfo(nodeid_t nodeid, const APIFrame::PayLoad& payload)
+void NodeInterview::DecodeNodeProtocolInfo(nodeid_t nodeid, const payload_t& payload)
 {
 	// Table 4.92: Get Node Information Protocol Data response payload (excluding FUNC_ID)
 	// [0]=Byte1 (Listening, Routing, Supported speed[3], Protocol version[3])
@@ -218,7 +309,7 @@ void NodeInterview::DecodeNodeProtocolInfo(nodeid_t nodeid, const APIFrame::PayL
 
 void NodeInterview::RequestNodeInformation(nodeid_t nodeid)
 {
-	if (nodeid == nodeid_t{ 0 } || nodeid == nodeid_t{ 1 }) return;
+	if (nodeid == 0 || nodeid == 1) return;
 
 	Node* node = nodes.GetOrCreate(nodeid);
 	node->SetInterviewState(Node::eInterviewState::NodeInfoPending);
@@ -231,7 +322,7 @@ void NodeInterview::RequestNodeInformation(nodeid_t nodeid)
 }
 
 // Decodes Node Information Frame (NIF) from payload and updates the node if possible
-void NodeInterview::DecodeNodeInfo(const APIFrame::PayLoad& payload)
+void NodeInterview::DecodeNodeInfo(const payload_t& payload)
 {
 	if (payload.size() < 3)
 	{

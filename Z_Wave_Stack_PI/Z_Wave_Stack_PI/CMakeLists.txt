@@ -51,7 +51,7 @@ add_executable(Z_Wave_Stack_PI
 
     # Shared utilities
     "FormatCompat.h"
-    "NodeId_t.h"
+    "Strong_id.h"
 )
 
 if (MSVC)

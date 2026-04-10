@@ -95,7 +95,7 @@ void Initialize::GetInitData()
 	enqueue(frame);
 }
 
-void Initialize::DecodeInitData(const APIFrame::PayLoad& payload)
+void Initialize::DecodeInitData(const payload_t& payload)
 {
 	// Response payload format (excluding command id, which is in the frame function id):
 	// [0] Z-Wave API Version
@@ -194,7 +194,7 @@ void Initialize::GetControllerCapabilities()
 	enqueue(frame);
 }
 
-void Initialize::DecodeControllerCapabilities(const APIFrame::PayLoad& payload)
+void Initialize::DecodeControllerCapabilities(const payload_t& payload)
 {
 	// Response payload format (excluding command id):
 	// [0] Controller capabilities bitmask
@@ -250,7 +250,7 @@ void Initialize::GetProtocolVersion()
 	enqueue(frame);
 }
 
-void Initialize::DecodeProtocolVersion(const APIFrame::PayLoad& payload)
+void Initialize::DecodeProtocolVersion(const payload_t& payload)
 {
 	// Response payload format (excluding command id):
 	// [0] Protocol Type
@@ -315,7 +315,7 @@ void Initialize::GetCapabilities()
 	enqueue(frame);
 }
 
-void Initialize::DecodeCapabilities(const APIFrame::PayLoad& payload)
+void Initialize::DecodeCapabilities(const payload_t& payload)
 {
 	// Response payload format (excluding command id):
 	// [0] API version
@@ -407,7 +407,7 @@ void Initialize::GetNetworkIdsFromMemory()
 	enqueue(frame);
 }
 
-void Initialize::DecodeNetworkIdsFromMemory(const APIFrame::PayLoad& payload)
+void Initialize::DecodeNetworkIdsFromMemory(const payload_t& payload)
 {
 	// Response payload format (excluding command id):
 	// [0..3] HomeID (4 bytes)
@@ -490,7 +490,7 @@ void Initialize::GetLibraryVersion()
 	enqueue(frame);
 }
 
-void Initialize::DecodeLibraryVersion(const APIFrame::PayLoad& payload)
+void Initialize::DecodeLibraryVersion(const payload_t& payload)
 {
 	// Spec (4.3.11): 12-byte version string (may not be NUL-terminated, padded with NUL)
 	// followed by 1 byte library type.
@@ -560,7 +560,7 @@ void Initialize::GetLibraryType()
 	enqueue(frame);
 }
 
-void Initialize::DecodeLibraryType(const APIFrame::PayLoad& payload)
+void Initialize::DecodeLibraryType(const payload_t& payload)
 {
 #pragma pack(push, 1)
 	struct PayloadStruct

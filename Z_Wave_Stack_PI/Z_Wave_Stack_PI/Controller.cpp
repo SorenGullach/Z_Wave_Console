@@ -3,7 +3,7 @@
 #include <chrono>
 #include <iostream> 
 #include <thread>
-#include "NodeId_t.h"
+#include "Strong_id.h"
 
 Controller::Controller()
 	: Nodes([this](const APIFrame& f) { Enqueue(f); })
@@ -38,13 +38,15 @@ void Controller::Start()
 		std::cout << ControllerInfo::ToString() << "\n";
 		for (auto id : NodeIds)
 		{
-			if (id == nodeid_t{ 0 } || id == nodeid_t{ 1 }) continue;
+			//if (id == nodeid_t{ 0 } || id == nodeid_t{ 1 }) continue;
+			if (id == 0 || id == 1) continue;
 
 			initializeDeadline = std::chrono::steady_clock::now() + initializeTimeout;
 
+			nodeInterview.Start(id);
+
 			while (!nodeInterview.Done(id))
 			{
-				nodeInterview.Start(id);
 				if (std::chrono::steady_clock::now() >= initializeDeadline)
 				{
 					Log.AddL(eLogTypes::ERR, MakeTag(), "Node {} initialization timed out after {} ms", id, initializeTimeout.count() * 1000);
@@ -141,7 +143,7 @@ bool Controller::OnFrameReceivedTimeout(const APIFrame& frame)
 
 // Parses frames delivered via Z-Wave Serial API `ZW_API_APPLICATION_COMMAND_HANDLER` and
 // dispatches to command-class specific decoders/interview handlers.
-void Controller::HandleCCFrame(const APIFrame::PayLoad& payload)
+void Controller::HandleCCFrame(const payload_t& payload)
 {
 	if (payload.empty())
 	{
@@ -186,17 +188,17 @@ void Controller::HandleCCFrame(const APIFrame::PayLoad& payload)
 		return;
 	}
 
-	const ccparams_t cmd(payload.begin() + cmdStart, payload.begin() + cmdEnd);
-	if (cmd.size() < 2)
+	const ccparams_t ccParams(payload.begin() + cmdStart, payload.begin() + cmdEnd);
+	if (ccParams.size() < 2)
 		return;
 
-	const eCommandClass cmdClass = static_cast<eCommandClass>(cmd[0]);
-	const ccid_t cmdId(cmd[1]);
-	const ccparams_t cmdParams(cmd.begin() + 2, cmd.end());
+	const eCommandClass cmdClass = static_cast<eCommandClass>(ccParams[0]);
+	const ccid_t ccId = ccParams[1];
+	const ccparams_t cmdParams(ccParams.begin() + 2, ccParams.end());
 	Log.AddL(eLogTypes::RTU, MakeTag(), "CC frame: fromNode={} cc=0x{:02X} cmd=0x{:02X} paramsLen={}",
-			 nodeId, (uint8_t)cmdClass, (int)cmdId.value, cmdParams.size());
+			 nodeId, (uint8_t)cmdClass, ccId, cmdParams.size());
 
-	switch ((static_cast<uint16_t>(cmdClass) << 8) | cmdId.value)
+	switch ((static_cast<uint16_t>(cmdClass) << 8) | ccId.Value())
 	{
 		//
 		// All device CCs handled by ZW_Node / ZW_Device
@@ -223,7 +225,7 @@ void Controller::HandleCCFrame(const APIFrame::PayLoad& payload)
 			case (static_cast<uint16_t>(eCommandClass::MULTI_CHANNEL_ASSOCIATION) << 8) | static_cast<uint8_t>(CC_MultiChannelAssociation::eMultiChannelAssociationCommand::MULTI_CHANNEL_ASSOCIATION_GROUPINGS_REPORT) :
 
 			// All device CCs handled here
-			Nodes::HandleCCDeviceReport(nodeId, cmdClass, cmdId.value, cmdParams);
+			Nodes::HandleCCDeviceReport(nodeId, cmdClass, ccId, cmdParams);
 			break;
 
 			//
@@ -232,13 +234,13 @@ void Controller::HandleCCFrame(const APIFrame::PayLoad& payload)
 			default:
 				Log.AddL(eLogTypes::ERR, MakeTag(),
 						 "Controller.HandleCCFrame: unhandled cc=0x{:02X} cmd=0x{:02X} fromNode={} (cmdLen={}, payloadLen={})",
-						 (uint8_t)cmdClass, (int)cmdId.value, nodeId, cmdLen, payload.size());
+						 (uint8_t)cmdClass, (int)ccId.Value(), nodeId, cmdLen, payload.size());
 				break;
 	}
 }
 
 // Called by the interface layer when a waited-for callback/response did not arrive.
-void Controller::HandleCCFrameTimeout(const APIFrame::PayLoad& payload)
+void Controller::HandleCCFrameTimeout(const payload_t& payload)
 {
 	Log.AddL(eLogTypes::RTU, MakeTag(), "Controller.HandleCCFrameTimeout: payloadLen={}", payload.size());
 }

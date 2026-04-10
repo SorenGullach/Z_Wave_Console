@@ -8,6 +8,8 @@
 #include <chrono>
 #include <cstdint>
 #include <source_location>
+#include <iostream>
+#include <iomanip>
 
 #include "FormatCompat.h"
 
@@ -69,8 +71,8 @@ public:
 
 	auto Lock() const { return std::scoped_lock(LockMutex); }
 
-	void SetLogTypeOn(eLogTypes lt) { CurrentLogTypes |= static_cast<uint16_t>(lt); }
-	void SetLogTypeOff(eLogTypes lt) { CurrentLogTypes &= ~static_cast<uint16_t>(lt); }
+	void SetLogTypeOn(eLogTypes lt) { CurrentLogTypes |= static_cast<uint32_t>(lt); }
+	void SetLogTypeOff(eLogTypes lt) { CurrentLogTypes &= ~static_cast<uint32_t>(lt); }
 
 	struct LogEntry
 	{
@@ -107,7 +109,7 @@ public:
 			auto startIt = log.end() - static_cast<std::ptrdiff_t>(count);
 			for (; startIt != log.end(); ++startIt)
 			{
-				if ((CurrentLogTypes & static_cast<uint16_t>(startIt->lt)) != 0)
+				if ((CurrentLogTypes & static_cast<uint32_t>(startIt->lt)) != 0)
 					result.push_back(BuildLogLine(ToString(startIt->lt), startIt->tag, startIt->msg));
 			}
 		}
@@ -140,8 +142,8 @@ public:
 		case eLogTypes::ITF: return "ITF";
 		case eLogTypes::RTU: return "RTU";
 		case eLogTypes::WRN: return "WRN";
-		default: return "???";
 		}
+		return "???";
 	}
 
 	template <typename... Args>
@@ -158,14 +160,22 @@ private:
 	std::deque<LogEntry> log;
 	std::ofstream logFile;
 
-	uint16_t CurrentLogTypes =
-		static_cast<uint16_t>(eLogTypes::ERR) |
-		static_cast<uint16_t>(eLogTypes::ITW) |
-		static_cast<uint16_t>(eLogTypes::DVC);
+	uint32_t CurrentLogTypes = 0
+		| static_cast<uint32_t>(eLogTypes::ERR)
+		| static_cast<uint32_t>(eLogTypes::WRN)
+		| static_cast<uint32_t>(eLogTypes::DVC)
+		| static_cast<uint32_t>(eLogTypes::ITW)
+		//| static_cast<uint32_t>(eLogTypes::DBG)
+		| static_cast<uint32_t>(eLogTypes::ITF)
+		| static_cast<uint32_t>(eLogTypes::ITZ)
+		//| static_cast<uint32_t>(eLogTypes::RTU)
+		;
 
 	void AddInternal(eLogTypes lt, const std::string& tag, const std::string& msg)
 	{
-		// log all entries
+		// filter log types
+		if ((CurrentLogTypes & static_cast<uint16_t>(lt)) == 0)
+			return;
 
 		{
 			auto _lock = Lock();
@@ -185,19 +195,19 @@ private:
 				auto _lock = Lock();
 				std::string line = BuildLogLine(ToString(lt), tag, msg);
 
-			//	std::cout << line << std::endl;
+				//	std::cout << line << std::endl;
 
 				auto now = std::chrono::system_clock::now();
 				auto t = std::chrono::system_clock::to_time_t(now);
 				std::tm tmBuf = GetLocalTime(t);
 
-				std::cout 
+				std::cout
 					<< std::put_time(&tmBuf, ":%S") << '.'
 					<< std::setw(3) << std::setfill('0')
 					<< std::chrono::duration_cast<std::chrono::milliseconds>(now.time_since_epoch()).count() % 1000
 					<< " " << line << std::endl;
 
-				logFile 
+				logFile
 					<< std::put_time(&tmBuf, "%H:%M:%S") << '.'
 					<< std::setw(3) << std::setfill('0')
 					<< std::chrono::duration_cast<std::chrono::milliseconds>(now.time_since_epoch()).count() % 1000
